@@ -423,6 +423,9 @@ router.get('/shared/:token', (req, res) => {
     const markets = Report.getMarkets(report.id);
     const isMultiMarket = markets && markets.length > 0;
 
+    // Get PR insights for shared view
+    const prInsights = Report.getPRInsights(report.id);
+
     if (isMultiMarket) {
       const categoryFamilies = Report.getCategoryFamilies(report.id);
       const competitors = Report.getMarketCompetitors(report.id);
@@ -440,7 +443,8 @@ router.get('/shared/:token', (req, res) => {
         marketResults,
         configuration,
         llmResponses,
-        sources
+        sources,
+        prInsights
       });
     } else {
       const analysisResults = Report.getAnalysisResults(report.id);
@@ -454,7 +458,8 @@ router.get('/shared/:token', (req, res) => {
         configuration,
         analysisResults,
         llmResponses,
-        sources
+        sources,
+        prInsights
       });
     }
   } catch (error) {

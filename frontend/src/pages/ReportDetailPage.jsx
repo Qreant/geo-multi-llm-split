@@ -110,7 +110,9 @@ export default function ReportDetailPage() {
   };
 
   const handleCopyShareLink = () => {
-    const shareUrl = `${window.location.origin}/share/${shareToken}`;
+    // Always use production domain for share links
+    const productionDomain = 'https://geo-multi-llm-split-frontend.vercel.app';
+    const shareUrl = `${productionDomain}/share/${shareToken}`;
     navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -693,7 +695,7 @@ export default function ReportDetailPage() {
                 <div className="flex items-center gap-2 p-3 bg-[#F4F6F8] rounded-lg">
                   <LinkIcon className="w-4 h-4 text-[#757575] flex-shrink-0" />
                   <span className="text-sm text-[#212121] truncate flex-1">
-                    {window.location.origin}/share/{shareToken}
+                    geo-multi-llm-split-frontend.vercel.app/share/{shareToken}
                   </span>
                   <button
                     onClick={handleCopyShareLink}
