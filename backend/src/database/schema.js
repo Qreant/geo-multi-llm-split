@@ -41,12 +41,7 @@ export function initDatabase() {
     )
   `);
 
-  // Add share_token column if it doesn't exist (migration for existing DBs)
-  try {
-    db.exec(`ALTER TABLE reports ADD COLUMN share_token TEXT UNIQUE`);
-  } catch (e) {
-    // Column already exists, ignore
-  }
+  // Note: share_token migration is handled in migrate.js for existing databases
 
   // Report configuration - stores the questions used
   db.exec(`

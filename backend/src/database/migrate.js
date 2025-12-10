@@ -54,13 +54,18 @@ export function migrateDatabase() {
 
     // Migration 4: Add share_token column to reports table
     const reportsTableInfo = db.prepare('PRAGMA table_info(reports)').all();
+    console.log('📋 Reports table columns:', reportsTableInfo.map(c => c.name).join(', '));
     const hasShareToken = reportsTableInfo.some(col => col.name === 'share_token');
 
     if (!hasShareToken) {
       console.log('📦 Running migration: Adding share_token column to reports');
-      db.exec('ALTER TABLE reports ADD COLUMN share_token TEXT UNIQUE');
+      db.exec('ALTER TABLE reports ADD COLUMN share_token TEXT');
+      // Create index separately (UNIQUE constraint via index)
+      db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_reports_share_token ON reports(share_token)');
       console.log('✅ Added share_token column');
       migrationsMade = true;
+    } else {
+      console.log('✓ share_token column already exists');
     }
 
     if (!migrationsMade) {
