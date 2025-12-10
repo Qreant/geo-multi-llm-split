@@ -966,6 +966,113 @@ export class Report {
   }
 
   // ==========================================
+  // Health Check Methods
+  // ==========================================
+
+  /**
+   * Get all actively processing reports
+   */
+  static getActiveReports() {
+    const db = getDatabase();
+    const stmt = db.prepare(`
+      SELECT r.*,
+        (SELECT COUNT(*) FROM llm_responses WHERE report_id = r.id) as questions_processed,
+        (SELECT MAX(created_at) FROM llm_responses WHERE report_id = r.id) as last_activity
+      FROM reports r
+      WHERE r.status = 'processing'
+      ORDER BY r.created_at DESC
+    `);
+
+    return stmt.all().map(report => ({
+      ...report,
+      competitors: JSON.parse(report.competitors || '[]'),
+      countries: JSON.parse(report.countries || '[]'),
+      languages: JSON.parse(report.languages || '[]')
+    }));
+  }
+
+  /**
+   * Get reports that appear stuck (processing too long or no recent activity)
+   */
+  static getStuckReports(stuckThresholdMinutes = 10) {
+    const db = getDatabase();
+    const stmt = db.prepare(`
+      SELECT r.*,
+        (SELECT COUNT(*) FROM llm_responses WHERE report_id = r.id) as questions_processed,
+        (SELECT MAX(created_at) FROM llm_responses WHERE report_id = r.id) as last_activity,
+        ROUND((julianday('now') - julianday(r.created_at)) * 24 * 60) as elapsed_minutes
+      FROM reports r
+      WHERE r.status = 'processing'
+      AND (
+        (julianday('now') - julianday(r.created_at)) * 24 * 60 > ?
+        OR (
+          (SELECT MAX(created_at) FROM llm_responses WHERE report_id = r.id) IS NOT NULL
+          AND (julianday('now') - julianday((SELECT MAX(created_at) FROM llm_responses WHERE report_id = r.id))) * 24 * 60 > ?
+        )
+      )
+      ORDER BY r.created_at DESC
+    `);
+
+    return stmt.all(stuckThresholdMinutes, stuckThresholdMinutes / 2).map(report => ({
+      ...report,
+      competitors: JSON.parse(report.competitors || '[]'),
+      countries: JSON.parse(report.countries || '[]'),
+      languages: JSON.parse(report.languages || '[]')
+    }));
+  }
+
+  /**
+   * Get recently failed reports
+   */
+  static getRecentFailures(hours = 1) {
+    const db = getDatabase();
+    const stmt = db.prepare(`
+      SELECT * FROM reports
+      WHERE status = 'failed'
+      AND (julianday('now') - julianday(created_at)) * 24 < ?
+      ORDER BY created_at DESC
+    `);
+
+    return stmt.all(hours).map(report => ({
+      ...report,
+      competitors: JSON.parse(report.competitors || '[]'),
+      countries: JSON.parse(report.countries || '[]'),
+      languages: JSON.parse(report.languages || '[]')
+    }));
+  }
+
+  /**
+   * Get health summary counts
+   */
+  static getHealthSummary() {
+    const db = getDatabase();
+
+    const activeStmt = db.prepare(`SELECT COUNT(*) as count FROM reports WHERE status = 'processing'`);
+    const stuckStmt = db.prepare(`
+      SELECT COUNT(*) as count FROM reports
+      WHERE status = 'processing'
+      AND (julianday('now') - julianday(created_at)) * 24 * 60 > 10
+    `);
+    const failedStmt = db.prepare(`
+      SELECT COUNT(*) as count FROM reports
+      WHERE status = 'failed'
+      AND (julianday('now') - julianday(created_at)) * 24 < 1
+    `);
+    const completedStmt = db.prepare(`
+      SELECT COUNT(*) as count FROM reports
+      WHERE status = 'completed'
+      AND (julianday('now') - julianday(created_at)) * 24 < 24
+    `);
+
+    return {
+      active: activeStmt.get()?.count || 0,
+      stuck: stuckStmt.get()?.count || 0,
+      failed_last_hour: failedStmt.get()?.count || 0,
+      completed_last_24h: completedStmt.get()?.count || 0
+    };
+  }
+
+  // ==========================================
   // Overview Data Methods
   // ==========================================
 

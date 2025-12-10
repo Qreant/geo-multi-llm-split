@@ -9,6 +9,99 @@ import { resolveVertexRedirect } from '../services/llmService.js';
 const router = express.Router();
 
 /**
+ * GET /api/reports/health
+ * Get health status of all ongoing and recent reports
+ * Useful for monitoring report processing health
+ */
+router.get('/health', (req, res) => {
+  try {
+    const stuckThreshold = parseInt(req.query.stuck_threshold) || 10; // minutes
+    const failureWindow = parseInt(req.query.failure_window) || 1; // hours
+
+    // Fetch all health data
+    const activeReports = Report.getActiveReports();
+    const stuckReports = Report.getStuckReports(stuckThreshold);
+    const recentFailures = Report.getRecentFailures(failureWindow);
+    const summary = Report.getHealthSummary();
+
+    // Format active reports with computed fields
+    const formattedActive = activeReports.map(report => {
+      const startedAt = new Date(report.created_at);
+      const elapsedSeconds = Math.round((Date.now() - startedAt.getTime()) / 1000);
+
+      // Determine current stage based on progress
+      let currentStage = 'querying';
+      if (report.progress >= 95) currentStage = 'insights';
+      else if (report.progress >= 85) currentStage = 'aggregating';
+      else if (report.progress >= 75) currentStage = 'classifying';
+      else if (report.progress > 0) currentStage = 'querying';
+      else currentStage = 'initializing';
+
+      return {
+        id: report.id,
+        entity: report.entity,
+        category: report.category,
+        status: report.status,
+        progress: report.progress || 0,
+        questions_processed: report.questions_processed || 0,
+        total_questions: report.total_questions || 0,
+        elapsed_seconds: elapsedSeconds,
+        current_stage: currentStage,
+        last_activity: report.last_activity,
+        started_at: report.created_at,
+        markets: report.countries?.length || 1
+      };
+    });
+
+    // Format stuck reports
+    const formattedStuck = stuckReports.map(report => ({
+      id: report.id,
+      entity: report.entity,
+      status: report.status,
+      progress: report.progress || 0,
+      questions_processed: report.questions_processed || 0,
+      total_questions: report.total_questions || 0,
+      elapsed_minutes: report.elapsed_minutes,
+      last_activity: report.last_activity,
+      started_at: report.created_at,
+      reason: report.last_activity
+        ? 'No activity for extended period'
+        : 'Running longer than expected'
+    }));
+
+    // Format recent failures
+    const formattedFailures = recentFailures.map(report => ({
+      id: report.id,
+      entity: report.entity,
+      error_message: report.error_message,
+      failed_at: report.created_at,
+      execution_time: report.execution_time
+    }));
+
+    // Determine overall health status
+    let healthStatus = 'healthy';
+    if (summary.stuck > 0 || summary.failed_last_hour > 2) {
+      healthStatus = 'degraded';
+    }
+    if (summary.stuck > 2 || summary.failed_last_hour > 5) {
+      healthStatus = 'unhealthy';
+    }
+
+    res.json({
+      status: healthStatus,
+      timestamp: new Date().toISOString(),
+      summary,
+      active_reports: formattedActive,
+      stuck_reports: formattedStuck,
+      recent_failures: formattedFailures
+    });
+  } catch (error) {
+    console.error('Error fetching health status:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
  * GET /api/reports
  * List all reports
  */
