@@ -1,0 +1,284 @@
+{
+  "version": "1.0",
+  "title": "FXTM Competitive Analysis Visualization Specification",
+  "charts": [
+    {
+      "id": "trend-line-chart",
+      "type": "line",
+      "title": "Visibility & SOV Trends",
+      "description": "Time-series visualization of brand visibility and share of voice",
+      "data": {
+        "source": "trendData",
+        "xField": "month",
+        "yFields": ["visibility", "sov", "ranking"]
+      },
+      "scales": {
+        "x": {
+          "type": "band",
+          "domain": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
+        },
+        "y": {
+          "type": "linear",
+          "domain": [0, 100],
+          "label": "Percentage"
+        }
+      },
+      "axes": {
+        "x": {
+          "position": "bottom",
+          "tickSize": 6,
+          "tickPadding": 10,
+          "label": "Month"
+        },
+        "y": {
+          "position": "left",
+          "tickSize": 6,
+          "tickPadding": 10,
+          "tickFormat": "d",
+          "label": "Value"
+        }
+      },
+      "colors": {
+        "visibility": "#3B82F6",
+        "sov": "#22C55E",
+        "ranking": "#F59E0B"
+      },
+      "sizes": {
+        "strokeWidth": 2,
+        "dotRadius": 4,
+        "activeDotRadius": 6
+      },
+      "interactions": {
+        "tooltip": true,
+        "hover": true,
+        "legend": {
+          "clickable": true,
+          "position": "bottom"
+        }
+      },
+      "dimensions": {
+        "width": "100%",
+        "height": 300,
+        "margin": { "top": 20, "right": 30, "bottom": 50, "left": 50 }
+      }
+    },
+    {
+      "id": "source-type-pie-chart",
+      "type": "pie",
+      "title": "Share of Voice by Source Type",
+      "description": "Distribution of content sources influencing LLM responses",
+      "data": {
+        "source": "sourceTypeSov",
+        "nameField": "name",
+        "valueField": "value"
+      },
+      "scales": {
+        "color": {
+          "type": "ordinal",
+          "domain": ["Corporate Blogs & Content", "Journalism", "Social / UGC"],
+          "range": ["#3B82F6", "#22C55E", "#F59E0B"]
+        }
+      },
+      "layout": {
+        "innerRadius": 60,
+        "outerRadius": 100,
+        "paddingAngle": 2,
+        "cornerRadius": 4
+      },
+      "colors": {
+        "Corporate Blogs & Content": "#3B82F6",
+        "Journalism": "#22C55E",
+        "Social / UGC": "#F59E0B"
+      },
+      "labels": {
+        "show": true,
+        "position": "outside",
+        "format": "{name}: {value}%"
+      },
+      "interactions": {
+        "tooltip": {
+          "enabled": true,
+          "format": "{name}\n{value}% of sources"
+        },
+        "hover": {
+          "scale": 1.05
+        }
+      },
+      "dimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "competitors-bar-chart",
+      "type": "horizontalBar",
+      "title": "Competitor SOV Ranking",
+      "description": "Share of voice comparison across competitors",
+      "data": {
+        "source": "competitorsRanking",
+        "categoryField": "name",
+        "valueField": "sov"
+      },
+      "scales": {
+        "x": {
+          "type": "linear",
+          "domain": [0, 0.5],
+          "format": ".0%"
+        },
+        "y": {
+          "type": "band",
+          "padding": 0.2
+        }
+      },
+      "axes": {
+        "x": {
+          "position": "bottom",
+          "label": "Share of Voice",
+          "tickFormat": ".0%"
+        },
+        "y": {
+          "position": "left",
+          "label": "Brand"
+        }
+      },
+      "colors": {
+        "default": "#3B82F6",
+        "highlight": "#1D4ED8",
+        "fxtm": "#EF4444"
+      },
+      "sizes": {
+        "barHeight": 32,
+        "gap": 8
+      },
+      "interactions": {
+        "tooltip": true,
+        "hover": {
+          "opacity": 0.8
+        }
+      },
+      "dimensions": {
+        "width": "100%",
+        "height": 400,
+        "margin": { "top": 20, "right": 30, "bottom": 50, "left": 120 }
+      }
+    },
+    {
+      "id": "sentiment-bar-chart",
+      "type": "horizontalBar",
+      "title": "Concept Sentiment Analysis",
+      "description": "Sentiment distribution for brand-associated concepts",
+      "data": {
+        "source": "reputationAnalysis.topConcepts",
+        "categoryField": "concept",
+        "valueField": "value"
+      },
+      "scales": {
+        "x": {
+          "type": "linear",
+          "domain": [0, 100]
+        },
+        "y": {
+          "type": "band",
+          "padding": 0.3
+        }
+      },
+      "colors": {
+        "positive": "#22C55E",
+        "negative": "#EF4444",
+        "mixed": "#64748B"
+      },
+      "sizes": {
+        "barHeight": 24,
+        "cornerRadius": 4
+      },
+      "interactions": {
+        "tooltip": {
+          "enabled": true,
+          "format": "{concept}\nSentiment: {sentiment}\nStrength: {value}%"
+        }
+      },
+      "dimensions": {
+        "width": "100%",
+        "height": 320,
+        "margin": { "top": 20, "right": 30, "bottom": 30, "left": 200 }
+      }
+    },
+    {
+      "id": "metric-cards",
+      "type": "cards",
+      "title": "Key Metrics",
+      "items": [
+        {
+          "id": "visibility-card",
+          "label": "Brand Visibility",
+          "valueField": "visibility.visibility",
+          "format": "{value}%",
+          "icon": "eye"
+        },
+        {
+          "id": "sov-card",
+          "label": "Share of Voice",
+          "valueField": "visibility.shareOfVoice",
+          "format": "{value}%",
+          "icon": "trending-up"
+        },
+        {
+          "id": "position-card",
+          "label": "Average Position",
+          "valueField": "visibility.averagePosition",
+          "format": "#{value}",
+          "icon": "trophy"
+        },
+        {
+          "id": "mentions-card",
+          "label": "Total Mentions",
+          "valueField": "visibility.mentions",
+          "format": "{value}",
+          "icon": "bar-chart"
+        }
+      ],
+      "layout": {
+        "columns": 4,
+        "gap": 16
+      },
+      "colors": {
+        "background": "#FFFFFF",
+        "border": "#E2E8F0",
+        "icon": "#3B82F6",
+        "value": "#1E293B",
+        "label": "#64748B"
+      }
+    }
+  ],
+  "tables": [
+    {
+      "id": "competitors-table",
+      "title": "Competitive Ranking",
+      "columns": [
+        { "field": "rank", "header": "Rank", "width": 60, "align": "center" },
+        { "field": "name", "header": "Brand", "width": 150 },
+        { "field": "sov", "header": "SOV", "width": 80, "format": ".1%", "align": "right" },
+        { "field": "visibility", "header": "Visibility", "width": 80, "format": ".0%", "align": "right" },
+        { "field": "avgPosition", "header": "Avg Position", "width": 100, "format": ".2f", "align": "right" },
+        { "field": "mentions", "header": "Mentions", "width": 80, "align": "center" }
+      ],
+      "styles": {
+        "headerBackground": "#F8FAFC",
+        "headerColor": "#475569",
+        "rowBackground": "#FFFFFF",
+        "rowAltBackground": "#F8FAFC",
+        "borderColor": "#E2E8F0"
+      }
+    }
+  ],
+  "colorPalette": {
+    "chart1": "#3B82F6",
+    "chart2": "#22C55E",
+    "chart3": "#F59E0B",
+    "chart4": "#A855F7",
+    "chart5": "#EC4899",
+    "positive": "#22C55E",
+    "negative": "#EF4444",
+    "neutral": "#64748B"
+  }
+}

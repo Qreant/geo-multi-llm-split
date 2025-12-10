@@ -1,0 +1,26 @@
+node_modules/
+.env
+.env.local
+*.log
+.DS_Store
+database/*.db
+database/*.db-journal
+dist/
+build/
+
+# IDE and tool configs with potential secrets
+.claude/
+.idea/
+.vscode/settings.json
+
+# Test files with potential API keys
+test-serpapi*.js
+test-ai-mode.js
+serpapi-*.json
+
+# macOS
+*.swp
+Thumbs.db
+
+# Legacy Google Apps Script (reference only)
+*.gs

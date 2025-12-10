@@ -1,0 +1,143 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Social Analytics Design System */
+    /* Primary & Brand */
+    --primary-main: #10B981;
+    --primary-hover: #059669;
+    --secondary-blue: #2196F3;
+    --bg-page: #F4F6F8;
+
+    /* Semantic / Data Viz */
+    --positive: #4CAF50;
+    --neutral: #9E9E9E;
+    --negative: #EF5350;
+
+    /* Text & Borders */
+    --text-primary: #212121;
+    --text-secondary: #757575;
+    --border-color: #E0E0E0;
+
+    /* Typography Scale */
+    --font-display: 48px;
+    --font-xxl: 32px;
+    --font-xl: 24px;
+    --font-lg: 18px;
+    --font-base: 16px;
+    --font-sm: 14px;
+    --font-xs: 12px;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-[#E0E0E0];
+  }
+
+  body {
+    @apply bg-[#F4F6F8] text-[#212121];
+    font-family: 'Roboto', 'Helvetica Neue', -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  /* Dashboard Card Pattern */
+  .card-base {
+    @apply bg-white rounded-lg border border-[#E0E0E0] p-6;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Metric Value */
+  .metric-value {
+    @apply text-5xl font-light text-[#212121];
+  }
+
+  /* Section Title */
+  .section-title {
+    @apply text-lg font-medium uppercase tracking-wide text-[#757575];
+  }
+
+  /* Primary Button */
+  .btn-primary {
+    @apply px-4 py-2 bg-[#10B981] text-white rounded font-medium;
+    @apply hover:bg-[#059669] transition-colors;
+  }
+
+  /* Secondary Button */
+  .btn-secondary {
+    @apply px-4 py-2 bg-white text-[#212121] rounded font-medium border border-[#E0E0E0];
+    @apply hover:bg-[#F4F6F8] transition-colors;
+  }
+
+  /* AI Summary Box */
+  .ai-summary {
+    @apply bg-[#EEF0F2] rounded-lg p-4 border border-[#E0E0E0];
+  }
+
+  /* Sidebar Navigation */
+  .sidebar-tab {
+    @apply flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium;
+    @apply text-[#757575] hover:bg-[#F0FDF4] hover:text-[#10B981] transition-colors cursor-pointer;
+  }
+
+  .sidebar-tab-active {
+    @apply bg-[#10B981] text-white shadow-sm;
+  }
+
+  /* Hierarchical Navigation */
+  .nav-item {
+    @apply flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium w-full text-left;
+    @apply text-[#212121] hover:bg-[#F0FDF4] transition-colors cursor-pointer;
+  }
+
+  .nav-item-active {
+    @apply bg-[#E8F5E9] text-[#10B981] font-semibold;
+  }
+
+  .nav-category-header {
+    @apply flex items-center justify-between px-3 py-2 rounded-lg text-sm w-full text-left;
+    @apply text-[#212121] hover:bg-[#F5F5F5] transition-colors cursor-pointer;
+  }
+
+  .nav-sub-item {
+    @apply flex items-center gap-2 px-3 py-2 rounded-lg text-sm w-full text-left;
+    @apply text-[#757575] hover:bg-[#F0FDF4] hover:text-[#10B981] transition-colors cursor-pointer;
+  }
+
+  .nav-sub-item-active {
+    @apply bg-[#E8F5E9] text-[#10B981] font-medium;
+  }
+
+  .nav-info-item {
+    @apply flex items-center gap-2 px-3 py-2 rounded-lg text-sm;
+    @apply bg-[#F5F5F5];
+  }
+
+  /* Category Sub-tabs */
+  .category-subtab {
+    @apply px-6 py-3 text-sm font-medium border-b-2 border-transparent;
+    @apply text-[#757575] hover:text-[#212121] transition-colors cursor-pointer;
+  }
+
+  .category-subtab-active {
+    @apply border-[#10B981] text-[#10B981] bg-[#F0FDF4];
+  }
+
+  /* Sentiment Badges */
+  .sentiment-badge-positive {
+    @apply bg-[#E8F5E9] text-[#4CAF50];
+  }
+
+  .sentiment-badge-negative {
+    @apply bg-[#FFEBEE] text-[#EF5350];
+  }
+
+  .sentiment-badge-neutral {
+    @apply bg-[#F5F5F5] text-[#9E9E9E];
+  }
+}

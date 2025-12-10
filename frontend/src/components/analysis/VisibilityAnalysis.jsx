@@ -1,0 +1,933 @@
+import { useState, useMemo } from 'react';
+import { Trophy, AlertCircle, TrendingUp, Eye, Sparkles, MessageSquare, ChevronDown, ChevronRight, Layers } from 'lucide-react';
+import SourceAnalysis from './SourceAnalysis';
+import EntityTrendsChart from './EntityTrendsChart';
+
+/**
+ * VisibilityAnalysis Component
+ * Displays brand visibility metrics, rankings, and opportunities
+ */
+export default function VisibilityAnalysis({ data, entity, allSources = [], selectedLLMs = ['gemini', 'openai'] }) {
+  // State for toggling between raw entities and brand family view
+  const [showBrandFamilies, setShowBrandFamilies] = useState(true);
+  // State for tracking expanded brand families
+  const [expandedFamilies, setExpandedFamilies] = useState(new Set());
+  if (!data) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-[#757575]">No visibility data available</p>
+      </div>
+    );
+  }
+
+  const visibility = data.visibility || {};
+  const rankings = data.entities_ranking || [];
+  const brandFamilyRanking = data.brand_family_ranking || null;
+  const brandGroupingMetadata = data.brand_grouping_metadata || null;
+  const rankedFirst = data.ranked_first_questions || [];
+  const notRankedFirst = data.not_ranked_first_questions || [];
+  const llmPerformance = data.llm_performance || [];
+
+  // Check if both LLMs are selected
+  const bothSelected = selectedLLMs.includes('gemini') && selectedLLMs.includes('openai');
+
+  // Calculate metrics based on selected LLMs using llm_performance data
+  const filteredMetrics = useMemo(() => {
+    // Filter llm_performance to only selected LLMs
+    const selectedPerformance = llmPerformance.filter(perf =>
+      selectedLLMs.includes(perf.llm)
+    );
+
+    if (selectedPerformance.length === 0) {
+      // Fallback to combined visibility data
+      return {
+        visibility: visibility.visibility || 0,
+        sov: visibility.sov || 0,
+        avgPosition: visibility.averagePosition || 0
+      };
+    }
+
+    // Average the metrics across selected LLMs
+    const totalVisibility = selectedPerformance.reduce((sum, p) => sum + (p.visibility || 0), 0);
+    const totalSov = selectedPerformance.reduce((sum, p) => sum + (p.sov || 0), 0);
+    const totalAvgPos = selectedPerformance.reduce((sum, p) => sum + (p.avgPosition || 0), 0);
+
+    return {
+      visibility: totalVisibility / selectedPerformance.length,
+      sov: totalSov / selectedPerformance.length,
+      avgPosition: totalAvgPos / selectedPerformance.length
+    };
+  }, [llmPerformance, selectedLLMs, visibility]);
+
+  // Helper to check if a question has data for selected LLMs
+  const hasSelectedLLMData = (item) => {
+    const geminiData = item.llm_responses?.gemini;
+    const openaiData = item.llm_responses?.openai;
+
+    if (selectedLLMs.includes('gemini') && selectedLLMs.includes('openai')) {
+      return geminiData || openaiData;
+    }
+    if (selectedLLMs.includes('gemini') && !selectedLLMs.includes('openai')) {
+      return geminiData;
+    }
+    if (selectedLLMs.includes('openai') && !selectedLLMs.includes('gemini')) {
+      return openaiData;
+    }
+    return false;
+  };
+
+  // Filter questions by selected LLMs
+  const filteredRankedFirst = useMemo(() =>
+    rankedFirst.filter(hasSelectedLLMData),
+    [rankedFirst, selectedLLMs]
+  );
+
+  const filteredNotRankedFirst = useMemo(() =>
+    notRankedFirst.filter(hasSelectedLLMData),
+    [notRankedFirst, selectedLLMs]
+  );
+
+  // Calculate filtered rankings from question data when single LLM selected
+  const filteredRankings = useMemo(() => {
+    if (bothSelected) {
+      return null; // Use original rankings when both selected
+    }
+
+    const allQuestions = [...rankedFirst, ...notRankedFirst];
+    const entityStats = new Map();
+    let totalQuestionsWithData = 0;
+
+    allQuestions.forEach(item => {
+      // Get data from the selected LLM only
+      const llmData = selectedLLMs.includes('gemini')
+        ? item.llm_responses?.gemini
+        : item.llm_responses?.openai;
+
+      if (!llmData) return;
+      totalQuestionsWithData++;
+
+      // Process full ranking from this question
+      const fullRanking = llmData.full_ranking || llmData.ranking || [];
+      fullRanking.forEach(entry => {
+        const name = entry.name;
+        const rank = entry.rank;
+
+        if (!entityStats.has(name)) {
+          entityStats.set(name, {
+            name,
+            totalRank: 0,
+            mentions: 0,
+            rankOneMentions: 0
+          });
+        }
+
+        const stats = entityStats.get(name);
+        stats.mentions++;
+        stats.totalRank += rank;
+        if (rank === 1) {
+          stats.rankOneMentions++;
+        }
+      });
+    });
+
+    if (totalQuestionsWithData === 0) {
+      return [];
+    }
+
+    // Calculate metrics and sort
+    const rankings = Array.from(entityStats.values()).map(stats => {
+      const avgRank = stats.mentions > 0 ? stats.totalRank / stats.mentions : 10;
+      const visibility = stats.mentions / totalQuestionsWithData;
+      // SOV: weighted by inverse rank (rank 1 = 1, rank 2 = 0.5, etc.)
+      const weightedScore = stats.mentions > 0
+        ? stats.mentions / avgRank
+        : 0;
+
+      return {
+        name: stats.name,
+        average_rank: avgRank,
+        mentions: stats.mentions,
+        visibility: visibility,
+        sov: visibility / avgRank, // Simple SOV based on visibility and position
+        rank_one_count: stats.rankOneMentions
+      };
+    });
+
+    // Sort by SOV descending
+    rankings.sort((a, b) => b.sov - a.sov);
+
+    // Normalize SOV to percentages (sum to ~100%)
+    const totalSov = rankings.reduce((sum, r) => sum + r.sov, 0);
+    if (totalSov > 0) {
+      rankings.forEach(r => {
+        r.sov = r.sov / totalSov;
+      });
+    }
+
+    return rankings;
+  }, [rankedFirst, notRankedFirst, selectedLLMs, bothSelected]);
+
+  // Helper to toggle expanded state for a brand family
+  const toggleFamily = (familyName) => {
+    setExpandedFamilies(prev => {
+      const next = new Set(prev);
+      if (next.has(familyName)) {
+        next.delete(familyName);
+      } else {
+        next.add(familyName);
+      }
+      return next;
+    });
+  };
+
+  // Determine which ranking to display
+  // When filtering by single LLM, use filteredRankings calculated from questions
+  const displayRankings = useMemo(() => {
+    if (!bothSelected && filteredRankings && filteredRankings.length > 0) {
+      // Use recalculated rankings when single LLM selected
+      return filteredRankings;
+    }
+    // Use brand family or raw rankings when both LLMs selected
+    return (showBrandFamilies && brandFamilyRanking) ? brandFamilyRanking : rankings;
+  }, [bothSelected, filteredRankings, showBrandFamilies, brandFamilyRanking, rankings]);
+
+  // Find target entity in the DISPLAYED rankings (brand family or raw) to ensure consistency
+  const targetInDisplayedRankings = useMemo(() => {
+    if (bothSelected) {
+      if (showBrandFamilies && brandFamilyRanking) {
+        // In brand family mode, find by is_target_brand flag
+        return brandFamilyRanking.find(r => r.is_target_brand);
+      }
+      // In raw mode, find by entity name
+      return rankings.find(r => r.name.toLowerCase() === entity.toLowerCase());
+    }
+    // When single LLM selected, find in filtered rankings
+    return displayRankings.find(r => r.name.toLowerCase() === entity.toLowerCase());
+  }, [bothSelected, showBrandFamilies, brandFamilyRanking, rankings, displayRankings, entity]);
+
+  // Use filtered metrics based on selected LLMs
+  // If both LLMs selected, use combined data; otherwise use per-LLM data
+  const visibilityPercent = bothSelected && targetInDisplayedRankings
+    ? (targetInDisplayedRankings.visibility * 100)
+    : (filteredMetrics.visibility * 100);
+  const sovPercent = bothSelected && targetInDisplayedRankings
+    ? (targetInDisplayedRankings.sov * 100)
+    : (filteredMetrics.sov * 100);
+  const avgPosition = bothSelected && targetInDisplayedRankings
+    ? targetInDisplayedRankings.average_rank
+    : filteredMetrics.avgPosition;
+
+  // SOV Status - recalculate based on corrected SOV value
+  const sovStatus = sovPercent > 50 ? 'Good' : sovPercent > 25 ? 'Fair' : 'Poor';
+  const sovStatusColor = sovStatus === 'Good' ? '#4CAF50' :
+                         sovStatus === 'Fair' ? '#FF9800' : '#EF5350';
+
+  return (
+    <div className="space-y-8">
+      {/* Section Header */}
+      <div className="mb-6">
+        <h2 className="text-xl font-medium text-[#212121] mb-2">Visibility Analysis</h2>
+        <p className="text-sm text-[#757575]">
+          Brand visibility and competitive positioning in AI search results
+        </p>
+      </div>
+
+      {/* Top Metrics Grid - 2 columns for summary cards */}
+      <div className="grid grid-cols-2 gap-6">
+        {/* Brand Visibility Card */}
+        <div className="bg-white border border-[#E0E0E0] rounded-lg p-6">
+          <h3 className="text-lg font-medium text-[#212121] mb-1">Brand Visibility</h3>
+          <p className="text-sm text-[#757575] mb-6">Percentage of answers mentioning your brand</p>
+
+          <div className="flex items-center gap-6">
+            {/* Circular Progress */}
+            <div className="relative w-32 h-32">
+              <svg className="transform -rotate-90 w-32 h-32">
+                <circle
+                  cx="64"
+                  cy="64"
+                  r="56"
+                  stroke="#F5F5F5"
+                  strokeWidth="8"
+                  fill="none"
+                />
+                <circle
+                  cx="64"
+                  cy="64"
+                  r="56"
+                  stroke="#2196F3"
+                  strokeWidth="8"
+                  fill="none"
+                  strokeDasharray={`${2 * Math.PI * 56}`}
+                  strokeDashoffset={`${2 * Math.PI * 56 * (1 - visibilityPercent / 100)}`}
+                  strokeLinecap="round"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Eye className="w-8 h-8 text-[#2196F3]" />
+              </div>
+            </div>
+
+            {/* Metrics */}
+            <div>
+              <div className="text-4xl font-light text-[#212121] mb-2">
+                {visibilityPercent.toFixed(2)}%
+              </div>
+              <div className="text-sm text-[#757575]">
+                Average Position <span className="font-medium text-[#212121]">{avgPosition.toFixed(1)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Brand Share of Voice Card */}
+        <div className="bg-white border border-[#E0E0E0] rounded-lg p-6">
+          <h3 className="text-lg font-medium text-[#212121] mb-1">Brand Share of Voice</h3>
+          <p className="text-sm text-[#757575] mb-6">Visibility weighted by average position</p>
+
+          <div className="flex items-center gap-6">
+            {/* Circular Progress */}
+            <div className="relative w-32 h-32">
+              <svg className="transform -rotate-90 w-32 h-32">
+                <circle
+                  cx="64"
+                  cy="64"
+                  r="56"
+                  stroke="#F5F5F5"
+                  strokeWidth="8"
+                  fill="none"
+                />
+                <circle
+                  cx="64"
+                  cy="64"
+                  r="56"
+                  stroke={sovStatusColor}
+                  strokeWidth="8"
+                  fill="none"
+                  strokeDasharray={`${2 * Math.PI * 56}`}
+                  strokeDashoffset={`${2 * Math.PI * 56 * (1 - sovPercent / 100)}`}
+                  strokeLinecap="round"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <TrendingUp className="w-8 h-8" style={{ color: sovStatusColor }} />
+              </div>
+            </div>
+
+            {/* Metrics */}
+            <div>
+              <div className="text-4xl font-light text-[#212121] mb-2">
+                {sovPercent.toFixed(2)}%
+              </div>
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: sovStatusColor }}
+                />
+                <span className="text-sm font-medium" style={{ color: sovStatusColor }}>
+                  {sovStatus}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Full-width Chart and Ranking */}
+      {/* Entity Trends Chart - SOV and Position */}
+      <EntityTrendsChart
+        rankings={bothSelected ? rankings : (filteredRankings || rankings)}
+        brandFamilyRanking={bothSelected ? brandFamilyRanking : null}
+        entity={entity}
+        showBrandFamilies={bothSelected ? showBrandFamilies : false}
+        onToggleBrandFamilies={bothSelected ? setShowBrandFamilies : undefined}
+      />
+
+      {/* Brand Industry Ranking Table */}
+      <div className="bg-white border border-[#E0E0E0] rounded-lg p-6">
+          <div className="flex items-center justify-between mb-1">
+            <h3 className="text-lg font-medium text-[#212121]">Brand Industry Ranking</h3>
+            {/* Toggle for Brand Families view */}
+            {brandFamilyRanking && brandFamilyRanking.length > 0 && (
+              <button
+                onClick={() => setShowBrandFamilies(!showBrandFamilies)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  showBrandFamilies
+                    ? 'bg-[#E3F2FD] text-[#1976D2]'
+                    : 'bg-[#F5F5F5] text-[#757575] hover:bg-[#EEEEEE]'
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" />
+                {showBrandFamilies ? 'Brand Families' : 'All Products'}
+              </button>
+            )}
+          </div>
+          <p className="text-sm text-[#757575] mb-4">
+            {showBrandFamilies && brandFamilyRanking
+              ? `Products grouped by parent brand (${brandGroupingMetadata?.total_brands || 0} brands, ${brandGroupingMetadata?.total_variants || 0} products)`
+              : 'Complete brand performance metrics'}
+          </p>
+
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {displayRankings.slice(0, 10).map((competitor, index) => {
+              const isTarget = showBrandFamilies && brandFamilyRanking
+                ? competitor.is_target_brand
+                : competitor.name.toLowerCase() === entity.toLowerCase();
+              const sovValue = (competitor.sov * 100).toFixed(2);
+              const visibilityValue = competitor.visibility !== undefined
+                ? (competitor.visibility * 100).toFixed(2)
+                : Math.min((competitor.mentions / (visibility.totalQuestions * 2)) * 100, 100).toFixed(2);
+
+              // Check if this is a brand family with variants
+              const hasVariants = showBrandFamilies && competitor.variants && competitor.variants.length > 1;
+              const isExpanded = expandedFamilies.has(competitor.name);
+
+              return (
+                <div key={index}>
+                  <div
+                    className={`flex items-center gap-3 p-3 rounded-lg ${isTarget ? 'bg-[#E3F2FD]' : 'bg-[#F9FAFB]'} ${hasVariants ? 'cursor-pointer hover:bg-opacity-80' : ''}`}
+                    onClick={hasVariants ? () => toggleFamily(competitor.name) : undefined}
+                  >
+                    {/* Rank Badge */}
+                    <div className="flex items-center gap-2 min-w-[40px]">
+                      {index === 0 && <Trophy className="w-5 h-5 text-[#FFA000]" />}
+                      {index > 0 && <span className="text-sm font-medium text-[#757575]">{index + 1}</span>}
+                    </div>
+
+                    {/* Brand Name with expand indicator */}
+                    <div className="flex-1 min-w-0 flex items-center gap-2">
+                      {hasVariants && (
+                        isExpanded
+                          ? <ChevronDown className="w-4 h-4 text-[#757575] flex-shrink-0" />
+                          : <ChevronRight className="w-4 h-4 text-[#757575] flex-shrink-0" />
+                      )}
+                      <div className="text-sm font-medium text-[#212121] truncate">
+                        {competitor.name}
+                      </div>
+                      {hasVariants && (
+                        <span className="text-xs text-[#9E9E9E] flex-shrink-0">
+                          ({competitor.variant_count} products)
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Metrics */}
+                    <div className="flex items-center gap-4 text-xs">
+                      <div className="flex items-center gap-1">
+                        <TrendingUp className="w-3 h-3 text-[#4CAF50]" />
+                        <span className="text-[#757575]">{sovValue}%</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Eye className="w-3 h-3 text-[#757575]" />
+                        <span className="text-[#757575]">{visibilityValue}%</span>
+                      </div>
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white border border-[#E0E0E0]">
+                        <span className="text-xs font-medium text-[#212121]">
+                          {competitor.average_rank.toFixed(1)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Expanded variants list */}
+                  {hasVariants && isExpanded && (
+                    <div className="ml-12 mt-1 space-y-1">
+                      {competitor.variants.map((variant, vIndex) => (
+                        <div
+                          key={vIndex}
+                          className="flex items-center gap-3 px-3 py-2 rounded bg-white border border-[#E8E8E8] text-xs"
+                        >
+                          <span className="text-[#9E9E9E] min-w-[20px]">•</span>
+                          <span className="flex-1 text-[#424242] truncate">{variant.name}</span>
+                          <div className="flex items-center gap-3 text-[#757575]">
+                            <span>{(variant.sov * 100).toFixed(1)}%</span>
+                            <span>{(variant.visibility * 100).toFixed(1)}%</span>
+                            <span className="w-6 text-center">{variant.average_rank.toFixed(1)}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+      {/* Source Analysis - Pie Chart and Domain List */}
+      {(data.source_analysis || data.full_sources_list || allSources.length > 0) && (
+        <SourceAnalysis
+          sourceAnalysis={data.source_analysis}
+          sources={data.full_sources_list || allSources}
+          className="mb-8"
+        />
+      )}
+
+      {/* Questions Where Brand is Ranked #1 */}
+      {(() => {
+        const allQuestions = [...(filteredRankedFirst || []), ...(filteredNotRankedFirst || [])];
+        const rankedFirstEntries = [];
+
+        // Check which LLMs are selected
+        const showGemini = selectedLLMs.includes('gemini');
+        const showOpenai = selectedLLMs.includes('openai');
+
+        allQuestions.forEach((item, qIndex) => {
+          const geminiData = showGemini ? item.llm_responses?.gemini : null;
+          const openaiData = showOpenai ? item.llm_responses?.openai : null;
+
+          const geminiRankedFirst = geminiData?.target_rank === 1;
+          const openaiRankedFirst = openaiData?.target_rank === 1;
+
+          // Both selected LLMs ranked target #1 - one card with both responses
+          if (geminiRankedFirst && openaiRankedFirst) {
+            rankedFirstEntries.push({
+              key: `both-${qIndex}`,
+              question: item.question,
+              bothAgree: true,
+              gemini: geminiData?.target_comment ? {
+                comment: geminiData.target_comment,
+                ranking: geminiData?.full_ranking || [],
+                sources: geminiData?.sources || []
+              } : null,
+              openai: openaiData?.target_comment ? {
+                comment: openaiData.target_comment,
+                ranking: openaiData?.full_ranking || [],
+                sources: openaiData?.sources || []
+              } : null
+            });
+          }
+          // Only Gemini ranked target #1
+          else if (geminiRankedFirst && !openaiRankedFirst) {
+            if (geminiData?.target_comment) {
+              rankedFirstEntries.push({
+                key: `gemini-${qIndex}`,
+                question: item.question,
+                bothAgree: false,
+                llm: 'gemini',
+                comment: geminiData.target_comment,
+                ranking: geminiData?.full_ranking || [],
+                sources: geminiData?.sources || []
+              });
+            }
+          }
+          // Only OpenAI ranked target #1
+          else if (!geminiRankedFirst && openaiRankedFirst) {
+            if (openaiData?.target_comment) {
+              rankedFirstEntries.push({
+                key: `openai-${qIndex}`,
+                question: item.question,
+                bothAgree: false,
+                llm: 'openai',
+                comment: openaiData.target_comment,
+                ranking: openaiData?.full_ranking || [],
+                sources: openaiData?.sources || []
+              });
+            }
+          }
+        });
+
+        return rankedFirstEntries.length > 0 ? (
+          <div>
+            <div className="mb-4">
+              <h3 className="text-xl font-medium text-[#212121] mb-1">
+                Questions Where Your Brand is Ranked #1
+              </h3>
+              <p className="text-sm text-[#757575]">
+                Queries where your brand achieves top position ({rankedFirstEntries.length} questions)
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {rankedFirstEntries.map((entry) => (
+                <div key={entry.key} className="bg-[#E8F5E9] border border-[#4CAF50] rounded-lg p-6">
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-[#4CAF50] flex items-center justify-center flex-shrink-0">
+                      <Trophy className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-base font-medium text-[#212121] mb-2">
+                        {entry.question}
+                      </h4>
+                    </div>
+                  </div>
+
+                  {/* Show rankings from either LLM */}
+                  {(entry.bothAgree ? (entry.gemini?.ranking || entry.openai?.ranking) : entry.ranking)?.length > 0 && (
+                    <div className="mb-4">
+                      <div className="text-xs font-medium text-[#757575] uppercase mb-2">
+                        Overall Rankings:
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {(entry.bothAgree ? (entry.gemini?.ranking || entry.openai?.ranking) : entry.ranking).map((ent, idx) => {
+                          const isTargetEntity = ent.name.toLowerCase() === entity.toLowerCase();
+                          return (
+                            <span
+                              key={idx}
+                              className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                                isTargetEntity
+                                  ? 'bg-[#2196F3] text-white'
+                                  : 'bg-[#F5F5F5] text-[#212121]'
+                              }`}
+                            >
+                              #{ent.rank} {ent.name}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Both LLMs agree - show both responses */}
+                  {entry.bothAgree ? (
+                    <div className="space-y-3">
+                      {entry.gemini && (
+                        <div className="bg-white border-l-4 border-[#4CAF50] p-4 rounded">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-6 h-6 rounded bg-[#4285F4] flex items-center justify-center">
+                              <Sparkles className="w-3.5 h-3.5 text-white" />
+                            </div>
+                            <span className="text-sm font-medium text-[#212121]">Gemini</span>
+                            <span className="text-xs text-[#757575]">— Why {entity} is ranked #1:</span>
+                          </div>
+                          <p className="text-sm text-[#212121] italic">
+                            {entry.gemini.comment}
+                          </p>
+                          {entry.gemini.sources?.length > 0 && (
+                            <div className="mt-3">
+                              <p className="text-xs text-[#757575] mb-1">Associated Sources:</p>
+                              {entry.gemini.sources.slice(0, 2).map((source, idx) => (
+                                <a key={idx} href={source.url} target="_blank" rel="noopener noreferrer" className="block text-xs text-[#2196F3] hover:underline">
+                                  → {source.title || source.url}
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {entry.openai && (
+                        <div className="bg-white border-l-4 border-[#4CAF50] p-4 rounded">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-6 h-6 rounded bg-[#10A37F] flex items-center justify-center">
+                              <MessageSquare className="w-3.5 h-3.5 text-white" />
+                            </div>
+                            <span className="text-sm font-medium text-[#212121]">ChatGPT</span>
+                            <span className="text-xs text-[#757575]">— Why {entity} is ranked #1:</span>
+                          </div>
+                          <p className="text-sm text-[#212121] italic">
+                            {entry.openai.comment}
+                          </p>
+                          {entry.openai.sources?.length > 0 && (
+                            <div className="mt-3">
+                              <p className="text-xs text-[#757575] mb-1">Associated Sources:</p>
+                              {entry.openai.sources.slice(0, 2).map((source, idx) => (
+                                <a key={idx} href={source.url} target="_blank" rel="noopener noreferrer" className="block text-xs text-[#2196F3] hover:underline">
+                                  → {source.title || source.url}
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    /* Single LLM ranked target #1 (disagreement) */
+                    <div className="bg-white border-l-4 border-[#4CAF50] p-4 rounded">
+                      <div className="flex items-center gap-2 mb-2">
+                        {entry.llm === 'gemini' ? (
+                          <div className="w-6 h-6 rounded bg-[#4285F4] flex items-center justify-center">
+                            <Sparkles className="w-3.5 h-3.5 text-white" />
+                          </div>
+                        ) : (
+                          <div className="w-6 h-6 rounded bg-[#10A37F] flex items-center justify-center">
+                            <MessageSquare className="w-3.5 h-3.5 text-white" />
+                          </div>
+                        )}
+                        <span className="text-sm font-medium text-[#212121]">{entry.llm === 'gemini' ? 'Gemini' : 'ChatGPT'}</span>
+                        <span className="text-xs text-[#757575]">— Why {entity} is ranked #1:</span>
+                      </div>
+                      <p className="text-sm text-[#212121] italic">
+                        {entry.comment}
+                      </p>
+                      {entry.sources?.length > 0 && (
+                        <div className="mt-3">
+                          <p className="text-xs text-[#757575] mb-1">Associated Sources:</p>
+                          {entry.sources.slice(0, 2).map((source, idx) => (
+                            <a key={idx} href={source.url} target="_blank" rel="noopener noreferrer" className="block text-xs text-[#2196F3] hover:underline">
+                              → {source.title || source.url}
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null;
+      })()}
+
+      {/* Questions Where Brand is not ranked 1 */}
+      {(() => {
+        const allQuestions = [...(filteredRankedFirst || []), ...(filteredNotRankedFirst || [])];
+        const notRankedFirstEntries = [];
+
+        // Check which LLMs are selected
+        const showGemini = selectedLLMs.includes('gemini');
+        const showOpenai = selectedLLMs.includes('openai');
+
+        allQuestions.forEach((item, qIndex) => {
+          const geminiData = showGemini ? item.llm_responses?.gemini : null;
+          const openaiData = showOpenai ? item.llm_responses?.openai : null;
+
+          const geminiRankedFirst = geminiData?.target_rank === 1;
+          const openaiRankedFirst = openaiData?.target_rank === 1;
+          const geminiNotRankedFirst = geminiData && geminiData?.target_rank !== 1;
+          const openaiNotRankedFirst = openaiData && openaiData?.target_rank !== 1;
+
+          // Both selected LLMs did NOT rank target #1 - one card with both responses
+          if (geminiNotRankedFirst && openaiNotRankedFirst) {
+            notRankedFirstEntries.push({
+              key: `both-${qIndex}`,
+              question: item.question,
+              bothAgree: true,
+              gemini: geminiData?.top_brand_comment ? {
+                topBrand: geminiData.top_brand || 'Competitor',
+                comment: geminiData.top_brand_comment,
+                targetRank: geminiData.target_rank,
+                targetComment: geminiData.target_comment,
+                ranking: geminiData?.full_ranking || [],
+                sources: geminiData?.sources || []
+              } : null,
+              openai: openaiData?.top_brand_comment ? {
+                topBrand: openaiData.top_brand || 'Competitor',
+                comment: openaiData.top_brand_comment,
+                targetRank: openaiData.target_rank,
+                targetComment: openaiData.target_comment,
+                ranking: openaiData?.full_ranking || [],
+                sources: openaiData?.sources || []
+              } : null
+            });
+          }
+          // Only Gemini did NOT rank target #1
+          else if (geminiNotRankedFirst && !openaiNotRankedFirst) {
+            if (geminiData?.top_brand_comment) {
+              notRankedFirstEntries.push({
+                key: `gemini-${qIndex}`,
+                question: item.question,
+                bothAgree: false,
+                llm: 'gemini',
+                topBrand: geminiData.top_brand || 'Competitor',
+                comment: geminiData.top_brand_comment,
+                targetRank: geminiData.target_rank,
+                targetComment: geminiData.target_comment,
+                ranking: geminiData?.full_ranking || [],
+                sources: geminiData?.sources || []
+              });
+            }
+          }
+          // Only OpenAI did NOT rank target #1
+          else if (openaiNotRankedFirst && !geminiNotRankedFirst) {
+            if (openaiData?.top_brand_comment) {
+              notRankedFirstEntries.push({
+                key: `openai-${qIndex}`,
+                question: item.question,
+                bothAgree: false,
+                llm: 'openai',
+                topBrand: openaiData.top_brand || 'Competitor',
+                comment: openaiData.top_brand_comment,
+                targetRank: openaiData.target_rank,
+                targetComment: openaiData.target_comment,
+                ranking: openaiData?.full_ranking || [],
+                sources: openaiData?.sources || []
+              });
+            }
+          }
+        });
+
+        return notRankedFirstEntries.length > 0 ? (
+          <div>
+            <div className="mb-4">
+              <h3 className="text-xl font-medium text-[#212121] mb-1">
+                Questions Where Your Brand is not ranked 1
+              </h3>
+              <p className="text-sm text-[#757575]">
+                Opportunities to improve visibility in key queries ({notRankedFirstEntries.length} questions)
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {notRankedFirstEntries.map((entry) => (
+                <div key={entry.key} className="bg-white border border-[#E0E0E0] rounded-lg p-6">
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-[#FFEBEE] flex items-center justify-center flex-shrink-0">
+                      <AlertCircle className="w-5 h-5 text-[#EF5350]" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-base font-medium text-[#212121] mb-3">
+                        {entry.question}
+                      </h4>
+                      <div className="flex items-center gap-6 text-sm mb-4">
+                        <div>
+                          <span className="text-[#757575]">{entity} Rank: </span>
+                          <span className="font-medium text-[#212121]">
+                            {entry.bothAgree
+                              ? (entry.gemini?.targetRank || entry.openai?.targetRank || 'Not mentioned')
+                              : (entry.targetRank || 'Not mentioned')}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[#757575]">Top Brand: </span>
+                          <span className="font-medium text-[#212121]">
+                            {entry.bothAgree
+                              ? (entry.gemini?.topBrand || entry.openai?.topBrand)
+                              : entry.topBrand}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Show rankings from either LLM */}
+                  {(entry.bothAgree ? (entry.gemini?.ranking || entry.openai?.ranking) : entry.ranking)?.length > 0 && (
+                    <div className="mb-4">
+                      <div className="text-xs font-medium text-[#757575] uppercase mb-2">
+                        Overall Rankings:
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {(entry.bothAgree ? (entry.gemini?.ranking || entry.openai?.ranking) : entry.ranking).map((ent, idx) => {
+                          const isTargetEntity = ent.name.toLowerCase() === entity.toLowerCase();
+                          return (
+                            <span
+                              key={idx}
+                              className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                                isTargetEntity
+                                  ? 'bg-[#2196F3] text-white'
+                                  : 'bg-[#F5F5F5] text-[#212121]'
+                              }`}
+                            >
+                              #{ent.rank} {ent.name}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Both LLMs agree - show both responses (one card per LLM) */}
+                  {entry.bothAgree ? (
+                    <div className="space-y-3">
+                      {entry.gemini && (
+                        <div className="bg-[#FFEBEE] border-l-4 border-[#EF5350] p-4 rounded">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-6 h-6 rounded bg-[#4285F4] flex items-center justify-center">
+                              <Sparkles className="w-3.5 h-3.5 text-white" />
+                            </div>
+                            <span className="text-sm font-medium text-[#212121]">Gemini</span>
+                            <span className="text-xs text-[#757575]">— Why {entry.gemini.topBrand} was chosen:</span>
+                          </div>
+                          <p className="text-sm text-[#212121]">
+                            {entry.gemini.comment}
+                          </p>
+                          {entry.gemini.targetComment && (
+                            <div className="mt-3 pt-3 border-t border-[#FFCDD2]">
+                              <p className="text-xs text-[#757575] mb-1">{entity} Status:</p>
+                              <p className="text-sm text-[#212121]">
+                                {entry.gemini.targetComment}
+                              </p>
+                            </div>
+                          )}
+                          {entry.gemini.sources?.length > 0 && (
+                            <div className="mt-3 pt-3 border-t border-[#FFCDD2]">
+                              <p className="text-xs text-[#757575] mb-1">Associated Sources:</p>
+                              {entry.gemini.sources.slice(0, 2).map((source, idx) => (
+                                <a key={idx} href={source.url} target="_blank" rel="noopener noreferrer" className="block text-xs text-[#2196F3] hover:underline">
+                                  → {source.title || source.url}
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {entry.openai && (
+                        <div className="bg-[#FFEBEE] border-l-4 border-[#EF5350] p-4 rounded">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-6 h-6 rounded bg-[#10A37F] flex items-center justify-center">
+                              <MessageSquare className="w-3.5 h-3.5 text-white" />
+                            </div>
+                            <span className="text-sm font-medium text-[#212121]">ChatGPT</span>
+                            <span className="text-xs text-[#757575]">— Why {entry.openai.topBrand} was chosen:</span>
+                          </div>
+                          <p className="text-sm text-[#212121]">
+                            {entry.openai.comment}
+                          </p>
+                          {entry.openai.targetComment && (
+                            <div className="mt-3 pt-3 border-t border-[#FFCDD2]">
+                              <p className="text-xs text-[#757575] mb-1">{entity} Status:</p>
+                              <p className="text-sm text-[#212121]">
+                                {entry.openai.targetComment}
+                              </p>
+                            </div>
+                          )}
+                          {entry.openai.sources?.length > 0 && (
+                            <div className="mt-3 pt-3 border-t border-[#FFCDD2]">
+                              <p className="text-xs text-[#757575] mb-1">Associated Sources:</p>
+                              {entry.openai.sources.slice(0, 2).map((source, idx) => (
+                                <a key={idx} href={source.url} target="_blank" rel="noopener noreferrer" className="block text-xs text-[#2196F3] hover:underline">
+                                  → {source.title || source.url}
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    /* Single LLM did NOT rank target #1 (disagreement) - one card */
+                    <div className="bg-[#FFEBEE] border-l-4 border-[#EF5350] p-4 rounded">
+                      <div className="flex items-center gap-2 mb-2">
+                        {entry.llm === 'gemini' ? (
+                          <div className="w-6 h-6 rounded bg-[#4285F4] flex items-center justify-center">
+                            <Sparkles className="w-3.5 h-3.5 text-white" />
+                          </div>
+                        ) : (
+                          <div className="w-6 h-6 rounded bg-[#10A37F] flex items-center justify-center">
+                            <MessageSquare className="w-3.5 h-3.5 text-white" />
+                          </div>
+                        )}
+                        <span className="text-sm font-medium text-[#212121]">{entry.llm === 'gemini' ? 'Gemini' : 'ChatGPT'}</span>
+                        <span className="text-xs text-[#757575]">— Why {entry.topBrand} was chosen:</span>
+                      </div>
+                      <p className="text-sm text-[#212121]">
+                        {entry.comment}
+                      </p>
+                      {entry.targetComment && (
+                        <div className="mt-3 pt-3 border-t border-[#FFCDD2]">
+                          <p className="text-xs text-[#757575] mb-1">{entity} Status:</p>
+                          <p className="text-sm text-[#212121]">
+                            {entry.targetComment}
+                          </p>
+                        </div>
+                      )}
+                      {entry.sources?.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-[#FFCDD2]">
+                          <p className="text-xs text-[#757575] mb-1">Associated Sources:</p>
+                          {entry.sources.slice(0, 2).map((source, idx) => (
+                            <a key={idx} href={source.url} target="_blank" rel="noopener noreferrer" className="block text-xs text-[#2196F3] hover:underline">
+                              → {source.title || source.url}
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null;
+      })()}
+    </div>
+  );
+}

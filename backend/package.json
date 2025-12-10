@@ -1,0 +1,24 @@
+{
+  "name": "geo-backend",
+  "version": "1.0.0",
+  "description": "GEO Multi-LLM Analysis Backend API",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon --watch src --ext js,json --ignore '*.db' --ignore '*.sqlite*' --ignore 'database/*' --ignore 'test-*' --ignore '*.log' --delay 3000 src/server.js",
+    "start": "node src/server.js",
+    "stable": "node src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "better-sqlite3": "^9.2.2",
+    "axios": "^1.6.2",
+    "uuid": "^9.0.1",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

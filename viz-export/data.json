@@ -1,0 +1,167 @@
+{
+  "metadata": {
+    "entity": "FXTM",
+    "category": "Online forex trading",
+    "generatedAt": "2025-12-03",
+    "totalQuestions": 20
+  },
+  "visibility": {
+    "visibility": 0,
+    "averagePosition": 0,
+    "shareOfVoice": 0,
+    "sovStatus": "Poor",
+    "sovEvolution": 0,
+    "totalQuestions": 20,
+    "mentions": 0
+  },
+  "trendData": [
+    { "month": "Jan", "visibility": 0, "sov": 0, "ranking": 0 },
+    { "month": "Feb", "visibility": 0, "sov": 0, "ranking": 0 },
+    { "month": "Mar", "visibility": 0, "sov": 0, "ranking": 0 },
+    { "month": "Apr", "visibility": 0, "sov": 0, "ranking": 0 },
+    { "month": "May", "visibility": 0, "sov": 0, "ranking": 0 },
+    { "month": "Jun", "visibility": 0, "sov": 0, "ranking": 0 }
+  ],
+  "competitorsRanking": [
+    { "rank": 1, "name": "IG", "sov": 0.4780, "visibility": 0.70, "avgPosition": 1.93, "mentions": 14 },
+    { "rank": 2, "name": "Pepperstone", "sov": 0.2574, "visibility": 0.55, "avgPosition": 3.27, "mentions": 11 },
+    { "rank": 3, "name": "FOREX.com", "sov": 0.2161, "visibility": 0.55, "avgPosition": 4.09, "mentions": 11 },
+    { "rank": 4, "name": "Interactive Brokers", "sov": 0.1885, "visibility": 0.35, "avgPosition": 2.71, "mentions": 7 },
+    { "rank": 5, "name": "OANDA", "sov": 0.1778, "visibility": 0.40, "avgPosition": 3.50, "mentions": 8 },
+    { "rank": 6, "name": "CMC Markets", "sov": 0.1561, "visibility": 0.40, "avgPosition": 4.13, "mentions": 8 },
+    { "rank": 7, "name": "Fidelity", "sov": 0.1500, "visibility": 0.15, "avgPosition": 1.00, "mentions": 3 },
+    { "rank": 8, "name": "eToro", "sov": 0.1200, "visibility": 0.30, "avgPosition": 4.00, "mentions": 6 },
+    { "rank": 9, "name": "AvaTrade", "sov": 0.0762, "visibility": 0.20, "avgPosition": 4.25, "mentions": 4 },
+    { "rank": 10, "name": "Saxo", "sov": 0.0750, "visibility": 0.15, "avgPosition": 3.00, "mentions": 3 }
+  ],
+  "sourceTypeSov": [
+    { "name": "Corporate Blogs & Content", "value": 60, "percentage": "60%" },
+    { "name": "Journalism", "value": 35, "percentage": "35%" },
+    { "name": "Social / UGC", "value": 5, "percentage": "5%" }
+  ],
+  "sourceTypeBreakdown": [
+    {
+      "type": "Corporate Blogs & Content",
+      "count": 24,
+      "domains": [
+        { "domain": "forexbrokers.com", "percentage": 10.64 },
+        { "domain": "fxempire.com", "percentage": 7.98 },
+        { "domain": "statrys.com", "percentage": 3.19 }
+      ]
+    },
+    {
+      "type": "Journalism",
+      "count": 14,
+      "domains": [
+        { "domain": "investopedia.com", "percentage": 5.32 },
+        { "domain": "kiplinger.com", "percentage": 2.66 },
+        { "domain": "cbsnews.com", "percentage": 2.66 }
+      ]
+    },
+    {
+      "type": "Social / UGC",
+      "count": 2,
+      "domains": [
+        { "domain": "youtube.com", "percentage": 2.50 }
+      ]
+    }
+  ],
+  "topDomains": {
+    "news": [
+      { "domain": "investopedia.com", "percentage": 5.32 },
+      { "domain": "kiplinger.com", "percentage": 2.66 },
+      { "domain": "cbsnews.com", "percentage": 2.66 }
+    ],
+    "nonNews": [
+      { "domain": "forexbrokers.com", "percentage": 10.64 },
+      { "domain": "fxempire.com", "percentage": 7.98 },
+      { "domain": "fxstreet.com", "percentage": 4.26 },
+      { "domain": "statrys.com", "percentage": 3.19 },
+      { "domain": "brokerchooser.com", "percentage": 2.66 }
+    ]
+  },
+  "reputationAnalysis": {
+    "categoriesAssociated": [
+      {
+        "name": "Forex Trading",
+        "categorySov": 1.0,
+        "averagePosition": 1,
+        "mentions": 6,
+        "frequency": 1.0,
+        "comment": "FXTM is primarily known as an online broker for trading foreign exchange currency pairs.",
+        "topCompetitors": ["IG Group", "IC Markets", "Oanda", "XM", "Pepperstone"]
+      },
+      {
+        "name": "Stock Trading",
+        "categorySov": 0.49,
+        "averagePosition": 2.4,
+        "mentions": 5,
+        "frequency": 0.83,
+        "comment": "Clients can trade shares from major global companies, often as CFDs or outright purchases.",
+        "topCompetitors": ["Charles Schwab", "eToro", "IG"]
+      },
+      {
+        "name": "CFD Trading",
+        "categorySov": 0.41,
+        "averagePosition": 2.25,
+        "mentions": 4,
+        "frequency": 0.67,
+        "comment": "FXTM offers Contracts for Difference across various asset classes.",
+        "topCompetitors": ["IG", "eToro", "CMC Markets"]
+      },
+      {
+        "name": "Commodity Trading",
+        "categorySov": 0.30,
+        "averagePosition": 3.5,
+        "mentions": 4,
+        "frequency": 0.67,
+        "comment": "FXTM provides trading opportunities in various commodities.",
+        "topCompetitors": ["Plus500", "AvaTrade", "IG"]
+      },
+      {
+        "name": "Index Trading",
+        "categorySov": 0.24,
+        "averagePosition": 4.5,
+        "mentions": 4,
+        "frequency": 0.67,
+        "comment": "The broker allows trading on global equity markets through index CFDs.",
+        "topCompetitors": ["IG", "IG Group", "Capital.com"]
+      }
+    ],
+    "topConcepts": [
+      { "concept": "Regulation & Safety", "sentiment": "positive", "value": 95, "frequency": 0.95 },
+      { "concept": "Trading Platforms (MT4/MT5 & App)", "sentiment": "positive", "value": 95, "frequency": 0.95 },
+      { "concept": "Trading Instruments", "sentiment": "positive", "value": 70, "frequency": 0.70 },
+      { "concept": "Broker Overview/Identity", "sentiment": "positive", "value": 55, "frequency": 0.55 },
+      { "concept": "Spreads & Fees", "sentiment": "mixed", "value": 65, "frequency": 0.65 },
+      { "concept": "Educational Resources", "sentiment": "mixed", "value": 60, "frequency": 0.60 },
+      { "concept": "Customer Service", "sentiment": "mixed", "value": 50, "frequency": 0.50 },
+      { "concept": "Withdrawal Process/Fees", "sentiment": "negative", "value": 70, "frequency": 0.70 }
+    ]
+  },
+  "questions": {
+    "notRankedFirst": [
+      {
+        "question": "Best online forex trading?",
+        "llm": "Gemini",
+        "topBrand": "IG",
+        "overallRanking": ["IG", "Saxo", "Interactive Brokers", "FOREX.com", "Charles Schwab"],
+        "comment": "IG is consistently ranked as a top overall forex broker for 2025.",
+        "sources": [
+          { "name": "Statrys", "url": "https://www.statrys.com/blog/best-forex-platforms" },
+          { "name": "BrokerChooser", "url": "https://brokerchooser.com/best-brokers/best-forex-brokers" }
+        ]
+      },
+      {
+        "question": "Best online forex trading?",
+        "llm": "OpenAI",
+        "topBrand": "Fidelity",
+        "overallRanking": ["Fidelity", "Interactive Brokers", "FOREX.com", "IG", "Pepperstone"],
+        "comment": "Recognized for its expansive product offerings and comprehensive advisory services.",
+        "sources": [
+          { "name": "Kiplinger", "url": "https://www.kiplinger.com/investing/wealth-management/online-brokers/605136/the-best-online-brokers-and-trading-platforms" }
+        ]
+      }
+    ]
+  }
+}
