@@ -21,7 +21,9 @@ const PrimarySidebar = ({
   onMarketChange,
   // LLM filter props
   selectedLLMs,
-  onLLMToggle
+  onLLMToggle,
+  // Shared view mode
+  isSharedView = false
 }) => {
   const [expandedCategories, setExpandedCategories] = useState(
     categories.length > 0 ? [0] : [] // Expand first category by default
@@ -112,8 +114,8 @@ const PrimarySidebar = ({
         </div>
       )}
 
-      {/* Overview Section - Show for multi-market OR multi-category */}
-      {(isMultiMarket || categories.length > 1) && (
+      {/* Overview Section - Show for multi-market OR multi-category (not in shared view) */}
+      {!isSharedView && (isMultiMarket || categories.length > 1) && (
         <div className="mb-6">
           <h3 className="text-xs font-semibold text-[#9E9E9E] uppercase tracking-wide mb-3">
             Overview
@@ -220,22 +222,24 @@ const PrimarySidebar = ({
         </div>
       )}
 
-      {/* PR Insights Section */}
-      <div className="mb-6">
-        <h3 className="text-xs font-semibold text-[#9E9E9E] uppercase tracking-wide mb-3">
-          Recommendations
-        </h3>
+      {/* PR Insights Section - Hide in shared view */}
+      {!isSharedView && (
+        <div className="mb-6">
+          <h3 className="text-xs font-semibold text-[#9E9E9E] uppercase tracking-wide mb-3">
+            Recommendations
+          </h3>
 
-        <button
-          onClick={() => handleViewChange({ type: 'insights' })}
-          className={`nav-item ${
-            activeView.type === 'insights' ? 'nav-item-active' : ''
-          }`}
-        >
-          <Lightbulb className="w-4 h-4" />
-          <span>PR Insights</span>
-        </button>
-      </div>
+          <button
+            onClick={() => handleViewChange({ type: 'insights' })}
+            className={`nav-item ${
+              activeView.type === 'insights' ? 'nav-item-active' : ''
+            }`}
+          >
+            <Lightbulb className="w-4 h-4" />
+            <span>PR Insights</span>
+          </button>
+        </div>
+      )}
 
       {/* Locations Section - Only for non-multi-market reports */}
       {!isMultiMarket && (
@@ -290,7 +294,9 @@ PrimarySidebar.propTypes = {
   onMarketChange: PropTypes.func,
   // LLM filter props
   selectedLLMs: PropTypes.arrayOf(PropTypes.string),
-  onLLMToggle: PropTypes.func
+  onLLMToggle: PropTypes.func,
+  // Shared view mode
+  isSharedView: PropTypes.bool
 };
 
 PrimarySidebar.defaultProps = {
@@ -303,7 +309,8 @@ PrimarySidebar.defaultProps = {
   selectedMarket: null,
   onMarketChange: null,
   selectedLLMs: ['gemini', 'openai'],
-  onLLMToggle: null
+  onLLMToggle: null,
+  isSharedView: false
 };
 
 export default PrimarySidebar;

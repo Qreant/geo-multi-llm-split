@@ -2,6 +2,16 @@
 
 This file provides guidance to Claude Code when working with the GEO Multi-LLM Brand Analysis system.
 
+## Git Repository
+
+**Repository:** https://github.com/Qreant/geo-multi-llm-split
+
+**IMPORTANT Git Rules:**
+1. **NEVER push to git automatically** - Only push when the user explicitly asks to push
+2. **Only push to the above repository** - Do not push to any other remote
+3. Commits can be made freely, but pushing requires explicit user request
+4. When asked to push, use: `git push origin <branch>`
+
 ## Project Overview
 
 A full-stack web application for analyzing brand reputation and visibility across AI search engines (Gemini, OpenAI GPT-4o). The system performs multi-dimensional brand analysis by querying LLMs with structured prompts and aggregating results into actionable insights.

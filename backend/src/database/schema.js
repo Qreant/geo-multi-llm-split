@@ -36,9 +36,17 @@ export function initDatabase() {
       progress INTEGER DEFAULT 0,
       total_questions INTEGER DEFAULT 0,
       execution_time INTEGER,
-      error_message TEXT
+      error_message TEXT,
+      share_token TEXT UNIQUE
     )
   `);
+
+  // Add share_token column if it doesn't exist (migration for existing DBs)
+  try {
+    db.exec(`ALTER TABLE reports ADD COLUMN share_token TEXT UNIQUE`);
+  } catch (e) {
+    // Column already exists, ignore
+  }
 
   // Report configuration - stores the questions used
   db.exec(`

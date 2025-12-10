@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api, getEventSourceUrl } from '../lib/api';
 import Highcharts from 'highcharts';
-import { ArrowLeft, Loader, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, Loader, CheckCircle, XCircle, Share2, Copy, Check, Link as LinkIcon, X } from 'lucide-react';
 
 // Import navigation components
 import PrimarySidebar from '../components/navigation/PrimarySidebar';
@@ -58,6 +58,12 @@ export default function ReportDetailPage() {
   // LLM filter state - both selected by default
   const [selectedLLMs, setSelectedLLMs] = useState(['gemini', 'openai']);
 
+  // Share modal state
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareToken, setShareToken] = useState(null);
+  const [shareLoading, setShareLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+
   // Toggle LLM selection (ensure at least one is always selected)
   const handleLLMToggle = (llmId) => {
     setSelectedLLMs(prev => {
@@ -69,6 +75,44 @@ export default function ReportDetailPage() {
         return [...prev, llmId];
       }
     });
+  };
+
+  // Share functions
+  const handleShare = async () => {
+    setShowShareModal(true);
+    setShareLoading(true);
+    try {
+      // First check if already has a share token
+      const checkResponse = await api.get(`/api/reports/${reportId}/share`);
+      if (checkResponse.data.share_token) {
+        setShareToken(checkResponse.data.share_token);
+      } else {
+        // Generate new token
+        const response = await api.post(`/api/reports/${reportId}/share`);
+        setShareToken(response.data.share_token);
+      }
+    } catch (err) {
+      console.error('Error generating share link:', err);
+    } finally {
+      setShareLoading(false);
+    }
+  };
+
+  const handleCopyShareLink = () => {
+    const shareUrl = `${window.location.origin}/share/${shareToken}`;
+    navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleRevokeShare = async () => {
+    try {
+      await api.delete(`/api/reports/${reportId}/share`);
+      setShareToken(null);
+      setShowShareModal(false);
+    } catch (err) {
+      console.error('Error revoking share link:', err);
+    }
   };
 
   useEffect(() => {
@@ -522,10 +566,19 @@ export default function ReportDetailPage() {
           Back to Reports
         </Link>
 
-        <span className="inline-flex items-center px-4 py-2 rounded bg-[#E8F5E9] text-[#4CAF50] font-medium text-sm">
-          <CheckCircle className="w-4 h-4 mr-2" />
-          Completed in {report.execution_time}s
-        </span>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleShare}
+            className="inline-flex items-center px-4 py-2 rounded bg-[#E3F2FD] text-[#2196F3] hover:bg-[#BBDEFB] font-medium text-sm transition-colors"
+          >
+            <Share2 className="w-4 h-4 mr-2" />
+            Share
+          </button>
+          <span className="inline-flex items-center px-4 py-2 rounded bg-[#E8F5E9] text-[#4CAF50] font-medium text-sm">
+            <CheckCircle className="w-4 h-4 mr-2" />
+            Completed in {report.execution_time}s
+          </span>
+        </div>
       </div>
 
       {/* Header Card */}
@@ -600,6 +653,78 @@ export default function ReportDetailPage() {
           </div>
         </main>
       </div>
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-[#212121]">Share Report</h3>
+              <button
+                onClick={() => setShowShareModal(false)}
+                className="p-1 hover:bg-[#F4F6F8] rounded transition-colors"
+              >
+                <X className="w-5 h-5 text-[#757575]" />
+              </button>
+            </div>
+
+            {shareLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader className="w-6 h-6 animate-spin text-[#2196F3]" />
+                <span className="ml-2 text-[#757575]">Generating share link...</span>
+              </div>
+            ) : shareToken ? (
+              <div className="space-y-4">
+                <p className="text-sm text-[#757575]">
+                  Anyone with this link can view this report in read-only mode.
+                </p>
+
+                <div className="flex items-center gap-2 p-3 bg-[#F4F6F8] rounded-lg">
+                  <LinkIcon className="w-4 h-4 text-[#757575] flex-shrink-0" />
+                  <span className="text-sm text-[#212121] truncate flex-1">
+                    {window.location.origin}/share/{shareToken}
+                  </span>
+                  <button
+                    onClick={handleCopyShareLink}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-[#10B981] text-white text-sm font-medium rounded hover:bg-[#059669] transition-colors"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="w-4 h-4" />
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4" />
+                        Copy
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <div className="pt-4 border-t border-[#E0E0E0]">
+                  <button
+                    onClick={handleRevokeShare}
+                    className="text-sm text-[#EF5350] hover:text-[#D32F2F] transition-colors"
+                  >
+                    Revoke share link
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-[#757575]">Failed to generate share link. Please try again.</p>
+                <button
+                  onClick={handleShare}
+                  className="mt-4 px-4 py-2 bg-[#2196F3] text-white rounded hover:bg-[#1976D2] transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

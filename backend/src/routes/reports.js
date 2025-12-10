@@ -300,4 +300,162 @@ router.post('/:id/resolve-sources', async (req, res) => {
   }
 });
 
+// ==========================================
+// Share Token Routes
+// ==========================================
+
+/**
+ * POST /api/reports/:id/share
+ * Generate a share token for a report
+ */
+router.post('/:id/share', (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const report = Report.findById(id);
+    if (!report) {
+      return res.status(404).json({ error: 'Report not found' });
+    }
+
+    if (report.status !== 'completed') {
+      return res.status(400).json({ error: 'Only completed reports can be shared' });
+    }
+
+    // Check if already has a token
+    let token = Report.getShareToken(id);
+    if (!token) {
+      token = Report.generateShareToken(id);
+    }
+
+    if (!token) {
+      return res.status(500).json({ error: 'Failed to generate share token' });
+    }
+
+    res.json({
+      success: true,
+      share_token: token,
+      share_url: `/share/${token}`
+    });
+  } catch (error) {
+    console.error('Error generating share token:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * DELETE /api/reports/:id/share
+ * Revoke share token for a report
+ */
+router.delete('/:id/share', (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const report = Report.findById(id);
+    if (!report) {
+      return res.status(404).json({ error: 'Report not found' });
+    }
+
+    const revoked = Report.revokeShareToken(id);
+
+    res.json({
+      success: revoked,
+      message: revoked ? 'Share link revoked' : 'No share link to revoke'
+    });
+  } catch (error) {
+    console.error('Error revoking share token:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * GET /api/reports/:id/share
+ * Get current share token for a report
+ */
+router.get('/:id/share', (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const report = Report.findById(id);
+    if (!report) {
+      return res.status(404).json({ error: 'Report not found' });
+    }
+
+    const token = Report.getShareToken(id);
+
+    res.json({
+      has_share_link: !!token,
+      share_token: token,
+      share_url: token ? `/share/${token}` : null
+    });
+  } catch (error) {
+    console.error('Error getting share token:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * GET /api/shared/:token
+ * Get a shared report by token (public, read-only)
+ */
+router.get('/shared/:token', (req, res) => {
+  try {
+    const { token } = req.params;
+
+    const report = Report.findByShareToken(token);
+    if (!report) {
+      return res.status(404).json({ error: 'Shared report not found or link expired' });
+    }
+
+    if (report.status !== 'completed') {
+      return res.status(400).json({ error: 'Report is not available' });
+    }
+
+    // Get all report data (same as regular GET but via token)
+    const configuration = Report.getConfiguration(report.id);
+    const llmResponses = Report.getLLMResponses(report.id);
+    const sources = Report.getSources(report.id);
+
+    const markets = Report.getMarkets(report.id);
+    const isMultiMarket = markets && markets.length > 0;
+
+    if (isMultiMarket) {
+      const categoryFamilies = Report.getCategoryFamilies(report.id);
+      const competitors = Report.getMarketCompetitors(report.id);
+      const marketResults = Report.getMarketAnalysisResults(report.id);
+
+      res.json({
+        ...report,
+        id: undefined, // Don't expose internal ID
+        share_token: undefined, // Don't expose the token in response
+        isMultiMarket: true,
+        isSharedView: true,
+        markets,
+        categoryFamilies,
+        competitors,
+        marketResults,
+        configuration,
+        llmResponses,
+        sources
+      });
+    } else {
+      const analysisResults = Report.getAnalysisResults(report.id);
+
+      res.json({
+        ...report,
+        id: undefined, // Don't expose internal ID
+        share_token: undefined, // Don't expose the token in response
+        isMultiMarket: false,
+        isSharedView: true,
+        configuration,
+        analysisResults,
+        llmResponses,
+        sources
+      });
+    }
+  } catch (error) {
+    console.error('Error fetching shared report:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;

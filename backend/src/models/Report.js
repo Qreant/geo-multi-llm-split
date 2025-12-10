@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { getDatabase } from '../database/schema.js';
 import { extractDomainInfo } from '../services/sourceClassifier.js';
 
@@ -963,6 +964,65 @@ export class Report {
       competitors,
       marketResults
     };
+  }
+
+  // ==========================================
+  // Share Token Methods
+  // ==========================================
+
+  /**
+   * Generate a unique share token for a report
+   */
+  static generateShareToken(reportId) {
+    const db = getDatabase();
+
+    // Generate a random token (URL-safe base64)
+    const token = Buffer.from(crypto.randomUUID()).toString('base64url').slice(0, 16);
+
+    const stmt = db.prepare('UPDATE reports SET share_token = ? WHERE id = ?');
+    const result = stmt.run(token, reportId);
+
+    if (result.changes > 0) {
+      return token;
+    }
+    return null;
+  }
+
+  /**
+   * Get share token for a report
+   */
+  static getShareToken(reportId) {
+    const db = getDatabase();
+    const stmt = db.prepare('SELECT share_token FROM reports WHERE id = ?');
+    const result = stmt.get(reportId);
+    return result?.share_token || null;
+  }
+
+  /**
+   * Find a report by its share token
+   */
+  static findByShareToken(token) {
+    const db = getDatabase();
+    const stmt = db.prepare('SELECT * FROM reports WHERE share_token = ?');
+    const report = stmt.get(token);
+
+    if (!report) return null;
+
+    return {
+      ...report,
+      competitors: JSON.parse(report.competitors || '[]'),
+      countries: JSON.parse(report.countries || '[]'),
+      languages: JSON.parse(report.languages || '[]')
+    };
+  }
+
+  /**
+   * Revoke share token for a report
+   */
+  static revokeShareToken(reportId) {
+    const db = getDatabase();
+    const stmt = db.prepare('UPDATE reports SET share_token = NULL WHERE id = ?');
+    return stmt.run(reportId).changes > 0;
   }
 
   // ==========================================

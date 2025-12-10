@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Plus, X, Star, Globe, ArrowRight } from 'lucide-react';
 
 const COUNTRIES = [
+  { value: 'Global', label: 'Global', flag: '🌍' },
   { value: 'United States', label: 'United States', flag: '🇺🇸' },
   { value: 'United Kingdom', label: 'United Kingdom', flag: '🇬🇧' },
   { value: 'Canada', label: 'Canada', flag: '🇨🇦' },
@@ -33,6 +34,7 @@ const COUNTRIES = [
 ];
 
 const LANGUAGES = [
+  { value: 'All Languages', label: 'All Languages' },
   { value: 'English', label: 'English' },
   { value: 'French', label: 'French' },
   { value: 'German', label: 'German' },
@@ -98,7 +100,7 @@ export default function BrandMarketsStep({ entity: initialEntity, markets: initi
   const [markets, setMarkets] = useState(
     initialMarkets.length > 0
       ? initialMarkets
-      : [{ country: 'United States', language: 'English', code: 'en-US', isPrimary: true }]
+      : [{ country: 'Global', language: 'All Languages', code: 'all-GL', isPrimary: true }]
   );
   const [showAddMarket, setShowAddMarket] = useState(false);
   const [newMarket, setNewMarket] = useState({ country: '', language: '' });
