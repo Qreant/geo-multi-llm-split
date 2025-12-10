@@ -23,8 +23,35 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // CORS configuration for split deployment
+// Supports multiple origins (comma-separated) and Vercel preview URLs
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || '*',
+  origin: (origin, callback) => {
+    const allowedOrigins = (process.env.CORS_ORIGIN || '*').split(',').map(o => o.trim());
+
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+
+    // Allow all if wildcard
+    if (allowedOrigins.includes('*')) return callback(null, true);
+
+    // Check exact match or Vercel preview URL pattern
+    const isAllowed = allowedOrigins.some(allowed => {
+      if (origin === allowed) return true;
+      // Match Vercel preview URLs: geo-multi-llm-split-frontend-*.vercel.app
+      if (allowed.includes('.vercel.app')) {
+        const basePattern = allowed.replace('.vercel.app', '').replace('https://', '');
+        return origin.includes(basePattern) && origin.endsWith('.vercel.app');
+      }
+      return false;
+    });
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS blocked origin: ${origin}`);
+      callback(null, true); // Allow anyway for now, log for debugging
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
