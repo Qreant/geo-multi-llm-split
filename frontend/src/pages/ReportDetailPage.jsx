@@ -62,6 +62,7 @@ export default function ReportDetailPage() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareToken, setShareToken] = useState(null);
   const [shareLoading, setShareLoading] = useState(false);
+  const [shareError, setShareError] = useState(null);
   const [copied, setCopied] = useState(false);
 
   // Toggle LLM selection (ensure at least one is always selected)
@@ -81,18 +82,28 @@ export default function ReportDetailPage() {
   const handleShare = async () => {
     setShowShareModal(true);
     setShareLoading(true);
+    setShareError(null);
+    setShareToken(null);
     try {
       // First check if already has a share token
+      console.log('Checking for existing share token for report:', reportId);
       const checkResponse = await api.get(`/api/reports/${reportId}/share`);
+      console.log('Check response:', checkResponse.data);
       if (checkResponse.data.share_token) {
         setShareToken(checkResponse.data.share_token);
       } else {
         // Generate new token
+        console.log('Generating new share token...');
         const response = await api.post(`/api/reports/${reportId}/share`);
+        console.log('Generate response:', response.data);
         setShareToken(response.data.share_token);
       }
     } catch (err) {
       console.error('Error generating share link:', err);
+      console.error('Error response:', err.response?.data);
+      console.error('Error status:', err.response?.status);
+      const errorMessage = err.response?.data?.error || err.message || 'Unknown error occurred';
+      setShareError(errorMessage);
     } finally {
       setShareLoading(false);
     }
@@ -713,10 +724,13 @@ export default function ReportDetailPage() {
               </div>
             ) : (
               <div className="text-center py-4">
-                <p className="text-[#757575]">Failed to generate share link. Please try again.</p>
+                <p className="text-[#EF5350] font-medium mb-2">Failed to generate share link</p>
+                {shareError && (
+                  <p className="text-sm text-[#757575] mb-4">{shareError}</p>
+                )}
                 <button
                   onClick={handleShare}
-                  className="mt-4 px-4 py-2 bg-[#2196F3] text-white rounded hover:bg-[#1976D2] transition-colors"
+                  className="mt-2 px-4 py-2 bg-[#2196F3] text-white rounded hover:bg-[#1976D2] transition-colors"
                 >
                   Retry
                 </button>

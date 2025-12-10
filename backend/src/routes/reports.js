@@ -374,13 +374,17 @@ router.delete('/:id/share', (req, res) => {
 router.get('/:id/share', (req, res) => {
   try {
     const { id } = req.params;
+    console.log(`[Share] Getting share token for report: ${id}`);
 
     const report = Report.findById(id);
     if (!report) {
+      console.log(`[Share] Report not found: ${id}`);
       return res.status(404).json({ error: 'Report not found' });
     }
 
+    console.log(`[Share] Report found, status: ${report.status}`);
     const token = Report.getShareToken(id);
+    console.log(`[Share] Token retrieved: ${token ? 'exists' : 'none'}`);
 
     res.json({
       has_share_link: !!token,
@@ -388,7 +392,8 @@ router.get('/:id/share', (req, res) => {
       share_url: token ? `/share/${token}` : null
     });
   } catch (error) {
-    console.error('Error getting share token:', error);
+    console.error('[Share] Error getting share token:', error);
+    console.error('[Share] Stack trace:', error.stack);
     res.status(500).json({ error: error.message });
   }
 });

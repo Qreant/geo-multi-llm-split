@@ -52,6 +52,17 @@ export function migrateDatabase() {
       migrationsMade = true;
     }
 
+    // Migration 4: Add share_token column to reports table
+    const reportsTableInfo = db.prepare('PRAGMA table_info(reports)').all();
+    const hasShareToken = reportsTableInfo.some(col => col.name === 'share_token');
+
+    if (!hasShareToken) {
+      console.log('📦 Running migration: Adding share_token column to reports');
+      db.exec('ALTER TABLE reports ADD COLUMN share_token TEXT UNIQUE');
+      console.log('✅ Added share_token column');
+      migrationsMade = true;
+    }
+
     if (!migrationsMade) {
       console.log('✓ Database schema is up to date');
     }
