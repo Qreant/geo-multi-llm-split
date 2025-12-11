@@ -11,20 +11,25 @@ import VisibilityCompetitivenessMatrix from './VisibilityCompetitivenessMatrix';
  * OverviewTab Component
  * Aggregated dashboard view across all categories and markets
  */
-export default function OverviewTab({ reportId, entity }) {
+export default function OverviewTab({ reportId, entity, selectedMarket, selectedLLMs }) {
   const [overviewData, setOverviewData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchOverviewData();
-  }, [reportId]);
+  }, [reportId, selectedMarket, selectedLLMs]);
 
   const fetchOverviewData = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await api.get(`/api/reports/${reportId}/overview`);
+      const response = await api.get(`/api/reports/${reportId}/overview`, {
+        params: {
+          market: selectedMarket || 'master',
+          llms: selectedLLMs?.join(',') || 'gemini,openai'
+        }
+      });
       setOverviewData(response.data);
     } catch (err) {
       console.error('Error fetching overview data:', err);
@@ -151,5 +156,7 @@ export default function OverviewTab({ reportId, entity }) {
 
 OverviewTab.propTypes = {
   reportId: PropTypes.string.isRequired,
-  entity: PropTypes.string
+  entity: PropTypes.string,
+  selectedMarket: PropTypes.string,
+  selectedLLMs: PropTypes.arrayOf(PropTypes.string)
 };

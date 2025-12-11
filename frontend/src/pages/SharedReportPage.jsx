@@ -88,13 +88,12 @@ export default function SharedReportPage() {
 
       // Handle multi-market vs legacy reports
       if (response.data.isMultiMarket) {
-        const markets = response.data.markets || [];
-        const primaryMarket = markets.find(m => m.isPrimary) || markets[0];
-        if (primaryMarket) {
-          setSelectedMarket(primaryMarket.code);
-        }
+        // Set default to 'master' (all markets aggregated)
+        setSelectedMarket('master');
 
+        const markets = response.data.markets || [];
         const marketResults = response.data.marketResults || {};
+        const primaryMarket = markets.find(m => m.isPrimary) || markets[0];
         const firstMarketResults = primaryMarket ? marketResults[primaryMarket.code] : null;
         const categoryFamilies = response.data.categoryFamilies || [];
 
@@ -169,13 +168,73 @@ export default function SharedReportPage() {
     }
 
     const marketResults = report.marketResults || {};
+    const categoryFamilies = report.categoryFamilies || [];
+
+    // Master mode: aggregate data across all markets
+    if (selectedMarket === 'master') {
+      const allMarkets = report.markets || [];
+
+      // Aggregate reputation data from all markets
+      const allReputations = allMarkets
+        .map(m => marketResults[m.code]?.reputation)
+        .filter(Boolean);
+
+      let aggregatedReputation = null;
+      if (allReputations.length > 0) {
+        aggregatedReputation = allReputations[0]; // Simplified for shared view
+      }
+
+      // Aggregate categories across all markets
+      const aggregatedCategories = categoryFamilies.map((family) => {
+        const categoryDataFromAllMarkets = allMarkets
+          .map(m => marketResults[m.code]?.categories?.[family.id])
+          .filter(Boolean);
+
+        // Simple aggregation: use first market's data as base, average visibility metrics
+        let aggregatedVisibility = null;
+        const visibilityDataList = categoryDataFromAllMarkets.map(c => c.visibility).filter(Boolean);
+        if (visibilityDataList.length > 0) {
+          const avgMetrics = {
+            visibility: visibilityDataList.reduce((sum, v) => sum + (v.visibility?.visibility || 0), 0) / visibilityDataList.length,
+            sov: visibilityDataList.reduce((sum, v) => sum + (v.visibility?.sov || 0), 0) / visibilityDataList.length,
+            averagePosition: visibilityDataList.reduce((sum, v) => sum + (v.visibility?.averagePosition || 0), 0) / visibilityDataList.length,
+            mentions: visibilityDataList.reduce((sum, v) => sum + (v.visibility?.mentions || 0), 0),
+            totalQuestions: visibilityDataList.reduce((sum, v) => sum + (v.visibility?.totalQuestions || 0), 0)
+          };
+          aggregatedVisibility = {
+            ...visibilityDataList[0],
+            visibility: avgMetrics
+          };
+        }
+
+        let aggregatedCompetitive = null;
+        const competitiveDataList = categoryDataFromAllMarkets.map(c => c.competitive).filter(Boolean);
+        if (competitiveDataList.length > 0) {
+          aggregatedCompetitive = competitiveDataList[0]; // Simplified for shared view
+        }
+
+        return {
+          id: family.id,
+          name: family.canonical_name,
+          visibility: aggregatedVisibility,
+          competitive: aggregatedCompetitive
+        };
+      });
+
+      return {
+        reputation: aggregatedReputation,
+        categoriesAssociated: null,
+        categories: aggregatedCategories
+      };
+    }
+
+    // Single market mode
     const currentMarketData = selectedMarket ? marketResults[selectedMarket] : null;
 
     if (!currentMarketData) {
       return { reputation: null, categoriesAssociated: null, categories: [] };
     }
 
-    const categoryFamilies = report.categoryFamilies || [];
     const categories = categoryFamilies.map((family) => {
       const catData = currentMarketData.categories?.[family.id] || {};
       const translatedName = family.translations?.[selectedMarket]?.name || family.canonical_name;
@@ -203,8 +262,19 @@ export default function SharedReportPage() {
 
     const categoryFamilies = report.categoryFamilies || [];
     const category = categoryFamilies[categoryIndex];
-    if (!category || !selectedMarket) {
+    if (!category) {
       return [];
+    }
+
+    // Master mode: aggregate competitors from all markets
+    if (selectedMarket === 'master') {
+      const allMarkets = report.markets || [];
+      const allCompetitors = new Set();
+      allMarkets.forEach(market => {
+        const marketCompetitors = report.competitors?.[category.id]?.[market.code] || [];
+        marketCompetitors.forEach(c => allCompetitors.add(c));
+      });
+      return Array.from(allCompetitors);
     }
 
     return report.competitors?.[category.id]?.[selectedMarket] || [];
@@ -599,10 +669,11 @@ export default function SharedReportPage() {
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-medium text-[#9E9E9E] uppercase">Market</span>
                       <select
-                        value={selectedMarket || ''}
+                        value={selectedMarket || 'master'}
                         onChange={(e) => setSelectedMarket(e.target.value)}
                         className="appearance-none bg-white border border-[#E0E0E0] rounded-lg px-3 py-1.5 pr-8 text-sm font-medium text-[#212121] cursor-pointer hover:border-[#2196F3] focus:outline-none focus:ring-2 focus:ring-[#2196F3]/20 focus:border-[#2196F3] transition-colors"
                       >
+                        <option value="master">Master (All Markets)</option>
                         {report.markets.map((market) => (
                           <option key={market.code} value={market.code}>
                             {market.country} ({market.language}){market.isPrimary ? ' ★' : ''}
@@ -661,8 +732,8 @@ export default function SharedReportPage() {
 
           {/* Hierarchical Layout: Sidebar + Content */}
           <div className="flex gap-4">
-            {/* Left Sidebar - sticky below header */}
-            <aside className="w-[220px] flex-shrink-0 sticky top-[88px] self-start max-h-[calc(100vh-96px)] overflow-y-auto">
+            {/* Left Sidebar - 260px width */}
+            <aside className="w-[260px] flex-shrink-0">
               <PrimarySidebar
                 activeView={activeView}
                 onViewChange={setActiveView}

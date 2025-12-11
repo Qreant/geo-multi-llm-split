@@ -187,12 +187,19 @@ router.get('/:id', (req, res) => {
 /**
  * GET /api/reports/:id/overview
  * Get aggregated overview data across all categories and markets
+ * Query params:
+ *   - market: 'master' (all markets) or specific market code
+ *   - llms: comma-separated list of LLMs to include (e.g., 'gemini,openai')
  */
 router.get('/:id/overview', (req, res) => {
   try {
     const { id } = req.params;
+    const { market, llms } = req.query;
 
-    const overviewData = Report.getOverviewData(id);
+    // Parse LLMs filter
+    const llmsFilter = llms ? llms.split(',').map(l => l.trim()) : null;
+
+    const overviewData = Report.getOverviewData(id, { market, llms: llmsFilter });
     if (!overviewData) {
       return res.status(404).json({ error: 'Report not found' });
     }

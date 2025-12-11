@@ -41,7 +41,7 @@ function processOpportunities(opportunities) {
  * PRInsightsPanel Component
  * Main container for PR Insights and Recommendations with category tabs
  */
-export default function PRInsightsPanel({ reportId, entity }) {
+export default function PRInsightsPanel({ reportId, entity, selectedMarket, selectedLLMs }) {
   const [insights, setInsights] = useState(null);
   const [executionHistory, setExecutionHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -67,7 +67,13 @@ export default function PRInsightsPanel({ reportId, entity }) {
         setLoading(true);
         setError(null);
 
-        const response = await fetch(`${API_BASE}/api/insights/${reportId}`);
+        // Build query params for filters
+        const params = new URLSearchParams();
+        if (selectedMarket) params.append('market', selectedMarket);
+        if (selectedLLMs?.length) params.append('llms', selectedLLMs.join(','));
+        const queryString = params.toString();
+
+        const response = await fetch(`${API_BASE}/api/insights/${reportId}${queryString ? `?${queryString}` : ''}`);
         if (!response.ok) {
           throw new Error('Failed to fetch insights');
         }
@@ -91,7 +97,7 @@ export default function PRInsightsPanel({ reportId, entity }) {
     if (reportId) {
       fetchInsights();
     }
-  }, [reportId]);
+  }, [reportId, selectedMarket, selectedLLMs]);
 
   // Handle marking opportunity as implemented
   const handleImplement = async (opportunityId) => {
@@ -367,5 +373,7 @@ export default function PRInsightsPanel({ reportId, entity }) {
 
 PRInsightsPanel.propTypes = {
   reportId: PropTypes.string.isRequired,
-  entity: PropTypes.string
+  entity: PropTypes.string,
+  selectedMarket: PropTypes.string,
+  selectedLLMs: PropTypes.arrayOf(PropTypes.string)
 };

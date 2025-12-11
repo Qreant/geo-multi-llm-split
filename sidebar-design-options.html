@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sidebar Design Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .design-container {
+      display: grid;
+      grid-template-columns: repeat(3, 280px);
+      gap: 48px;
+      padding: 40px;
+      background: #f5f5f5;
+      min-height: 100vh;
+    }
+    .design-label {
+      position: absolute;
+      top: -32px;
+      left: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #424242;
+    }
+    .design-wrapper {
+      position: relative;
+    }
+  </style>
+</head>
+<body class="bg-gray-100">
+  <div class="p-8 bg-white border-b">
+    <h1 class="text-2xl font-bold text-gray-900">Sidebar Design Alternatives</h1>
+    <p class="text-gray-600 mt-2">Three design options for the navigation sidebar. Each addresses different UX principles.</p>
+  </div>
+
+  <div class="design-container justify-center">
+
+    <!-- OPTION 1: Minimal with Pills -->
+    <div class="design-wrapper">
+      <div class="design-label">Option 1: Minimal Pills</div>
+      <div class="w-[280px] bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+
+        <!-- Brand Header -->
+        <div class="p-5 border-b border-gray-100">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+            </div>
+            <div>
+              <div class="font-semibold text-gray-900">GEO Analysis</div>
+              <div class="text-xs text-gray-500">Nike Report</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Navigation -->
+        <div class="p-3">
+          <div class="space-y-1">
+            <a href="#" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+              </svg>
+              <span class="font-medium">Overview</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-emerald-50 text-emerald-700 font-medium">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+              </svg>
+              <span>PR Insights</span>
+              <span class="ml-auto text-xs bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full">9</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/>
+              </svg>
+              <span class="font-medium">Reputation</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="mx-5 border-t border-gray-100"></div>
+
+        <!-- Categories Section -->
+        <div class="p-3">
+          <div class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+            Categories
+          </div>
+
+          <!-- Category Item - Expanded -->
+          <div class="mt-1">
+            <button class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-gray-50 transition-colors">
+              <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+              <span class="font-medium text-gray-700 flex-1 text-left">Athletic Footwear</span>
+              <svg class="w-4 h-4 text-gray-400 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+
+            <!-- Sub-items -->
+            <div class="ml-9 mt-1 space-y-0.5">
+              <a href="#" class="flex items-center gap-2 px-3 py-2 rounded-md text-sm bg-blue-50 text-blue-700 font-medium">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+                Visibility
+              </a>
+              <a href="#" class="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-gray-600 hover:bg-gray-50">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+                Competitive
+              </a>
+            </div>
+          </div>
+
+          <!-- Category Item - Collapsed -->
+          <button class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-gray-50 transition-colors mt-1">
+            <div class="w-2 h-2 rounded-full bg-purple-500"></div>
+            <span class="font-medium text-gray-700 flex-1 text-left">Sportswear</span>
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+
+          <button class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-gray-50 transition-colors">
+            <div class="w-2 h-2 rounded-full bg-amber-500"></div>
+            <span class="font-medium text-gray-700 flex-1 text-left">Athletic Apparel</span>
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Design Notes -->
+      <div class="mt-4 p-4 bg-white rounded-lg border border-gray-200 text-sm">
+        <div class="font-semibold text-gray-900 mb-2">Key Improvements:</div>
+        <ul class="space-y-1.5 text-gray-600">
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-500 mt-0.5">&#10003;</span>
+            <span>Colored dots for category identification</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-500 mt-0.5">&#10003;</span>
+            <span>Cleaner visual hierarchy with pills</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-500 mt-0.5">&#10003;</span>
+            <span>Subtle hover states and transitions</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-500 mt-0.5">&#10003;</span>
+            <span>Badge for quick insight counts</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- OPTION 2: Card-based with Progress -->
+    <div class="design-wrapper">
+      <div class="design-label">Option 2: Cards with Progress</div>
+      <div class="w-[280px] bg-slate-900 rounded-xl shadow-lg overflow-hidden">
+
+        <!-- Brand Header - Dark -->
+        <div class="p-5 bg-gradient-to-r from-slate-800 to-slate-900">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-white/10 backdrop-blur rounded-lg flex items-center justify-center">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+            </div>
+            <div>
+              <div class="font-semibold text-white">Nike Analysis</div>
+              <div class="text-xs text-slate-400">Updated 2h ago</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="px-4 py-3 bg-slate-800/50 border-b border-slate-700/50">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-400">Analysis Progress</span>
+            <span class="text-emerald-400 font-medium">Complete</span>
+          </div>
+          <div class="mt-2 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+            <div class="h-full w-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full"></div>
+          </div>
+        </div>
+
+        <!-- Main Navigation -->
+        <div class="p-3 space-y-1">
+          <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors">
+            <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"/>
+            </svg>
+            <span class="font-medium">Overview</span>
+          </a>
+
+          <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-emerald-500/20 to-transparent border border-emerald-500/30 text-white">
+            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707"/>
+            </svg>
+            <span class="font-medium">PR Insights</span>
+            <div class="ml-auto flex items-center gap-1">
+              <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+              <span class="text-xs text-emerald-400">9 new</span>
+            </div>
+          </a>
+
+          <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors">
+            <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2"/>
+            </svg>
+            <span class="font-medium">Reputation</span>
+          </a>
+        </div>
+
+        <!-- Categories as Cards -->
+        <div class="p-3 pt-0">
+          <div class="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            Category Analysis
+          </div>
+
+          <div class="space-y-2 mt-2">
+            <!-- Category Card - Active -->
+            <div class="bg-slate-800 rounded-lg p-3 border border-slate-700">
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-medium text-white text-sm">Athletic Footwear</span>
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+                </svg>
+              </div>
+              <div class="flex gap-1.5">
+                <button class="flex-1 py-1.5 px-2 rounded bg-blue-500/20 border border-blue-500/30 text-blue-400 text-xs font-medium">
+                  Visibility
+                </button>
+                <button class="flex-1 py-1.5 px-2 rounded bg-slate-700 text-slate-400 text-xs hover:bg-slate-600 transition-colors">
+                  Competitive
+                </button>
+              </div>
+            </div>
+
+            <!-- Category Card - Collapsed -->
+            <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50 hover:border-slate-600 transition-colors cursor-pointer">
+              <div class="flex items-center justify-between">
+                <span class="font-medium text-slate-300 text-sm">Sportswear</span>
+                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </div>
+            </div>
+
+            <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50 hover:border-slate-600 transition-colors cursor-pointer">
+              <div class="flex items-center justify-between">
+                <span class="font-medium text-slate-300 text-sm">Athletic Apparel</span>
+                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Design Notes -->
+      <div class="mt-4 p-4 bg-white rounded-lg border border-gray-200 text-sm">
+        <div class="font-semibold text-gray-900 mb-2">Key Improvements:</div>
+        <ul class="space-y-1.5 text-gray-600">
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-500 mt-0.5">&#10003;</span>
+            <span>Dark theme reduces eye strain</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-500 mt-0.5">&#10003;</span>
+            <span>Progress indicator for analysis status</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-500 mt-0.5">&#10003;</span>
+            <span>Card-based categories feel interactive</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-500 mt-0.5">&#10003;</span>
+            <span>Inline sub-nav within category cards</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- OPTION 3: Compact with Tabs -->
+    <div class="design-wrapper">
+      <div class="design-label">Option 3: Compact Segmented</div>
+      <div class="w-[280px] bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+
+        <!-- Compact Header -->
+        <div class="p-4 bg-gradient-to-b from-gray-50 to-white border-b border-gray-100">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+                <span class="text-white font-bold text-sm">N</span>
+              </div>
+              <span class="font-semibold text-gray-900">Nike</span>
+            </div>
+            <button class="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+              <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Segmented Control -->
+        <div class="px-4 py-3 bg-gray-50 border-b border-gray-100">
+          <div class="flex bg-gray-200/70 rounded-lg p-1">
+            <button class="flex-1 py-1.5 px-3 text-xs font-medium text-gray-500 rounded-md hover:text-gray-700 transition-colors">
+              Overview
+            </button>
+            <button class="flex-1 py-1.5 px-3 text-xs font-medium bg-white text-gray-900 rounded-md shadow-sm">
+              Insights
+            </button>
+            <button class="flex-1 py-1.5 px-3 text-xs font-medium text-gray-500 rounded-md hover:text-gray-700 transition-colors">
+              Reports
+            </button>
+          </div>
+        </div>
+
+        <!-- Analysis Types - Horizontal Chips -->
+        <div class="p-4 border-b border-gray-100">
+          <div class="flex items-center gap-2 overflow-x-auto pb-1">
+            <button class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-full text-xs font-medium whitespace-nowrap">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707"/>
+              </svg>
+              PR Insights
+            </button>
+            <button class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-600 rounded-full text-xs font-medium whitespace-nowrap hover:bg-gray-200 transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2"/>
+              </svg>
+              Reputation
+            </button>
+          </div>
+        </div>
+
+        <!-- Categories as List with Visual Indicators -->
+        <div class="p-4">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Categories</span>
+            <span class="text-xs text-gray-400">3 active</span>
+          </div>
+
+          <div class="space-y-2">
+            <!-- Category - Expanded -->
+            <div class="rounded-lg border border-emerald-200 bg-emerald-50/50 overflow-hidden">
+              <button class="w-full flex items-center gap-3 px-3 py-2.5">
+                <div class="w-1 h-8 bg-emerald-500 rounded-full"></div>
+                <div class="flex-1 text-left">
+                  <div class="font-medium text-gray-900 text-sm">Athletic Footwear</div>
+                  <div class="text-xs text-gray-500">2 analysis types</div>
+                </div>
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+                </svg>
+              </button>
+              <div class="px-3 pb-3 ml-4 border-l-2 border-emerald-200">
+                <div class="space-y-1 pl-3">
+                  <a href="#" class="flex items-center justify-between py-2 px-2 rounded-md bg-emerald-100 text-emerald-800 text-sm">
+                    <div class="flex items-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      </svg>
+                      <span class="font-medium">Visibility</span>
+                    </div>
+                    <span class="text-xs bg-emerald-200 px-1.5 py-0.5 rounded">Active</span>
+                  </a>
+                  <a href="#" class="flex items-center gap-2 py-2 px-2 rounded-md text-gray-600 text-sm hover:bg-gray-100 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944"/>
+                    </svg>
+                    <span>Competitive</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Category - Collapsed -->
+            <button class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all">
+              <div class="w-1 h-8 bg-gray-300 rounded-full"></div>
+              <div class="flex-1 text-left">
+                <div class="font-medium text-gray-700 text-sm">Sportswear</div>
+                <div class="text-xs text-gray-400">2 analysis types</div>
+              </div>
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+
+            <button class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all">
+              <div class="w-1 h-8 bg-gray-300 rounded-full"></div>
+              <div class="flex-1 text-left">
+                <div class="font-medium text-gray-700 text-sm">Athletic Apparel</div>
+                <div class="text-xs text-gray-400">2 analysis types</div>
+              </div>
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Design Notes -->
+      <div class="mt-4 p-4 bg-white rounded-lg border border-gray-200 text-sm">
+        <div class="font-semibold text-gray-900 mb-2">Key Improvements:</div>
+        <ul class="space-y-1.5 text-gray-600">
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-500 mt-0.5">&#10003;</span>
+            <span>Segmented control for main views</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-500 mt-0.5">&#10003;</span>
+            <span>Horizontal chips for analysis types</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-500 mt-0.5">&#10003;</span>
+            <span>Visual bar indicators for hierarchy</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-500 mt-0.5">&#10003;</span>
+            <span>Compact info with count metadata</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Summary Section -->
+  <div class="p-8 bg-white border-t">
+    <h2 class="text-lg font-bold text-gray-900 mb-4">Design Recommendations Summary</h2>
+    <div class="grid grid-cols-3 gap-6 max-w-4xl">
+      <div class="p-4 rounded-lg bg-gray-50">
+        <div class="font-semibold text-gray-900 mb-2">Option 1: Minimal Pills</div>
+        <p class="text-sm text-gray-600">Best for: Clean, professional look. Uses familiar patterns. Easy to implement. Recommended if staying with light theme.</p>
+      </div>
+      <div class="p-4 rounded-lg bg-gray-50">
+        <div class="font-semibold text-gray-900 mb-2">Option 2: Dark Cards</div>
+        <p class="text-sm text-gray-600">Best for: Modern SaaS aesthetic. Great for data-heavy apps. May require theme toggle. Good for power users.</p>
+      </div>
+      <div class="p-4 rounded-lg bg-gray-50">
+        <div class="font-semibold text-gray-900 mb-2">Option 3: Compact Segmented</div>
+        <p class="text-sm text-gray-600">Best for: Limited space. Multiple view modes. Users who switch contexts often. Most information-dense.</p>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

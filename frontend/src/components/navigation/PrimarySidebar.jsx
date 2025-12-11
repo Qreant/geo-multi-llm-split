@@ -1,10 +1,20 @@
 import { useState } from 'react';
-import { Globe, TrendingUp, Eye, Trophy, ChevronDown, ChevronUp, Lightbulb, LayoutDashboard } from 'lucide-react';
+import { Globe, Eye, Trophy, ChevronDown, ChevronUp, Lightbulb, LayoutDashboard } from 'lucide-react';
 import PropTypes from 'prop-types';
+
+// Color palette for category dots
+const CATEGORY_COLORS = [
+  'bg-blue-500',
+  'bg-purple-500',
+  'bg-amber-500',
+  'bg-rose-500',
+  'bg-cyan-500',
+  'bg-emerald-500',
+];
 
 /**
  * PrimarySidebar Component
- * Hierarchical navigation with Market Selector, Analysis Types, Category Analysis
+ * Minimal Pills design - clean, professional navigation
  */
 const PrimarySidebar = ({
   activeView,
@@ -14,6 +24,7 @@ const PrimarySidebar = ({
   countries,
   languages,
   report,
+  insightsCount = 0,
   // Multi-market props
   isMultiMarket,
   // Shared view mode
@@ -35,146 +46,198 @@ const PrimarySidebar = ({
     onViewChange(view);
   };
 
-  return (
-    <div className="card-base p-4">
-      {/* Overview Section - Show for multi-market OR multi-category */}
-      {(isMultiMarket || categories.length > 1) && (
-        <div className="mb-6">
-          <h3 className="text-xs font-semibold text-[#9E9E9E] uppercase tracking-wide mb-3">
-            Overview
-          </h3>
+  // Format category name: replace underscores with spaces, capitalize words
+  const formatCategoryName = (name) => {
+    return name
+      .replace(/_/g, ' ')
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
 
-          <div className="space-y-1">
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden sticky top-[130px] max-h-[calc(100vh-146px)] overflow-y-auto">
+      {/* Main Navigation */}
+      <div className="p-3">
+        <div className="space-y-1">
+          {/* Overview - Show for multi-market OR multi-category */}
+          {(isMultiMarket || categories.length > 1) && (
             <button
               onClick={() => handleViewChange({ type: 'overview' })}
-              className={`nav-item ${
-                activeView.type === 'overview' ? 'nav-item-active' : ''
-              }`}
+              className={`
+                flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-left transition-all
+                ${activeView.type === 'overview'
+                  ? 'bg-emerald-50 text-emerald-700 font-medium'
+                  : 'text-gray-600 hover:bg-gray-50'
+                }
+              `}
             >
-              <LayoutDashboard className="w-4 h-4" />
-              <span>Overview</span>
+              <LayoutDashboard className="w-5 h-5" />
+              <span className="font-medium">Overview</span>
             </button>
+          )}
 
+          {/* PR Insights */}
+          {(isMultiMarket || categories.length > 1) && (
             <button
               onClick={() => handleViewChange({ type: 'insights' })}
-              className={`nav-item ${
-                activeView.type === 'insights' ? 'nav-item-active' : ''
-              }`}
+              className={`
+                flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-left transition-all
+                ${activeView.type === 'insights'
+                  ? 'bg-emerald-50 text-emerald-700 font-medium'
+                  : 'text-gray-600 hover:bg-gray-50'
+                }
+              `}
             >
-              <Lightbulb className="w-4 h-4" />
-              <span>PR Insights</span>
+              <Lightbulb className="w-5 h-5" />
+              <span className="font-medium">PR Insights</span>
+              {insightsCount > 0 && (
+                <span className={`
+                  ml-auto text-xs px-2 py-0.5 rounded-full
+                  ${activeView.type === 'insights'
+                    ? 'bg-emerald-200 text-emerald-800'
+                    : 'bg-gray-100 text-gray-600'
+                  }
+                `}>
+                  {insightsCount}
+                </span>
+              )}
             </button>
-          </div>
+          )}
+
+          {/* Reputation Analysis */}
+          {hasReputation && (
+            <button
+              onClick={() => handleViewChange({ type: 'reputation' })}
+              className={`
+                flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-left transition-all
+                ${activeView.type === 'reputation'
+                  ? 'bg-emerald-50 text-emerald-700 font-medium'
+                  : 'text-gray-600 hover:bg-gray-50'
+                }
+              `}
+            >
+              <Globe className="w-5 h-5" />
+              <span className="font-medium">Reputation Analysis</span>
+            </button>
+          )}
         </div>
-      )}
-
-      {/* Analysis Types Section */}
-      <div className="mb-6">
-        <h3 className="text-xs font-semibold text-[#9E9E9E] uppercase tracking-wide mb-3">
-          Analysis Types
-        </h3>
-
-        {hasReputation && (
-          <button
-            onClick={() => handleViewChange({ type: 'reputation' })}
-            className={`nav-item ${
-              activeView.type === 'reputation' ? 'nav-item-active' : ''
-            }`}
-          >
-            <Globe className="w-4 h-4" />
-            <span>Reputation Analysis</span>
-          </button>
-        )}
       </div>
 
-      {/* Category Analysis Section */}
+      {/* Divider */}
       {categories.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-xs font-semibold text-[#9E9E9E] uppercase tracking-wide mb-3">
-            Category Analysis
-          </h3>
+        <div className="mx-5 border-t border-gray-100"></div>
+      )}
 
-          {categories.map((category, index) => (
-            <div key={index} className="mb-2">
-              {/* Category Header - Expandable */}
-              <button
-                onClick={() => toggleCategory(index)}
-                className="nav-category-header"
-              >
-                <div className="flex items-center gap-2 flex-1">
-                  <TrendingUp className="w-4 h-4" />
-                  <span className="text-sm font-medium">{category.name}</span>
-                </div>
-                {expandedCategories.includes(index) ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
-              </button>
+      {/* Categories Section */}
+      {categories.length > 0 && (
+        <div className="p-3">
+          <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+            Categories
+          </div>
 
-              {/* Sub-items - Visibility & Competitive */}
-              {expandedCategories.includes(index) && (
-                <div className="ml-4 mt-1 space-y-1">
+          <div className="mt-1 space-y-1">
+            {categories.map((category, index) => {
+              const isExpanded = expandedCategories.includes(index);
+              const colorClass = CATEGORY_COLORS[index % CATEGORY_COLORS.length];
+              const isActiveCategory = activeView.type === 'category' && activeView.categoryIndex === index;
+
+              return (
+                <div key={index}>
+                  {/* Category Header */}
                   <button
-                    onClick={() => handleViewChange({
-                      type: 'category',
-                      categoryIndex: index,
-                      subTab: 'visibility'
-                    })}
-                    className={`nav-sub-item ${
-                      activeView.type === 'category' &&
-                      activeView.categoryIndex === index &&
-                      activeView.subTab === 'visibility'
-                        ? 'nav-sub-item-active'
-                        : ''
-                    }`}
+                    onClick={() => toggleCategory(index)}
+                    className={`
+                      w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all
+                      ${isActiveCategory
+                        ? 'bg-gray-50'
+                        : 'hover:bg-gray-50'
+                      }
+                    `}
                   >
-                    <Eye className="w-4 h-4" />
-                    <span>Visibility</span>
+                    <div className={`w-2 h-2 rounded-full ${colorClass}`}></div>
+                    <span className="font-medium text-gray-700 flex-1 text-left text-sm">
+                      {formatCategoryName(category.name)}
+                    </span>
+                    {isExpanded ? (
+                      <ChevronUp className="w-4 h-4 text-gray-400" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-gray-400" />
+                    )}
                   </button>
 
-                  <button
-                    onClick={() => handleViewChange({
-                      type: 'category',
-                      categoryIndex: index,
-                      subTab: 'competitive'
-                    })}
-                    className={`nav-sub-item ${
-                      activeView.type === 'category' &&
-                      activeView.categoryIndex === index &&
-                      activeView.subTab === 'competitive'
-                        ? 'nav-sub-item-active'
-                        : ''
-                    }`}
-                  >
-                    <Trophy className="w-4 h-4" />
-                    <span>Competitive</span>
-                  </button>
+                  {/* Sub-items */}
+                  {isExpanded && (
+                    <div className="ml-9 mt-1 space-y-0.5">
+                      <button
+                        onClick={() => handleViewChange({
+                          type: 'category',
+                          categoryIndex: index,
+                          subTab: 'visibility'
+                        })}
+                        className={`
+                          flex items-center gap-2 w-full px-3 py-2 rounded-md text-sm transition-all
+                          ${activeView.type === 'category' &&
+                            activeView.categoryIndex === index &&
+                            activeView.subTab === 'visibility'
+                            ? 'bg-emerald-50 text-emerald-700 font-medium'
+                            : 'text-gray-600 hover:bg-gray-50'
+                          }
+                        `}
+                      >
+                        <Eye className="w-4 h-4" />
+                        <span>Visibility</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleViewChange({
+                          type: 'category',
+                          categoryIndex: index,
+                          subTab: 'competitive'
+                        })}
+                        className={`
+                          flex items-center gap-2 w-full px-3 py-2 rounded-md text-sm transition-all
+                          ${activeView.type === 'category' &&
+                            activeView.categoryIndex === index &&
+                            activeView.subTab === 'competitive'
+                            ? 'bg-emerald-50 text-emerald-700 font-medium'
+                            : 'text-gray-600 hover:bg-gray-50'
+                          }
+                        `}
+                      >
+                        <Trophy className="w-4 h-4" />
+                        <span>Competitive</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          ))}
+              );
+            })}
+          </div>
         </div>
       )}
 
       {/* Locations Section - Only for non-multi-market reports */}
-      {!isMultiMarket && (
-        <div>
-          <h3 className="text-xs font-semibold text-[#9E9E9E] uppercase tracking-wide mb-3">
-            Locations
-          </h3>
-
-          <div className="nav-info-item">
-            <Globe className="w-4 h-4 text-[#757575]" />
-            <span className="text-sm text-[#757575]">
-              {countries && countries.length > 0
-                ? countries.join(', ')
-                : 'All countries'} - {languages && languages.length > 0
-                ? languages.join(', ')
-                : 'All languages'}
-            </span>
+      {!isMultiMarket && (countries?.length > 0 || languages?.length > 0) && (
+        <>
+          <div className="mx-5 border-t border-gray-100"></div>
+          <div className="p-3">
+            <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Location
+            </div>
+            <div className="px-4 py-2 flex items-center gap-2">
+              <Globe className="w-4 h-4 text-gray-400" />
+              <span className="text-sm text-gray-500">
+                {countries && countries.length > 0
+                  ? countries.join(', ')
+                  : 'Global'}
+                {languages && languages.length > 0 && (
+                  <span className="text-gray-400"> ({languages.join(', ')})</span>
+                )}
+              </span>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
@@ -196,6 +259,7 @@ PrimarySidebar.propTypes = {
   countries: PropTypes.arrayOf(PropTypes.string),
   languages: PropTypes.arrayOf(PropTypes.string),
   report: PropTypes.object,
+  insightsCount: PropTypes.number,
   isMultiMarket: PropTypes.bool,
   isSharedView: PropTypes.bool
 };
@@ -205,6 +269,7 @@ PrimarySidebar.defaultProps = {
   hasReputation: false,
   countries: [],
   languages: [],
+  insightsCount: 0,
   isMultiMarket: false,
   isSharedView: false
 };

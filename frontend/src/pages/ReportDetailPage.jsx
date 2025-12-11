@@ -157,15 +157,13 @@ export default function ReportDetailPage() {
 
       // Handle multi-market vs legacy reports
       if (response.data.isMultiMarket) {
-        // Set default selected market (primary or first)
-        const markets = response.data.markets || [];
-        const primaryMarket = markets.find(m => m.isPrimary) || markets[0];
-        if (primaryMarket) {
-          setSelectedMarket(primaryMarket.code);
-        }
+        // Set default selected market to 'master' (all markets aggregated)
+        setSelectedMarket('master');
 
         // Auto-select first available view based on market results
+        const markets = response.data.markets || [];
         const marketResults = response.data.marketResults || {};
+        const primaryMarket = markets.find(m => m.isPrimary) || markets[0];
         const firstMarketResults = primaryMarket ? marketResults[primaryMarket.code] : null;
         const categoryFamilies = response.data.categoryFamilies || [];
 
@@ -426,8 +424,69 @@ export default function ReportDetailPage() {
       };
     }
 
-    // Multi-market format - get data for selected market
     const marketResults = report.marketResults || {};
+    const categoryFamilies = report.categoryFamilies || [];
+
+    // Master mode: aggregate data across all markets
+    if (selectedMarket === 'master') {
+      const allMarkets = report.markets || [];
+
+      // Aggregate reputation data from all markets
+      const allReputations = allMarkets
+        .map(m => marketResults[m.code]?.reputation)
+        .filter(Boolean);
+
+      // Merge reputation data - combine sentiment topics from all markets
+      let aggregatedReputation = null;
+      if (allReputations.length > 0) {
+        aggregatedReputation = {
+          ...allReputations[0],
+          sentiment_topics: {
+            positive_topics: mergeTopics(allReputations.map(r => r.sentiment_topics?.positive_topics || [])),
+            negative_topics: mergeTopics(allReputations.map(r => r.sentiment_topics?.negative_topics || [])),
+            neutral_topics: mergeTopics(allReputations.map(r => r.sentiment_topics?.neutral_topics || []))
+          },
+          strengths: mergeItems(allReputations.map(r => r.strengths || []), 'strength'),
+          weaknesses: mergeItems(allReputations.map(r => r.weaknesses || []), 'weakness')
+        };
+      }
+
+      // Aggregate categories across all markets
+      const aggregatedCategories = categoryFamilies.map((family) => {
+        const categoryDataFromAllMarkets = allMarkets
+          .map(m => marketResults[m.code]?.categories?.[family.id])
+          .filter(Boolean);
+
+        // Aggregate visibility data
+        let aggregatedVisibility = null;
+        const visibilityDataList = categoryDataFromAllMarkets.map(c => c.visibility).filter(Boolean);
+        if (visibilityDataList.length > 0) {
+          aggregatedVisibility = mergeVisibilityData(visibilityDataList);
+        }
+
+        // Aggregate competitive data
+        let aggregatedCompetitive = null;
+        const competitiveDataList = categoryDataFromAllMarkets.map(c => c.competitive).filter(Boolean);
+        if (competitiveDataList.length > 0) {
+          aggregatedCompetitive = mergeCompetitiveData(competitiveDataList);
+        }
+
+        return {
+          id: family.id,
+          name: family.canonical_name,
+          visibility: aggregatedVisibility,
+          competitive: aggregatedCompetitive
+        };
+      });
+
+      return {
+        reputation: aggregatedReputation,
+        categoriesAssociated: null,
+        categories: aggregatedCategories
+      };
+    }
+
+    // Single market mode - get data for selected market
     const currentMarketData = selectedMarket ? marketResults[selectedMarket] : null;
 
     if (!currentMarketData) {
@@ -435,7 +494,6 @@ export default function ReportDetailPage() {
     }
 
     // Transform market categories from object format to array format
-    const categoryFamilies = report.categoryFamilies || [];
     const categories = categoryFamilies.map((family, idx) => {
       const catData = currentMarketData.categories?.[family.id] || {};
       // Get the translated name for this market or fallback to canonical
@@ -455,6 +513,147 @@ export default function ReportDetailPage() {
     };
   };
 
+  // Helper function to merge topics from multiple markets
+  const mergeTopics = (topicsArrays) => {
+    const topicMap = new Map();
+    topicsArrays.flat().forEach(topic => {
+      const key = topic.topic?.toLowerCase();
+      if (!key) return;
+      if (topicMap.has(key)) {
+        const existing = topicMap.get(key);
+        existing.frequency = (existing.frequency || 0) + (topic.frequency || 1);
+        existing.quotes = [...(existing.quotes || []), ...(topic.quotes || [])].slice(0, 5);
+        existing.sources = [...(existing.sources || []), ...(topic.sources || [])];
+        // Average sentiment scores
+        if (topic.sentiment_score !== undefined) {
+          existing.sentiment_score = ((existing.sentiment_score || 0) + topic.sentiment_score) / 2;
+        }
+      } else {
+        topicMap.set(key, { ...topic });
+      }
+    });
+    return Array.from(topicMap.values()).sort((a, b) => (b.frequency || 0) - (a.frequency || 0));
+  };
+
+  // Helper function to merge items (strengths/weaknesses) from multiple markets
+  const mergeItems = (itemsArrays, keyField) => {
+    const itemMap = new Map();
+    itemsArrays.flat().forEach(item => {
+      const key = item[keyField]?.toLowerCase();
+      if (!key) return;
+      if (itemMap.has(key)) {
+        const existing = itemMap.get(key);
+        existing.sources = [...(existing.sources || []), ...(item.sources || [])];
+      } else {
+        itemMap.set(key, { ...item });
+      }
+    });
+    return Array.from(itemMap.values());
+  };
+
+  // Helper function to merge visibility data from multiple markets
+  const mergeVisibilityData = (visibilityDataList) => {
+    if (visibilityDataList.length === 0) return null;
+    if (visibilityDataList.length === 1) return visibilityDataList[0];
+
+    // Average the visibility metrics
+    const avgMetrics = {
+      visibility: 0,
+      sov: 0,
+      averagePosition: 0,
+      mentions: 0,
+      totalQuestions: 0
+    };
+
+    visibilityDataList.forEach(vis => {
+      const metrics = vis.visibility || {};
+      avgMetrics.visibility += metrics.visibility || 0;
+      avgMetrics.sov += metrics.sov || 0;
+      avgMetrics.averagePosition += metrics.averagePosition || 0;
+      avgMetrics.mentions += metrics.mentions || 0;
+      avgMetrics.totalQuestions += metrics.totalQuestions || 0;
+    });
+
+    const count = visibilityDataList.length;
+    return {
+      ...visibilityDataList[0],
+      visibility: {
+        visibility: avgMetrics.visibility / count,
+        sov: avgMetrics.sov / count,
+        averagePosition: avgMetrics.averagePosition / count,
+        mentions: avgMetrics.mentions,
+        totalQuestions: avgMetrics.totalQuestions
+      },
+      // Merge brand family rankings
+      brand_family_ranking: mergeBrandFamilyRankings(visibilityDataList.map(v => v.brand_family_ranking || [])),
+      // Merge ranked questions
+      ranked_questions: visibilityDataList.flatMap(v => v.ranked_questions || []),
+      // Merge LLM performance
+      llm_performance: mergeLLMPerformance(visibilityDataList.map(v => v.llm_performance || []))
+    };
+  };
+
+  // Helper function to merge brand family rankings
+  const mergeBrandFamilyRankings = (rankingsArrays) => {
+    const brandMap = new Map();
+    rankingsArrays.flat().forEach(brand => {
+      const key = brand.name?.toLowerCase();
+      if (!key) return;
+      if (brandMap.has(key)) {
+        const existing = brandMap.get(key);
+        existing.visibility = ((existing.visibility || 0) + (brand.visibility || 0)) / 2;
+        existing.sov = ((existing.sov || 0) + (brand.sov || 0)) / 2;
+        existing.average_rank = ((existing.average_rank || 0) + (brand.average_rank || 0)) / 2;
+        existing.mentions = (existing.mentions || 0) + (brand.mentions || 0);
+      } else {
+        brandMap.set(key, { ...brand });
+      }
+    });
+    return Array.from(brandMap.values()).sort((a, b) => (b.sov || 0) - (a.sov || 0));
+  };
+
+  // Helper function to merge LLM performance data
+  const mergeLLMPerformance = (performanceArrays) => {
+    const llmMap = new Map();
+    performanceArrays.flat().forEach(perf => {
+      const llm = perf.llm;
+      if (!llm) return;
+      if (llmMap.has(llm)) {
+        const existing = llmMap.get(llm);
+        existing.visibility = ((existing.visibility || 0) + (perf.visibility || 0)) / 2;
+        existing.sov = ((existing.sov || 0) + (perf.sov || 0)) / 2;
+        existing.avgPosition = ((existing.avgPosition || 0) + (perf.avgPosition || 0)) / 2;
+        existing.mentions = (existing.mentions || 0) + (perf.mentions || 0);
+        existing.totalQuestions = (existing.totalQuestions || 0) + (perf.totalQuestions || 0);
+      } else {
+        llmMap.set(llm, { ...perf });
+      }
+    });
+    return Array.from(llmMap.values());
+  };
+
+  // Helper function to merge competitive data from multiple markets
+  const mergeCompetitiveData = (competitiveDataList) => {
+    if (competitiveDataList.length === 0) return null;
+    if (competitiveDataList.length === 1) return competitiveDataList[0];
+
+    return {
+      ...competitiveDataList[0],
+      // Merge ranked first questions
+      ranked_first_questions: competitiveDataList.flatMap(c => c.ranked_first_questions || []),
+      // Merge missed opportunities
+      missed_opportunities: competitiveDataList.flatMap(c => c.missed_opportunities || []),
+      // Merge LLM performance
+      competitive_llm_performance: mergeLLMPerformance(competitiveDataList.map(c => c.competitive_llm_performance || [])),
+      // Average visibility metrics
+      visibility: {
+        visibility: competitiveDataList.reduce((sum, c) => sum + (c.visibility?.visibility || 0), 0) / competitiveDataList.length,
+        sov: competitiveDataList.reduce((sum, c) => sum + (c.visibility?.sov || 0), 0) / competitiveDataList.length,
+        totalQuestions: competitiveDataList.reduce((sum, c) => sum + (c.visibility?.totalQuestions || 0), 0)
+      }
+    };
+  };
+
   const { reputation: reputationData, categoriesAssociated, categories } = getMarketData();
 
   // Get competitors for current market and category (for multi-market)
@@ -466,8 +665,19 @@ export default function ReportDetailPage() {
     // Get competitors from multi-market structure
     const categoryFamilies = report.categoryFamilies || [];
     const category = categoryFamilies[categoryIndex];
-    if (!category || !selectedMarket) {
+    if (!category) {
       return [];
+    }
+
+    // Master mode: aggregate competitors from all markets
+    if (selectedMarket === 'master') {
+      const allMarkets = report.markets || [];
+      const allCompetitors = new Set();
+      allMarkets.forEach(market => {
+        const marketCompetitors = report.competitors?.[category.id]?.[market.code] || [];
+        marketCompetitors.forEach(c => allCompetitors.add(c));
+      });
+      return Array.from(allCompetitors);
     }
 
     return report.competitors?.[category.id]?.[selectedMarket] || [];
@@ -481,11 +691,20 @@ export default function ReportDetailPage() {
 
     // Get categories_associated from market results (from category detection questions)
     const marketResults = report.marketResults || {};
-    const currentMarketData = selectedMarket ? marketResults[selectedMarket] : null;
 
-    if (currentMarketData?.categories_associated) {
-      // Use the real categories_associated from category detection analysis
-      return currentMarketData.categories_associated;
+    // Master mode: use the aggregated categories data
+    if (selectedMarket === 'master') {
+      // Fallback: Build from aggregated visibility data
+      if (categories.length === 0) {
+        return null;
+      }
+      // Use the fallback builder below which works with aggregated categories
+    } else {
+      const currentMarketData = selectedMarket ? marketResults[selectedMarket] : null;
+      if (currentMarketData?.categories_associated) {
+        // Use the real categories_associated from category detection analysis
+        return currentMarketData.categories_associated;
+      }
     }
 
     // Fallback: Build from visibility data if categories_associated not available
@@ -527,7 +746,14 @@ export default function ReportDetailPage() {
   // Content rendering logic
   const renderActiveContent = () => {
     if (activeView.type === 'overview') {
-      return <OverviewTab reportId={reportId} entity={report.entity} />;
+      return (
+        <OverviewTab
+          reportId={reportId}
+          entity={report.entity}
+          selectedMarket={selectedMarket}
+          selectedLLMs={selectedLLMs}
+        />
+      );
     }
 
     if (activeView.type === 'reputation') {
@@ -581,7 +807,14 @@ export default function ReportDetailPage() {
     }
 
     if (activeView.type === 'insights') {
-      return <PRInsightsPanel reportId={reportId} entity={report.entity} />;
+      return (
+        <PRInsightsPanel
+          reportId={reportId}
+          entity={report.entity}
+          selectedMarket={selectedMarket}
+          selectedLLMs={selectedLLMs}
+        />
+      );
     }
 
     return null;
@@ -649,10 +882,11 @@ export default function ReportDetailPage() {
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-medium text-[#9E9E9E] uppercase">Market</span>
                   <select
-                    value={selectedMarket || ''}
+                    value={selectedMarket || 'master'}
                     onChange={(e) => setSelectedMarket(e.target.value)}
                     className="appearance-none bg-white border border-[#E0E0E0] rounded-lg px-3 py-1.5 pr-8 text-sm font-medium text-[#212121] cursor-pointer hover:border-[#2196F3] focus:outline-none focus:ring-2 focus:ring-[#2196F3]/20 focus:border-[#2196F3] transition-colors"
                   >
+                    <option value="master">Master (All Markets)</option>
                     {report.markets.map((market) => (
                       <option key={market.code} value={market.code}>
                         {market.country} ({market.language}){market.isPrimary ? ' ★' : ''}
@@ -711,8 +945,8 @@ export default function ReportDetailPage() {
 
       {/* Hierarchical Layout: Sidebar + Content */}
       <div className="flex gap-4">
-        {/* Left Sidebar - 220px width, sticky below header */}
-        <aside className="w-[220px] flex-shrink-0 sticky top-[88px] self-start max-h-[calc(100vh-96px)] overflow-y-auto">
+        {/* Left Sidebar - 260px width */}
+        <aside className="w-[260px] flex-shrink-0">
           <PrimarySidebar
             activeView={activeView}
             onViewChange={setActiveView}

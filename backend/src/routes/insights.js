@@ -250,21 +250,62 @@ function generatePrioritySourceTargets(allSources, opportunities, config) {
 /**
  * GET /api/insights/:reportId
  * Get all PR insights for a report
+ * Query params:
+ *   - market: 'master' (all markets) or specific market code
+ *   - llms: comma-separated list of LLMs to include (e.g., 'gemini,openai')
  */
 router.get('/:reportId', (req, res) => {
   try {
     const { reportId } = req.params;
+    const { market, llms } = req.query;
 
     const report = Report.findById(reportId);
     if (!report) {
       return res.status(404).json({ error: 'Report not found' });
     }
 
-    const insights = Report.getPRInsights(reportId);
+    // Parse LLMs filter
+    const llmsFilter = llms ? llms.split(',').map(l => l.trim().toLowerCase()) : null;
+
+    let insights = Report.getPRInsights(reportId);
     const history = Report.getExecutionHistory(reportId);
 
+    // Filter opportunities by LLM if specified
+    if (llmsFilter && llmsFilter.length > 0 && insights.opportunities) {
+      insights = {
+        ...insights,
+        opportunities: insights.opportunities.filter(opp => {
+          // Keep opportunity if any of its sources were cited by selected LLMs
+          if (!opp.sources || opp.sources.length === 0) return true;
+          return opp.sources.some(source => {
+            const citedBy = source.cited_by || [];
+            return citedBy.some(llm => llmsFilter.includes(llm.toLowerCase()));
+          });
+        })
+      };
+
+      // Recalculate totals
+      insights.total_opportunities = insights.opportunities.length;
+      insights.priority_summary = {
+        critical: insights.opportunities.filter(o => o.priority?.tier === 'Critical').length,
+        strategic: insights.opportunities.filter(o => o.priority?.tier === 'Strategic').length,
+        quick_wins: insights.opportunities.filter(o => o.priority?.tier === 'Quick Wins').length,
+        low_priority: insights.opportunities.filter(o => o.priority?.tier === 'Low Priority').length
+      };
+    }
+
     // Generate priority source targets from stored sources and opportunities
-    const allSources = Report.getSources(reportId);
+    let allSources = Report.getSources(reportId);
+
+    // Filter sources by LLM if specified
+    if (llmsFilter && llmsFilter.length > 0) {
+      allSources = allSources.filter(source => {
+        const citedBy = source.cited_by || [];
+        if (citedBy.length === 0) return true; // Keep sources without LLM info
+        return citedBy.some(llm => llmsFilter.includes(llm.toLowerCase()));
+      });
+    }
+
     const prioritySourceTargets = generatePrioritySourceTargets(
       allSources,
       insights.opportunities || [],

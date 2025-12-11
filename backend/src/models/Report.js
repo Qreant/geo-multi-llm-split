@@ -1262,15 +1262,26 @@ export class Report {
 
   /**
    * Get aggregated overview data across all categories and markets
+   * @param {string} reportId
+   * @param {Object} options - Filter options
+   * @param {string} options.market - 'master' for all markets or specific market code
+   * @param {string[]} options.llms - Array of LLM IDs to filter by (e.g., ['gemini', 'openai'])
    */
-  static getOverviewData(reportId) {
+  static getOverviewData(reportId, options = {}) {
     const report = this.findById(reportId);
     if (!report) return null;
+
+    const { market = 'master', llms = null } = options;
 
     const markets = this.getMarkets(reportId);
     const isMultiMarket = markets.length > 0;
     const sources = this.getSources(reportId);
     const entity = report.entity;
+
+    // Filter markets if a specific market is requested
+    const filteredMarkets = (market && market !== 'master' && isMultiMarket)
+      ? markets.filter(m => m.code === market)
+      : markets;
 
     let categoryMetrics = [];
     let hasCompetitiveData = false;
@@ -1280,8 +1291,15 @@ export class Report {
       const categoryFamilies = this.getCategoryFamilies(reportId);
       const marketResults = this.getMarketAnalysisResults(reportId);
 
+      // Determine which markets to include based on filter
+      const marketsToProcess = market === 'master'
+        ? Object.keys(marketResults)
+        : [market].filter(m => marketResults[m]);
+
       categoryFamilies.forEach(family => {
-        Object.entries(marketResults).forEach(([marketCode, marketData]) => {
+        marketsToProcess.forEach(marketCode => {
+          const marketData = marketResults[marketCode];
+          if (!marketData) return;
           const catData = marketData.categories?.[family.id];
           if (!catData?.visibility) return;
 
@@ -1310,8 +1328,8 @@ export class Report {
           }
 
           // Get country name from market
-          const market = markets.find(m => m.code === marketCode);
-          const countryName = market?.country || marketCode;
+          const marketInfo = markets.find(m => m.code === marketCode);
+          const countryName = marketInfo?.country || marketCode;
 
           // Get translated name for this market
           const translatedName = family.translations?.[marketCode]?.name || family.canonical_name;
@@ -1514,7 +1532,7 @@ export class Report {
         avgWinRate,
         totalMentions,
         totalCategories: new Set(categoryMetrics.map(c => c.categoryName)).size,
-        totalMarkets: isMultiMarket ? markets.length : 1
+        totalMarkets: isMultiMarket ? (market === 'master' ? markets.length : 1) : 1
       },
       categoryMetrics,
       sourceAnalysis: {
