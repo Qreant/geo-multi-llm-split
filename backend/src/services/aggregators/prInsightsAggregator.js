@@ -5,6 +5,26 @@
  */
 
 /**
+ * Check if an entity name matches the target brand (including product variations)
+ * e.g., "Nike Pegasus" matches target "Nike"
+ */
+function isSameBrandFamily(entityName, targetBrand) {
+  if (!entityName || !targetBrand) return false;
+
+  const entity = entityName.toLowerCase().trim();
+  const target = targetBrand.toLowerCase().trim();
+
+  // Exact match
+  if (entity === target) return true;
+
+  // One contains the other (handles "Nike" matching "Nike Pegasus", "Nike Air Max", etc.)
+  if (entity.includes(target)) return true;
+  if (target.includes(entity)) return true;
+
+  return false;
+}
+
+/**
  * Calculate source quality score based on source authority
  * @param {Array} sources - Array of source objects with source_type
  * @returns {number} Quality score (0-1)
@@ -758,8 +778,14 @@ function analyzePrioritySourceTargets(opportunities, allSources, config, aggrega
     const questionTitle = opp.title || '';
     const questionText = questionTitle.replace(/^(Improve ranking for |Win back |Address )['"]?/, '').replace(/['"]?( against .*)?$/, '');
     const currentRank = opp.current_state?.rank;
-    const topCompetitor = opp.competitor_analysis?.top_ranked_entity;
+    const rawTopCompetitor = opp.competitor_analysis?.top_ranked_entity;
     const whyTheyWin = opp.competitor_analysis?.why_they_win;
+
+    // Filter out same-brand entities (e.g., "Nike Pegasus" shouldn't be a "competitor" for Nike)
+    const targetEntity = config?.entity || '';
+    const topCompetitor = (rawTopCompetitor && !isSameBrandFamily(rawTopCompetitor, targetEntity))
+      ? rawTopCompetitor
+      : null;
 
     // Track domains that have been updated for this opportunity (to avoid double-counting)
     const updatedDomains = new Set();
@@ -797,9 +823,13 @@ function analyzePrioritySourceTargets(opportunities, allSources, config, aggrega
         // Track competitive losses with question details
         if (isCompetitiveLoss) {
           domainData.competitive_loss_count++;
-          const competitorChosen = opp.current_state?.competitor_chosen || topCompetitor;
+          // Filter competitor chosen through same-brand check
+          const rawCompetitorChosen = opp.current_state?.competitor_chosen || rawTopCompetitor;
+          const competitorChosen = (rawCompetitorChosen && !isSameBrandFamily(rawCompetitorChosen, targetEntity))
+            ? rawCompetitorChosen
+            : null;
           const existingQ = domainData.competitive_loss_questions.find(q => q.id === oppId);
-          if (!existingQ) {
+          if (!existingQ && competitorChosen) {
             domainData.competitive_loss_questions.push({
               id: oppId,
               question: questionText,
@@ -807,12 +837,13 @@ function analyzePrioritySourceTargets(opportunities, allSources, config, aggrega
               why_chosen: whyTheyWin || opp.description
             });
           }
-          // Also track competitor from competitive losses
+          // Also track competitor from competitive losses (already filtered)
           if (competitorChosen) {
             domainData.competitor_mentions.push(competitorChosen);
           }
         }
 
+        // Only add competitor mentions if not same brand family (topCompetitor already filtered)
         if (topCompetitor && !isCompetitiveLoss) {
           domainData.competitor_mentions.push(topCompetitor);
         }
@@ -830,15 +861,16 @@ function analyzePrioritySourceTargets(opportunities, allSources, config, aggrega
         if (isVisibilityGap) urlData.visibility_gap_count++;
         if (isCompetitiveLoss) {
           urlData.competitive_loss_count++;
-          // Track competitor from competitive losses
-          const competitorChosen = opp.current_state?.competitor_chosen || opp.competitor_analysis?.top_ranked_entity;
-          if (competitorChosen) {
-            urlData.competitor_mentions.push(competitorChosen);
+          // Track competitor from competitive losses (only if not same brand family)
+          const rawCompetitorChosen = opp.current_state?.competitor_chosen || opp.competitor_analysis?.top_ranked_entity;
+          if (rawCompetitorChosen && !isSameBrandFamily(rawCompetitorChosen, targetEntity)) {
+            urlData.competitor_mentions.push(rawCompetitorChosen);
           }
         }
 
-        if (opp.competitor_analysis?.top_ranked_entity && !isCompetitiveLoss) {
-          urlData.competitor_mentions.push(opp.competitor_analysis.top_ranked_entity);
+        // Only add competitor mentions if not same brand family
+        if (topCompetitor && !isCompetitiveLoss) {
+          urlData.competitor_mentions.push(topCompetitor);
         }
       }
     });

@@ -9,11 +9,32 @@ import { Report } from '../models/Report.js';
 const router = express.Router();
 
 /**
+ * Check if an entity name matches the target brand (including product variations)
+ * e.g., "Nike Pegasus" matches target "Nike"
+ */
+function isSameBrandFamily(entityName, targetBrand) {
+  if (!entityName || !targetBrand) return false;
+
+  const entity = entityName.toLowerCase().trim();
+  const target = targetBrand.toLowerCase().trim();
+
+  // Exact match
+  if (entity === target) return true;
+
+  // One contains the other (handles "Nike" matching "Nike Pegasus", "Nike Air Max", etc.)
+  if (entity.includes(target)) return true;
+  if (target.includes(entity)) return true;
+
+  return false;
+}
+
+/**
  * Generate priority source targets from sources and opportunities
  */
 function generatePrioritySourceTargets(allSources, opportunities, config) {
   const domainMap = new Map();
   const urlMap = new Map();
+  const targetEntity = config?.entity || '';
 
   // Helper to extract domain from URL
   const extractDomain = (url) => {
@@ -127,8 +148,10 @@ function generatePrioritySourceTargets(allSources, opportunities, config) {
         domainData.total_impact_score += impactScore;
         if (isVisibilityGap) domainData.visibility_gap_count++;
         if (isCompetitiveLoss) domainData.competitive_loss_count++;
-        if (opp.competitor_analysis?.top_ranked_entity) {
-          domainData.competitor_mentions.push(opp.competitor_analysis.top_ranked_entity);
+        // Only track competitors that aren't the same brand family
+        const topRankedEntity = opp.competitor_analysis?.top_ranked_entity;
+        if (topRankedEntity && !isSameBrandFamily(topRankedEntity, targetEntity)) {
+          domainData.competitor_mentions.push(topRankedEntity);
         }
       }
 
@@ -141,8 +164,10 @@ function generatePrioritySourceTargets(allSources, opportunities, config) {
         urlData.total_impact_score += impactScore;
         if (isVisibilityGap) urlData.visibility_gap_count++;
         if (isCompetitiveLoss) urlData.competitive_loss_count++;
-        if (opp.competitor_analysis?.top_ranked_entity) {
-          urlData.competitor_mentions.push(opp.competitor_analysis.top_ranked_entity);
+        // Only track competitors that aren't the same brand family
+        const topRankedEntity = opp.competitor_analysis?.top_ranked_entity;
+        if (topRankedEntity && !isSameBrandFamily(topRankedEntity, targetEntity)) {
+          urlData.competitor_mentions.push(topRankedEntity);
         }
       }
     });
@@ -153,8 +178,11 @@ function generatePrioritySourceTargets(allSources, opportunities, config) {
 
   const getTopCompetitor = (mentions) => {
     if (!mentions?.length) return null;
+    // Filter out same-brand entities before counting
+    const filteredMentions = mentions.filter(m => !isSameBrandFamily(m, targetEntity));
+    if (!filteredMentions.length) return null;
     const counts = {};
-    mentions.forEach(m => counts[m] = (counts[m] || 0) + 1);
+    filteredMentions.forEach(m => counts[m] = (counts[m] || 0) + 1);
     return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
   };
 

@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 import {
-  Target, Globe, ExternalLink, ChevronDown, ChevronUp,
-  AlertCircle, TrendingUp, Users, FileText, HelpCircle
+  Globe, ExternalLink, ChevronDown, ChevronUp,
+  AlertCircle, Users, FileText, HelpCircle
 } from 'lucide-react';
 
 /**
@@ -27,12 +27,11 @@ function generateDomainIconUrl(domain) {
  * Displays domain and URL-level priority targets for PR outreach
  */
 export default function PrioritySourceTargets({ sourceTargets }) {
-  const [activeTab, setActiveTab] = useState('domains');
   const [expandedDomains, setExpandedDomains] = useState(new Set());
 
   if (!sourceTargets) return null;
 
-  const { summary, domain_targets, url_targets, high_authority_targets, outreach_recommendations } = sourceTargets;
+  const { domain_targets } = sourceTargets;
 
   const toggleDomain = (domain) => {
     setExpandedDomains(prev => {
@@ -47,10 +46,11 @@ export default function PrioritySourceTargets({ sourceTargets }) {
   };
 
   const getPriorityColor = (score) => {
-    if (score >= 70) return { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200' };
-    if (score >= 50) return { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-200' };
-    if (score >= 30) return { bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-200' };
-    return { bg: 'bg-gray-100', text: 'text-gray-700', border: 'border-gray-200' };
+    // Distinct colors for each priority level
+    if (score >= 70) return { bg: 'bg-[#FEF2F2]', text: 'text-[#DC2626]', border: 'border-[#FEE2E2]' }; // Critical - red
+    if (score >= 50) return { bg: 'bg-[#FFFBEB]', text: 'text-[#D97706]', border: 'border-[#FEF3C7]' }; // High - amber/orange
+    if (score >= 30) return { bg: 'bg-[#EFF6FF]', text: 'text-[#2563EB]', border: 'border-[#DBEAFE]' }; // Medium - blue
+    return { bg: 'bg-[#F8FAFC]', text: 'text-[#64748B]', border: 'border-[#F1F5F9]' }; // Low - gray
   };
 
   const getSourceTypeIcon = (sourceType) => {
@@ -84,12 +84,12 @@ export default function PrioritySourceTargets({ sourceTargets }) {
         >
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-3">
-              <div className={`p-2 rounded-lg ${colors.bg} flex items-center justify-center`}>
+              <div className={`p-1.5 rounded-lg ${colors.bg} flex items-center justify-center`}>
                 {domain.icon_url || generateDomainIconUrl(domain.domain) ? (
                   <img
                     src={domain.icon_url || generateDomainIconUrl(domain.domain)}
                     alt=""
-                    className="w-5 h-5 object-contain"
+                    className="w-10 h-10 object-contain rounded"
                     onError={(e) => {
                       e.target.style.display = 'none';
                       e.target.nextElementSibling.style.display = 'block';
@@ -97,7 +97,7 @@ export default function PrioritySourceTargets({ sourceTargets }) {
                   />
                 ) : null}
                 <Icon
-                  className={`w-5 h-5 ${colors.text}`}
+                  className={`w-10 h-10 ${colors.text}`}
                   style={{ display: (domain.icon_url || generateDomainIconUrl(domain.domain)) ? 'none' : 'block' }}
                 />
               </div>
@@ -387,186 +387,49 @@ export default function PrioritySourceTargets({ sourceTargets }) {
   };
 
   return (
-    <div className="bg-white border border-[#E0E0E0] rounded-lg p-6">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-[#FFF3E0] rounded-lg">
-          <Target className="w-6 h-6 text-[#E65100]" />
-        </div>
+    <div className="space-y-4">
+      {/* Critical Targets */}
+      {domain_targets?.critical?.length > 0 && (
         <div>
-          <h3 className="text-lg font-medium text-[#212121]">Priority PR Targets</h3>
-          <p className="text-sm text-[#757575]">
-            Sources to prioritize for outreach based on opportunity coverage
-          </p>
-        </div>
-      </div>
-
-      {/* Summary Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
-        <div className="bg-blue-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-blue-700">{summary?.total_citations || summary?.total_domains || 0}</div>
-          <div className="text-xs text-blue-600">Total Citations</div>
-        </div>
-        <div className="bg-red-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-red-700">{summary?.critical_targets || 0}</div>
-          <div className="text-xs text-red-600">Critical Targets</div>
-        </div>
-        <div className="bg-pink-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-pink-700">{summary?.reputation_impact_domains || 0}</div>
-          <div className="text-xs text-pink-600">Reputation Impact</div>
-        </div>
-        <div className="bg-orange-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-orange-700">{summary?.visibility_gap_domains || summary?.high_priority_targets || 0}</div>
-          <div className="text-xs text-orange-600">Visibility Gaps</div>
-        </div>
-        <div className="bg-purple-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-purple-700">{summary?.competitive_loss_domains || 0}</div>
-          <div className="text-xs text-purple-600">Competitive Losses</div>
-        </div>
-        <div className="bg-green-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-green-700">{summary?.high_authority_targets || 0}</div>
-          <div className="text-xs text-green-600">High Authority</div>
-        </div>
-      </div>
-
-      {/* Outreach Recommendations */}
-      {outreach_recommendations?.length > 0 && (
-        <div className="mb-6 bg-[#FFF8E1] border border-[#FFE082] rounded-lg p-4">
-          <h4 className="text-sm font-medium text-[#F57C00] mb-3 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4" />
-            Top Outreach Recommendations
+          <h4 className="text-sm font-medium text-[#DC2626] mb-3 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4" />
+            Critical Targets (Score 70+)
           </h4>
           <div className="space-y-3">
-            {outreach_recommendations.slice(0, 5).map((rec, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <span className={`
-                  text-xs px-2 py-0.5 rounded-full font-medium
-                  ${rec.priority === 'Critical' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}
-                `}>
-                  {rec.priority}
-                </span>
-                <div className="flex-1">
-                  <div className="text-sm text-[#424242]">
-                    <span className="font-medium">{rec.domain}</span> ({rec.source_type})
-                  </div>
-                  <div className="text-xs text-[#757575] mt-0.5">{rec.action}</div>
-                  {rec.competitor_context && (
-                    <div className="text-xs text-orange-600 mt-0.5">{rec.competitor_context}</div>
-                  )}
-                </div>
-              </div>
+            {domain_targets.critical.map((domain, i) => (
+              <DomainCard key={i} domain={domain} />
             ))}
           </div>
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="flex border-b border-[#E0E0E0] mb-4">
-        <button
-          onClick={() => setActiveTab('domains')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-            activeTab === 'domains'
-              ? 'border-[#1976D2] text-[#1976D2]'
-              : 'border-transparent text-[#757575] hover:text-[#424242]'
-          }`}
-        >
-          By Domain ({summary?.total_domains || 0})
-        </button>
-        <button
-          onClick={() => setActiveTab('urls')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-            activeTab === 'urls'
-              ? 'border-[#1976D2] text-[#1976D2]'
-              : 'border-transparent text-[#757575] hover:text-[#424242]'
-          }`}
-        >
-          By Article ({url_targets?.top_priority?.length || 0} priority)
-        </button>
-        <button
-          onClick={() => setActiveTab('authority')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-            activeTab === 'authority'
-              ? 'border-[#1976D2] text-[#1976D2]'
-              : 'border-transparent text-[#757575] hover:text-[#424242]'
-          }`}
-        >
-          High Authority ({high_authority_targets?.length || 0})
-        </button>
-      </div>
-
-      {/* Tab Content */}
-      <div className="space-y-4">
-        {activeTab === 'domains' && (
-          <>
-            {/* Critical Targets */}
-            {domain_targets?.critical?.length > 0 && (
-              <div>
-                <h4 className="text-sm font-medium text-red-700 mb-3 flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4" />
-                  Critical Targets (Score 70+)
-                </h4>
-                <div className="space-y-3">
-                  {domain_targets.critical.map((domain, i) => (
-                    <DomainCard key={i} domain={domain} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* High Priority */}
-            {domain_targets?.high_priority?.length > 0 && (
-              <div className="mt-6">
-                <h4 className="text-sm font-medium text-orange-700 mb-3">
-                  High Priority (Score 50-69)
-                </h4>
-                <div className="space-y-3">
-                  {domain_targets.high_priority.map((domain, i) => (
-                    <DomainCard key={i} domain={domain} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Medium Priority */}
-            {domain_targets?.medium_priority?.length > 0 && (
-              <div className="mt-6">
-                <h4 className="text-sm font-medium text-yellow-700 mb-3">
-                  Medium Priority (Score 30-49)
-                </h4>
-                <div className="space-y-3">
-                  {domain_targets.medium_priority.slice(0, 5).map((domain, i) => (
-                    <DomainCard key={i} domain={domain} />
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
-        )}
-
-        {activeTab === 'urls' && (
+      {/* High Priority */}
+      {domain_targets?.high_priority?.length > 0 && (
+        <div className="mt-6">
+          <h4 className="text-sm font-medium text-[#D97706] mb-3">
+            High Priority (Score 50-69)
+          </h4>
           <div className="space-y-3">
-            {url_targets?.top_priority?.length > 0 ? (
-              url_targets.top_priority.map((urlData, i) => (
-                <UrlCard key={i} urlData={urlData} />
-              ))
-            ) : (
-              <p className="text-center text-[#757575] py-8">No high-priority URLs identified</p>
-            )}
+            {domain_targets.high_priority.map((domain, i) => (
+              <DomainCard key={i} domain={domain} />
+            ))}
           </div>
-        )}
+        </div>
+      )}
 
-        {activeTab === 'authority' && (
+      {/* Medium Priority */}
+      {domain_targets?.medium_priority?.length > 0 && (
+        <div className="mt-6">
+          <h4 className="text-sm font-medium text-[#2563EB] mb-3">
+            Medium Priority (Score 30-49)
+          </h4>
           <div className="space-y-3">
-            {high_authority_targets?.length > 0 ? (
-              high_authority_targets.map((domain, i) => (
-                <DomainCard key={i} domain={domain} />
-              ))
-            ) : (
-              <p className="text-center text-[#757575] py-8">No high-authority sources identified</p>
-            )}
+            {domain_targets.medium_priority.slice(0, 5).map((domain, i) => (
+              <DomainCard key={i} domain={domain} />
+            ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

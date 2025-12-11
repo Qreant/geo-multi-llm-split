@@ -276,11 +276,13 @@ export default function PRInsightsPanel({ reportId, entity }) {
                 />
               )}
 
-              {/* Priority Summary */}
+              {/* Priority Summary - Source Target focused for Panorama */}
               <PrioritySummary
                 summary={insights?.priority_summary}
+                sourceTargets={insights?.priority_source_targets}
                 activeFilter={priorityFilter}
                 onFilterChange={setPriorityFilter}
+                useSourceTargets={true}
               />
 
               {/* Priority Source Targets - Main focus of Panorama */}
