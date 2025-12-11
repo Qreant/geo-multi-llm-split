@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 import {
   ChevronDown, ChevronUp, CheckCircle, ExternalLink,
-  AlertCircle, Target, Zap, Clock, TrendingUp
+  AlertCircle, TrendingUp, Minus, Clock
 } from 'lucide-react';
 import ExpectedImpactBadge from './ExpectedImpactBadge';
 import CollaborationRecommendations from './CollaborationRecommendations';
@@ -19,45 +19,61 @@ export default function OpportunityCard({
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  // Map old tier names to new display names
+  const getTierDisplayName = (tier) => {
+    switch (tier) {
+      case 'Critical':
+        return 'Critical';
+      case 'Strategic':
+        return 'High Priority';
+      case 'Quick Wins':
+        return 'Medium Priority';
+      case 'Low Priority':
+      default:
+        return 'Low Priority';
+    }
+  };
+
   const getPriorityConfig = (tier) => {
     switch (tier) {
       case 'Critical':
         return {
           icon: AlertCircle,
-          bgColor: 'bg-red-50',
-          borderColor: 'border-red-200',
-          textColor: 'text-red-700',
-          badgeColor: 'bg-red-100'
+          bgColor: 'bg-[#FEF2F2]',
+          borderColor: 'border-[#FEE2E2]',
+          textColor: 'text-[#DC2626]',
+          badgeColor: 'bg-[#FEE2E2]'
         };
       case 'Strategic':
         return {
-          icon: Target,
-          bgColor: 'bg-orange-50',
-          borderColor: 'border-orange-200',
-          textColor: 'text-orange-700',
-          badgeColor: 'bg-orange-100'
+          icon: TrendingUp,
+          bgColor: 'bg-[#FFFBEB]',
+          borderColor: 'border-[#FEF3C7]',
+          textColor: 'text-[#D97706]',
+          badgeColor: 'bg-[#FEF3C7]'
         };
       case 'Quick Wins':
         return {
-          icon: Zap,
-          bgColor: 'bg-yellow-50',
-          borderColor: 'border-yellow-200',
-          textColor: 'text-yellow-700',
-          badgeColor: 'bg-yellow-100'
+          icon: Minus,
+          bgColor: 'bg-[#EFF6FF]',
+          borderColor: 'border-[#DBEAFE]',
+          textColor: 'text-[#2563EB]',
+          badgeColor: 'bg-[#DBEAFE]'
         };
       case 'Low Priority':
       default:
         return {
           icon: Clock,
-          bgColor: 'bg-gray-50',
-          borderColor: 'border-gray-200',
-          textColor: 'text-gray-700',
-          badgeColor: 'bg-gray-100'
+          bgColor: 'bg-[#F8FAFC]',
+          borderColor: 'border-[#F1F5F9]',
+          textColor: 'text-[#64748B]',
+          badgeColor: 'bg-[#F1F5F9]'
         };
     }
   };
 
   const config = getPriorityConfig(opportunity.priority?.tier);
+  const displayTier = getTierDisplayName(opportunity.priority?.tier);
   const Icon = config.icon;
 
   const formatScore = (score) => {
@@ -92,7 +108,7 @@ export default function OpportunityCard({
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className={`text-xs font-medium ${config.textColor} uppercase tracking-wider`}>
-                  {opportunity.priority?.tier}
+                  {displayTier}
                 </span>
               </div>
               <h4 className="font-medium text-[#212121] leading-tight">

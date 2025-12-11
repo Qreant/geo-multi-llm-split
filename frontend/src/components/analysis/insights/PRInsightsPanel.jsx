@@ -295,11 +295,13 @@ export default function PRInsightsPanel({ reportId, entity }) {
           {/* Category Tabs - Reputation, Visibility, Competitive */}
           {activeTab !== 'panorama' && (
             <div className="space-y-6">
-              {/* Priority Filter */}
+              {/* Priority Filter - Use source targets mode for consistency */}
               <PrioritySummary
                 summary={insights?.priority_summary}
+                sourceTargets={insights?.priority_source_targets}
                 activeFilter={priorityFilter}
                 onFilterChange={setPriorityFilter}
+                useSourceTargets={true}
               />
 
               {/* Opportunity Cards */}
