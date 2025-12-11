@@ -483,9 +483,87 @@ export default function ReportDetailPage() {
         };
       });
 
+      // Aggregate categories_associated from all markets
+      const allCategoriesAssociated = allMarkets
+        .map(m => marketResults[m.code]?.categories_associated)
+        .filter(Boolean);
+
+      let aggregatedCategoriesAssociated = null;
+      if (allCategoriesAssociated.length > 0) {
+        // Merge categories from all markets
+        const categoryMap = {};
+        allCategoriesAssociated.forEach(ca => {
+          (ca.categories || []).forEach(cat => {
+            const key = cat.name?.toLowerCase();
+            if (!key) return;
+            if (!categoryMap[key]) {
+              categoryMap[key] = {
+                name: cat.name,
+                mentions: 0,
+                visibility_sum: 0,
+                sov_sum: 0,
+                position_sum: 0,
+                position_count: 0,
+                competitorsMap: {},
+                comments: []
+              };
+            }
+            categoryMap[key].mentions += cat.mentions || 1;
+            categoryMap[key].visibility_sum += cat.category_visibility || 0;
+            categoryMap[key].sov_sum += cat.category_sov || 0;
+            if (cat.average_position) {
+              categoryMap[key].position_sum += cat.average_position;
+              categoryMap[key].position_count++;
+            }
+            if (cat.comment) categoryMap[key].comments.push(cat.comment);
+            // Aggregate competitors
+            (cat.top_competitors || []).forEach(comp => {
+              const compKey = comp.name?.toLowerCase();
+              if (!compKey) return;
+              if (!categoryMap[key].competitorsMap[compKey]) {
+                categoryMap[key].competitorsMap[compKey] = {
+                  name: comp.name,
+                  mentions: 0,
+                  rank_sum: 0,
+                  rank_count: 0
+                };
+              }
+              categoryMap[key].competitorsMap[compKey].mentions++;
+              if (comp.average_rank) {
+                categoryMap[key].competitorsMap[compKey].rank_sum += comp.average_rank;
+                categoryMap[key].competitorsMap[compKey].rank_count++;
+              }
+            });
+          });
+        });
+
+        const marketCount = allCategoriesAssociated.length;
+        const mergedCategories = Object.values(categoryMap)
+          .map(cat => ({
+            name: cat.name,
+            category_visibility: cat.visibility_sum / marketCount,
+            category_sov: cat.sov_sum / marketCount,
+            average_position: cat.position_count > 0 ? cat.position_sum / cat.position_count : null,
+            mentions: cat.mentions,
+            comment: cat.comments[0] || '',
+            top_competitors: Object.values(cat.competitorsMap)
+              .map(comp => ({
+                name: comp.name,
+                average_rank: comp.rank_count > 0 ? comp.rank_sum / comp.rank_count : null,
+                mentions: comp.mentions
+              }))
+              .sort((a, b) => (a.average_rank || 99) - (b.average_rank || 99))
+              .slice(0, 5)
+          }))
+          .sort((a, b) => (b.category_sov || 0) - (a.category_sov || 0))
+          .slice(0, 10);
+
+        aggregatedCategoriesAssociated = { categories: mergedCategories };
+      }
+
       return {
         reputation: aggregatedReputation,
-        categoriesAssociated: null,
+        categoriesAssociated: aggregatedCategoriesAssociated,
         categories: aggregatedCategories
       };
     }
@@ -721,8 +799,12 @@ export default function ReportDetailPage() {
     // Get categories_associated from market results (from category detection questions)
     const marketResults = report.marketResults || {};
 
-    // Master mode: use the aggregated categories data
+    // Master mode: use the aggregated categoriesAssociated from getMarketData()
     if (selectedMarket === 'master') {
+      // categoriesAssociated already contains aggregated data from all markets
+      if (categoriesAssociated) {
+        return categoriesAssociated;
+      }
       // Fallback: Build from aggregated visibility data
       if (categories.length === 0) {
         return null;

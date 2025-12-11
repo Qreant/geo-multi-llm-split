@@ -10,6 +10,18 @@ if (typeof Highcharts === 'object') {
 }
 
 /**
+ * Format category name: replace underscores with spaces and capitalize each word
+ */
+const formatCategoryName = (name) => {
+  if (!name) return '';
+  return name
+    .replace(/_/g, ' ')
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
+/**
  * Get quadrant color based on position
  */
 function getQuadrantColor(x, y) {
@@ -234,7 +246,7 @@ export default function VisibilityCompetitivenessMatrix({ categoryMetrics = [], 
       return {
         x,
         y,
-        name: cat.marketLabel || cat.categoryName,
+        name: cat.marketLabel || formatCategoryName(cat.categoryName),
         avgPosition: cat.avgPosition?.toFixed(1) || 'N/A',
         mentions: cat.mentions || 0,
         sov: (cat.sov || 0) * 100,

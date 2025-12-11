@@ -16,10 +16,19 @@ const ENGLISH_TEMPLATES = [
   'What do people say about {{entity}}?'
 ];
 
-export default function ReputationPromptsStep({ entity, markets, reputationQuestions: initialQuestions, onComplete, onBack }) {
+// Category detection templates - discover what categories the brand is associated with
+const CATEGORY_DETECTION_TEMPLATES = [
+  'What is {{entity}} known for?',
+  'What is {{entity}} good for?',
+  'What does {{entity}} do?'
+];
+
+export default function ReputationPromptsStep({ entity, markets, reputationQuestions: initialQuestions, categoryDetectionQuestions: initialCatQuestions, onComplete, onBack }) {
   const [reputationQuestions, setReputationQuestions] = useState(initialQuestions || {});
+  const [categoryDetectionQuestions, setCategoryDetectionQuestions] = useState(initialCatQuestions || {});
   const [selectedMarket, setSelectedMarket] = useState(markets[0]?.code);
-  const [expanded, setExpanded] = useState(true);
+  const [expandedRep, setExpandedRep] = useState(true);
+  const [expandedCat, setExpandedCat] = useState(true);
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -35,7 +44,7 @@ export default function ReputationPromptsStep({ entity, markets, reputationQuest
 
   // Generate questions on mount
   useEffect(() => {
-    if (Object.keys(reputationQuestions).length === 0) {
+    if (Object.keys(reputationQuestions).length === 0 || Object.keys(categoryDetectionQuestions).length === 0) {
       generateQuestions();
     } else {
       setLoading(false);
@@ -44,46 +53,69 @@ export default function ReputationPromptsStep({ entity, markets, reputationQuest
 
   const generateQuestions = async () => {
     setLoading(true);
-    const generated = {};
+    const generatedRep = {};
+    const generatedCat = {};
 
     // First, generate English questions with entity substituted
-    const englishQuestions = ENGLISH_TEMPLATES.map(t => t.replace(/\{\{entity\}\}/g, entity));
+    const englishRepQuestions = ENGLISH_TEMPLATES.map(t => t.replace(/\{\{entity\}\}/g, entity));
+    const englishCatQuestions = CATEGORY_DETECTION_TEMPLATES.map(t => t.replace(/\{\{entity\}\}/g, entity));
 
     // Get unique languages
     const languagesNeeded = [...new Set(markets.map(m => m.language))];
-    const translationCache = {};
+    const translationCacheRep = {};
+    const translationCacheCat = {};
 
     // Translate complete questions for each unique language
     for (const language of languagesNeeded) {
       if (language === 'English') {
-        translationCache['English'] = englishQuestions;
+        translationCacheRep['English'] = englishRepQuestions;
+        translationCacheCat['English'] = englishCatQuestions;
       } else {
         try {
-          const response = await api.post('/api/analysis/translate-templates', {
-            templates: englishQuestions,
+          // Translate reputation questions
+          const repResponse = await api.post('/api/analysis/translate-templates', {
+            templates: englishRepQuestions,
             targetLanguage: language,
             entity
           });
-          translationCache[language] = response.data.translations;
+          translationCacheRep[language] = repResponse.data.translations;
+
+          // Translate category detection questions
+          const catResponse = await api.post('/api/analysis/translate-templates', {
+            templates: englishCatQuestions,
+            targetLanguage: language,
+            entity
+          });
+          translationCacheCat[language] = catResponse.data.translations;
         } catch (error) {
           console.error(`Failed to translate to ${language}:`, error);
-          translationCache[language] = englishQuestions; // Fallback to English
+          translationCacheRep[language] = englishRepQuestions;
+          translationCacheCat[language] = englishCatQuestions;
         }
       }
     }
 
     // Build questions for each market using cached translations
     for (const market of markets) {
-      const questions = translationCache[market.language] || englishQuestions;
-      generated[market.code] = questions.map((question, idx) => ({
+      const repQuestions = translationCacheRep[market.language] || englishRepQuestions;
+      generatedRep[market.code] = repQuestions.map((question, idx) => ({
         id: `REP_Q${idx + 1}`,
         type: 'reputation',
         question,
         editable: true
       }));
+
+      const catQuestions = translationCacheCat[market.language] || englishCatQuestions;
+      generatedCat[market.code] = catQuestions.map((question, idx) => ({
+        id: `CAT_Q${idx + 1}`,
+        type: 'category',
+        question,
+        editable: true
+      }));
     }
 
-    setReputationQuestions(generated);
+    setReputationQuestions(generatedRep);
+    setCategoryDetectionQuestions(generatedCat);
     setLoading(false);
   };
 
@@ -122,14 +154,29 @@ export default function ReputationPromptsStep({ entity, markets, reputationQuest
     }));
   };
 
+  // Category detection question handlers
+  const updateCatQuestion = (marketCode, index, newText) => {
+    setCategoryDetectionQuestions(prev => ({
+      ...prev,
+      [marketCode]: prev[marketCode]?.map((q, i) =>
+        i === index ? { ...q, question: newText } : q
+      )
+    }));
+    setEditingQuestion(null);
+  };
+
   const currentMarket = markets.find(m => m.code === selectedMarket) || markets[0];
   const currentQuestions = reputationQuestions[selectedMarket] || [];
+  const currentCatQuestions = categoryDetectionQuestions[selectedMarket] || [];
 
   // Check if all markets have valid questions (no empty questions)
   const hasEmptyQuestions = Object.values(reputationQuestions).some(marketQuestions =>
     marketQuestions?.some(q => !q.question?.trim())
   );
-  const canProceed = !hasEmptyQuestions && Object.keys(reputationQuestions).length > 0;
+  const hasEmptyCatQuestions = Object.values(categoryDetectionQuestions).some(marketQuestions =>
+    marketQuestions?.some(q => !q.question?.trim())
+  );
+  const canProceed = !hasEmptyQuestions && !hasEmptyCatQuestions && Object.keys(reputationQuestions).length > 0;
 
   if (loading) {
     return (
@@ -190,31 +237,31 @@ export default function ReputationPromptsStep({ entity, markets, reputationQuest
         </div>
       </div>
 
-      {/* Questions */}
+      {/* Reputation Questions */}
       <div className="card-base !p-0 overflow-hidden">
         <button
-          onClick={() => setExpanded(!expanded)}
+          onClick={() => setExpandedRep(!expandedRep)}
           className="w-full flex items-center justify-between p-4 hover:bg-[#F4F6F8] transition-colors"
         >
           <div className="flex items-center gap-3">
             <span className="text-xl">📊</span>
             <div className="text-left">
               <span className="font-medium text-[#212121]">
-                {getMarketFlag(selectedMarket)} {currentMarket?.country} Questions
+                {getMarketFlag(selectedMarket)} Reputation Questions
               </span>
-              <p className="text-xs text-[#757575]">{currentMarket?.language}</p>
+              <p className="text-xs text-[#757575]">Brand perception questions · {currentMarket?.language}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-[#757575]">{currentQuestions.length} questions</span>
-            {expanded ? <ChevronUp className="w-5 h-5 text-[#757575]" /> : <ChevronDown className="w-5 h-5 text-[#757575]" />}
+            {expandedRep ? <ChevronUp className="w-5 h-5 text-[#757575]" /> : <ChevronDown className="w-5 h-5 text-[#757575]" />}
           </div>
         </button>
 
-        {expanded && (
+        {expandedRep && (
           <div className="border-t border-[#E0E0E0] bg-[#F4F6F8] p-4 space-y-2">
             {currentQuestions.map((q, index) => {
-              const isEditing = editingQuestion === `${selectedMarket}-${index}`;
+              const isEditing = editingQuestion === `rep-${selectedMarket}-${index}`;
               const canDelete = currentQuestions.length > 1;
               return (
                 <div
@@ -241,7 +288,7 @@ export default function ReputationPromptsStep({ entity, markets, reputationQuest
                         {q.question || 'Click edit to add question...'}
                       </span>
                       <button
-                        onClick={() => setEditingQuestion(`${selectedMarket}-${index}`)}
+                        onClick={() => setEditingQuestion(`rep-${selectedMarket}-${index}`)}
                         className="p-1 text-[#757575] hover:text-[#10B981] hover:bg-[#E8F5E9] rounded transition-colors"
                       >
                         <Edit2 className="w-4 h-4" />
@@ -276,16 +323,79 @@ export default function ReputationPromptsStep({ entity, markets, reputationQuest
         )}
       </div>
 
+      {/* Category Detection Questions */}
+      <div className="card-base !p-0 overflow-hidden">
+        <button
+          onClick={() => setExpandedCat(!expandedCat)}
+          className="w-full flex items-center justify-between p-4 hover:bg-[#F4F6F8] transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-xl">🔍</span>
+            <div className="text-left">
+              <span className="font-medium text-[#212121]">
+                {getMarketFlag(selectedMarket)} Category Detection
+              </span>
+              <p className="text-xs text-[#757575]">Discover what categories {entity} is associated with</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-[#757575]">{currentCatQuestions.length} questions</span>
+            {expandedCat ? <ChevronUp className="w-5 h-5 text-[#757575]" /> : <ChevronDown className="w-5 h-5 text-[#757575]" />}
+          </div>
+        </button>
+
+        {expandedCat && (
+          <div className="border-t border-[#E0E0E0] bg-[#F4F6F8] p-4 space-y-2">
+            {currentCatQuestions.map((q, index) => {
+              const isEditing = editingQuestion === `cat-${selectedMarket}-${index}`;
+              return (
+                <div
+                  key={q.id}
+                  className="flex items-start gap-3 p-3 bg-white rounded border border-[#E0E0E0]"
+                >
+                  <span className="text-xs text-[#9E9E9E] font-mono w-16 pt-1">{q.id}</span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      defaultValue={q.question}
+                      autoFocus
+                      placeholder="Enter your question..."
+                      className="flex-1 px-3 py-2 text-sm border border-[#10B981] rounded focus:outline-none focus:ring-1 focus:ring-[#10B981]"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') updateCatQuestion(selectedMarket, index, e.target.value);
+                        if (e.key === 'Escape') setEditingQuestion(null);
+                      }}
+                      onBlur={(e) => updateCatQuestion(selectedMarket, index, e.target.value)}
+                    />
+                  ) : (
+                    <>
+                      <span className={`flex-1 text-sm ${q.question ? 'text-[#212121]' : 'text-[#9E9E9E] italic'}`}>
+                        {q.question || 'Click edit to add question...'}
+                      </span>
+                      <button
+                        onClick={() => setEditingQuestion(`cat-${selectedMarket}-${index}`)}
+                        className="p-1 text-[#757575] hover:text-[#10B981] hover:bg-[#E8F5E9] rounded transition-colors"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       {/* Info */}
       <div className="bg-[#E3F2FD] border border-[#2196F3]/20 rounded-lg p-4">
         <p className="text-sm text-[#1565C0]">
-          <strong>Tip:</strong> Reputation questions are about your brand "{entity}" and apply to all categories.
-          Each market has questions in its local language.
+          <strong>Tip:</strong> Reputation questions measure brand perception. Category detection questions help discover what product/service categories LLMs associate with "{entity}".
         </p>
       </div>
 
       {/* Validation Warning */}
-      {hasEmptyQuestions && (
+      {(hasEmptyQuestions || hasEmptyCatQuestions) && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
           <p className="text-sm text-amber-700">
             <strong>Warning:</strong> Some questions are empty. Please fill in all questions before continuing.
@@ -303,7 +413,7 @@ export default function ReputationPromptsStep({ entity, markets, reputationQuest
           Back
         </button>
         <button
-          onClick={() => onComplete(reputationQuestions)}
+          onClick={() => onComplete({ reputationQuestions, categoryDetectionQuestions })}
           disabled={!canProceed}
           className={`px-6 py-3 font-medium rounded-lg transition-colors flex items-center gap-2 ${
             canProceed

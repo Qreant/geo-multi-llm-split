@@ -2,6 +2,18 @@ import PropTypes from 'prop-types';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 /**
+ * Format category name: replace underscores with spaces and capitalize each word
+ */
+const formatCategoryName = (name) => {
+  if (!name) return '';
+  return name
+    .replace(/_/g, ' ')
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
+/**
  * CategoryRankingTable Component
  * Displays category performance rankings with visibility, SOV, and trend indicators
  */
@@ -82,7 +94,7 @@ export default function CategoryRankingTable({ categoryMetrics = [], entity = ''
                 </td>
                 <td className="py-4 px-2">
                   <div className="text-sm font-medium text-[#212121]">
-                    {cat.marketLabel || cat.categoryName}
+                    {cat.marketLabel || formatCategoryName(cat.categoryName)}
                   </div>
                   {cat.marketCode && cat.marketCode !== 'default' && !cat.marketLabel?.includes('(') && (
                     <div className="text-xs text-[#9E9E9E]">{cat.marketCode}</div>

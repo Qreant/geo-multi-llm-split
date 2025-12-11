@@ -34,6 +34,7 @@ export default function OnboardingWizard() {
     categoryFamilies: [],
     competitors: {}, // { [categoryId]: { [marketCode]: ['competitor1', 'competitor2'] } }
     reputationQuestions: {}, // { [marketCode]: [...questions] }
+    categoryDetectionQuestions: {}, // { [marketCode]: [...questions] } - CAT_Q1-Q3 questions
     categoryQuestions: {} // { [marketCode]: { [categoryId]: { visibility, competitive } } }
   });
 
@@ -105,8 +106,8 @@ export default function OnboardingWizard() {
   }, []);
 
   // Step 4 -> Step 5 (Reputation -> Category Prompts)
-  const handleReputationPromptsComplete = useCallback((reputationQuestions) => {
-    setConfig(prev => ({ ...prev, reputationQuestions }));
+  const handleReputationPromptsComplete = useCallback(({ reputationQuestions, categoryDetectionQuestions }) => {
+    setConfig(prev => ({ ...prev, reputationQuestions, categoryDetectionQuestions }));
     setCurrentStep(4);
   }, []);
 
@@ -150,6 +151,7 @@ export default function OnboardingWizard() {
         categoryFamilies: selectedCategories,
         competitors: filteredCompetitors,
         reputationQuestions: config.reputationQuestions,
+        categoryDetectionQuestions: config.categoryDetectionQuestions,
         categoryQuestions: filteredCategoryQuestions
       };
 
@@ -234,6 +236,7 @@ export default function OnboardingWizard() {
             entity={config.entity}
             markets={config.markets}
             reputationQuestions={config.reputationQuestions}
+            categoryDetectionQuestions={config.categoryDetectionQuestions}
             onComplete={handleReputationPromptsComplete}
             onBack={goBack}
           />

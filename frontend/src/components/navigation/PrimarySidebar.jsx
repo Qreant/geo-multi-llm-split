@@ -56,7 +56,7 @@ const PrimarySidebar = ({
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden sticky top-[130px] max-h-[calc(100vh-146px)] overflow-y-auto">
+    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden sticky top-[140px] max-h-[calc(100vh-156px)] overflow-y-auto">
       {/* Main Navigation */}
       <div className="p-3">
         <div className="space-y-1">
@@ -104,25 +104,35 @@ const PrimarySidebar = ({
               )}
             </button>
           )}
-
-          {/* Reputation Analysis */}
-          {hasReputation && (
-            <button
-              onClick={() => handleViewChange({ type: 'reputation' })}
-              className={`
-                flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-left transition-all
-                ${activeView.type === 'reputation'
-                  ? 'bg-emerald-50 text-emerald-700 font-medium'
-                  : 'text-gray-600 hover:bg-gray-50'
-                }
-              `}
-            >
-              <Globe className="w-5 h-5" />
-              <span className="font-medium">Reputation Analysis</span>
-            </button>
-          )}
         </div>
       </div>
+
+      {/* Reputation Section */}
+      {hasReputation && (
+        <>
+          <div className="mx-5 border-t border-gray-100"></div>
+          <div className="p-3">
+            <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Reputation
+            </div>
+            <div className="mt-1 space-y-1">
+              <button
+                onClick={() => handleViewChange({ type: 'reputation' })}
+                className={`
+                  flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-left transition-all
+                  ${activeView.type === 'reputation'
+                    ? 'bg-emerald-50 text-emerald-700 font-medium'
+                    : 'text-gray-600 hover:bg-gray-50'
+                  }
+                `}
+              >
+                <Globe className="w-5 h-5" />
+                <span className="font-medium">Brand Reputation</span>
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Divider */}
       {categories.length > 0 && (

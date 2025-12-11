@@ -3,6 +3,18 @@ import TopConceptsChart from './TopConceptsChart';
 import SourceAnalysis from './SourceAnalysis';
 
 /**
+ * Format category name: replace underscores with spaces and capitalize each word
+ */
+const formatCategoryName = (name) => {
+  if (!name) return '';
+  return name
+    .replace(/_/g, ' ')
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
+/**
  * ReputationAnalysis Component
  * Displays categories associated with the entity, showing presence, SOV, and competitors
  * Report-level analysis (not category-specific)
@@ -125,7 +137,7 @@ export default function ReputationAnalysis({ data, entity, categoriesAssociated 
                     <td className="px-4 py-4">
                       <div>
                         <span className="text-sm font-medium text-[#212121]">
-                          {category.name}
+                          {formatCategoryName(category.name)}
                         </span>
                         {category.comment && (
                           <p className="text-xs text-[#757575] mt-1 line-clamp-2">

@@ -151,7 +151,7 @@ async function processBatch(batch, geminiApiKey, openaiApiKey, reportId, onProgr
  */
 export async function runMultiMarketAnalysis(reportId, config, geminiApiKey, openaiApiKey) {
   const startTime = Date.now();
-  const { entity, markets, categoryFamilies, competitors, reputationQuestions, categoryQuestions } = config;
+  const { entity, markets, categoryFamilies, competitors, reputationQuestions, categoryDetectionQuestions, categoryQuestions } = config;
 
   console.log('\n🚀 ========== STARTING MULTI-MARKET ANALYSIS ==========');
   console.log(`📋 Report ID: ${reportId}`);
@@ -196,8 +196,9 @@ export async function runMultiMarketAnalysis(reportId, config, geminiApiKey, ope
       const repQuestions = reputationQuestions?.[market.code] || [];
       totalQuestions += repQuestions.length;
 
-      // Category detection questions per market (3 questions)
-      totalQuestions += 3;
+      // Category detection questions per market
+      const catDetQuestions = categoryDetectionQuestions?.[market.code] || [];
+      totalQuestions += catDetQuestions.length > 0 ? catDetQuestions.length : 3;
 
       // Category-specific questions per market
       categoryFamilies.forEach(cat => {
@@ -237,22 +238,27 @@ export async function runMultiMarketAnalysis(reportId, config, geminiApiKey, ope
         });
       }
 
-      // Category detection questions (translated if needed)
-      let categoryDetectionQuestions = buildCategoryDetectionQuestions(entity);
-      if (market.language && market.language.toLowerCase() !== 'english') {
-        try {
-          const translated = await translateQuestions(
-            { category: categoryDetectionQuestions },
-            market.language,
-            geminiApiKey
-          );
-          categoryDetectionQuestions = translated.category;
-        } catch (err) {
-          console.warn(`   ⚠️ Translation failed for ${market.code}, using English`);
+      // Category detection questions - use custom ones if provided, otherwise generate defaults
+      let catDetectionQuestions = categoryDetectionQuestions?.[market.code] || [];
+      if (catDetectionQuestions.length === 0) {
+        // Generate default questions
+        catDetectionQuestions = buildCategoryDetectionQuestions(entity);
+        // Translate if needed
+        if (market.language && market.language.toLowerCase() !== 'english') {
+          try {
+            const translated = await translateQuestions(
+              { category: catDetectionQuestions },
+              market.language,
+              geminiApiKey
+            );
+            catDetectionQuestions = translated.category;
+          } catch (err) {
+            console.warn(`   ⚠️ Translation failed for ${market.code}, using English`);
+          }
         }
       }
 
-      for (const question of categoryDetectionQuestions) {
+      for (const question of catDetectionQuestions) {
         allQuestionItems.push({
           type: 'category',
           marketCode: market.code,
