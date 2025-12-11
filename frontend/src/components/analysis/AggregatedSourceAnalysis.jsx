@@ -1,42 +1,16 @@
 import PropTypes from 'prop-types';
-import React, { useMemo, useState } from 'react';
-import { Link2, ExternalLink, ChevronDown, ChevronRight, Play } from 'lucide-react';
+import { useMemo } from 'react';
+import { Link2 } from 'lucide-react';
+import SourcesTable, { SOURCE_COLORS } from './SourcesTable';
 
 /**
  * AggregatedSourceAnalysis Component
  * Displays citation type breakdown and top domains aggregated across all categories
  */
 export default function AggregatedSourceAnalysis({ sourceAnalysis }) {
-  const [showAllDomains, setShowAllDomains] = useState(false);
-  const [expandedYouTube, setExpandedYouTube] = useState({});
-
   if (!sourceAnalysis) {
     return null;
   }
-
-  // Toggle YouTube expansion
-  const toggleYouTubeExpand = (domain) => {
-    setExpandedYouTube(prev => ({
-      ...prev,
-      [domain]: !prev[domain]
-    }));
-  };
-
-  // Color palette for source types (matches SourceAnalysis)
-  const SOURCE_COLORS = {
-    'Corporate Blogs & Content': '#4285F4',
-    'Social / UGC': '#34A853',
-    'Journalism': '#FBBC04',
-    'Aggregators / Encyclopedic': '#EA4335',
-    'Government / NGO': '#9C27B0',
-    'Academic / Research': '#FF9800',
-    'Press Release': '#607D8B',
-    'Owned Media': '#2E7D32',
-    'Competitor Media': '#C62828',
-    'Paid/Advertorial': '#00BCD4',
-    'Review Sites': '#795548',
-    'Other': '#9E9E9E'
-  };
 
   // Prepare stacked bar data from source type distribution
   const stackedBarData = useMemo(() => {
@@ -60,24 +34,45 @@ export default function AggregatedSourceAnalysis({ sourceAnalysis }) {
     return data;
   }, [sourceAnalysis]);
 
-  const topDomains = sourceAnalysis?.topDomains || [];
+  // Transform topDomains to match SourcesTable expected format
+  const transformedSources = useMemo(() => {
+    const topDomains = sourceAnalysis?.topDomains || [];
+    return topDomains.map(domain => ({
+      domain: domain.domain,
+      source_type: domain.sourceType,
+      sourceType: domain.sourceType,
+      citations: domain.citations,
+      isYouTube: domain.isYouTube,
+      youtube_channel: domain.youtubeChannel,
+      // Map videos/pages to urls array for SourcesTable
+      urls: domain.isYouTube && domain.videos
+        ? domain.videos.map(v => ({ url: v.url, title: v.title, citations: 1 }))
+        : domain.pages
+          ? domain.pages.map(p => ({ url: p.url, title: p.title, citations: 1 }))
+          : []
+    }));
+  }, [sourceAnalysis]);
 
   return (
-    <div className="space-y-6">
-      {/* Citation Type Breakdown - Horizontal Stacked Bar */}
-      {stackedBarData.length > 0 && (
-        <div className="bg-white border border-[#E0E0E0] rounded-lg p-6">
-          <div className="mb-6">
-            <h3 className="text-lg font-medium text-[#212121] mb-1">
-              Citation Type Breakdown
-            </h3>
+    <div className="bg-white border border-[#E0E0E0] rounded-lg p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <Link2 className="w-5 h-5 text-[#757575]" />
+          <div>
+            <h3 className="text-lg font-medium text-[#212121]">AI Citation Sources</h3>
             <p className="text-sm text-[#757575]">
-              Source distribution across all categories ({sourceAnalysis.totalSources || 0} sources)
+              {sourceAnalysis.totalSources || 0} sources across all categories
             </p>
           </div>
+        </div>
+      </div>
 
+      {/* Citation Type Breakdown - Horizontal Stacked Bar */}
+      {stackedBarData.length > 0 && (
+        <div className="mb-6">
           {/* Stacked Bar */}
-          <div className="h-10 rounded-lg overflow-hidden flex mb-4">
+          <div className="h-8 rounded-lg overflow-hidden flex mb-3">
             {stackedBarData.map((item, idx) => (
               <div
                 key={idx}
@@ -93,15 +88,15 @@ export default function AggregatedSourceAnalysis({ sourceAnalysis }) {
           </div>
 
           {/* Legend */}
-          <div className="flex flex-wrap gap-x-6 gap-y-2">
+          <div className="flex flex-wrap gap-x-5 gap-y-1.5">
             {stackedBarData.map((item, idx) => (
-              <div key={idx} className="flex items-center gap-2">
+              <div key={idx} className="flex items-center gap-1.5">
                 <div
-                  className="w-3 h-3 rounded-full flex-shrink-0"
+                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                   style={{ backgroundColor: item.color }}
                 />
-                <span className="text-sm text-[#212121] font-medium">{item.name}</span>
-                <span className="text-sm text-[#757575]">
+                <span className="text-xs text-[#212121] font-medium">{item.name}</span>
+                <span className="text-xs text-[#757575]">
                   {item.count} ({item.percentage.toFixed(0)}%)
                 </span>
               </div>
@@ -110,154 +105,14 @@ export default function AggregatedSourceAnalysis({ sourceAnalysis }) {
         </div>
       )}
 
-      {/* Top Citation Domains */}
-      {topDomains.length > 0 && (
-        <div className="bg-white border border-[#E0E0E0] rounded-lg p-6">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-2">
-              <Link2 className="w-5 h-5 text-[#757575]" />
-              <h3 className="text-lg font-medium text-[#212121]">Top Citation Sources</h3>
-            </div>
-            {topDomains.length > 10 && (
-              <button
-                onClick={() => setShowAllDomains(!showAllDomains)}
-                className="px-3 py-1.5 text-sm font-medium text-[#212121] bg-white border border-[#E0E0E0] rounded hover:bg-[#F5F5F5] transition-colors"
-              >
-                {showAllDomains ? 'Show Less' : 'Show All'}
-              </button>
-            )}
-          </div>
-          <p className="text-sm text-[#757575] mb-6">
-            Most frequently cited domains across all analyzed categories
-          </p>
-
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-[#E0E0E0]">
-                  <th className="text-left py-3 px-4 text-xs font-medium text-[#757575] uppercase tracking-wider">
-                    Domain
-                  </th>
-                  <th className="text-center py-3 px-4 text-xs font-medium text-[#757575] uppercase tracking-wider">
-                    Source Type
-                  </th>
-                  <th className="text-center py-3 px-4 text-xs font-medium text-[#757575] uppercase tracking-wider">
-                    Citations
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {(showAllDomains ? topDomains : topDomains.slice(0, 10)).map((domain, idx) => {
-                  const sourceTypeColor = SOURCE_COLORS[domain.sourceType] || SOURCE_COLORS['Other'];
-                  const domainInitial = domain.domain ? domain.domain.charAt(0).toUpperCase() : 'S';
-                  const isYouTube = domain.isYouTube && domain.videos && domain.videos.length > 0;
-                  const isExpanded = expandedYouTube[domain.domain];
-
-                  return (
-                    <React.Fragment key={idx}>
-                      <tr className={`border-b border-[#F5F5F5] hover:bg-[#FAFAFA] ${isYouTube ? 'cursor-pointer' : ''}`}
-                        onClick={isYouTube ? () => toggleYouTubeExpand(domain.domain) : undefined}
-                      >
-                        <td className="py-4 px-4">
-                          <div className="flex items-center gap-3">
-                            {/* YouTube expand/collapse icon */}
-                            {isYouTube && (
-                              <button className="p-1 hover:bg-[#E0E0E0] rounded transition-colors">
-                                {isExpanded ? (
-                                  <ChevronDown className="w-4 h-4 text-[#757575]" />
-                                ) : (
-                                  <ChevronRight className="w-4 h-4 text-[#757575]" />
-                                )}
-                              </button>
-                            )}
-                            <div className={`w-8 h-8 rounded ${isYouTube ? 'bg-red-100' : 'bg-[#F5F5F5]'} flex items-center justify-center text-xs font-medium ${isYouTube ? 'text-red-600' : 'text-[#757575]'} flex-shrink-0`}>
-                              {isYouTube ? (
-                                <Play className="w-4 h-4 fill-current" />
-                              ) : (
-                                domainInitial
-                              )}
-                            </div>
-                            {isYouTube ? (
-                              <div className="flex flex-col">
-                                <span className="text-sm font-medium text-[#212121]">
-                                  {domain.domain}
-                                </span>
-                                <span className="text-xs text-[#757575]">
-                                  {domain.videos.length} video{domain.videos.length !== 1 ? 's' : ''}
-                                </span>
-                              </div>
-                            ) : (
-                              <a
-                                href={`https://${domain.domain}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-sm font-medium text-[#212121] hover:text-[#1976D2] transition-colors flex items-center gap-1"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <span className="truncate max-w-[250px]">{domain.domain}</span>
-                                <ExternalLink className="w-3 h-3 flex-shrink-0 text-[#9E9E9E]" />
-                              </a>
-                            )}
-                          </div>
-                        </td>
-                        <td className="py-4 px-4 text-center">
-                          <span
-                            className="inline-flex px-2.5 py-1 text-xs font-medium rounded-full"
-                            style={{
-                              backgroundColor: `${sourceTypeColor}20`,
-                              color: sourceTypeColor
-                            }}
-                          >
-                            {domain.sourceType}
-                          </span>
-                        </td>
-                        <td className="py-4 px-4 text-center">
-                          <span className="text-sm font-medium text-[#212121]">
-                            {domain.citations}
-                          </span>
-                        </td>
-                      </tr>
-                      {/* YouTube videos expanded list */}
-                      {isYouTube && isExpanded && (
-                        <tr className="bg-[#FAFAFA]">
-                          <td colSpan={3} className="px-4 py-2">
-                            <div className="ml-12 space-y-2">
-                              {domain.videos.map((video, vidIdx) => (
-                                <div key={vidIdx} className="flex items-center gap-2 py-1.5 px-3 bg-white rounded border border-[#E0E0E0] hover:border-[#BDBDBD] transition-colors">
-                                  <Play className="w-3 h-3 text-red-500 flex-shrink-0" />
-                                  <a
-                                    href={video.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-sm text-[#212121] hover:text-[#1976D2] transition-colors flex-1 truncate"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    {video.title}
-                                  </a>
-                                  <ExternalLink className="w-3 h-3 text-[#9E9E9E] flex-shrink-0" />
-                                </div>
-                              ))}
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {!showAllDomains && topDomains.length > 10 && (
-            <div className="mt-4 text-center">
-              <button
-                onClick={() => setShowAllDomains(true)}
-                className="text-sm text-[#2196F3] hover:text-[#1976D2] font-medium"
-              >
-                Show {topDomains.length - 10} more domains
-              </button>
-            </div>
-          )}
+      {/* Top Citation Domains Table */}
+      {transformedSources.length > 0 && (
+        <div className="border-t border-[#E0E0E0] pt-5">
+          <SourcesTable
+            sources={transformedSources}
+            showUsageFrequency={false}
+            initialLimit={10}
+          />
         </div>
       )}
     </div>
@@ -274,11 +129,18 @@ AggregatedSourceAnalysis.propTypes = {
         citations: PropTypes.number,
         sourceType: PropTypes.string,
         isYouTube: PropTypes.bool,
+        youtubeChannel: PropTypes.string,
         videos: PropTypes.arrayOf(
           PropTypes.shape({
             url: PropTypes.string,
             title: PropTypes.string,
             videoId: PropTypes.string
+          })
+        ),
+        pages: PropTypes.arrayOf(
+          PropTypes.shape({
+            url: PropTypes.string,
+            title: PropTypes.string
           })
         )
       })

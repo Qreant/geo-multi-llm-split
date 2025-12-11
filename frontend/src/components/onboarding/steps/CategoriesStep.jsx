@@ -199,8 +199,8 @@ export default function CategoriesStep({ entity, markets, categoryFamilies, onCo
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {/* Detection Warnings */}
-                  {markets.some(m => !category.translations[m.code]?.detected) && category.source !== 'manual' && (
+                  {/* Detection Warnings - exclude "All Languages" markets which use canonical name */}
+                  {markets.some(m => m.language !== 'All Languages' && !category.translations[m.code]?.detected) && category.source !== 'manual' && (
                     <span className="flex items-center gap-1 text-xs text-[#F57C00]">
                       <AlertTriangle className="w-3 h-3" />
                       Partial
@@ -266,10 +266,12 @@ export default function CategoriesStep({ entity, markets, categoryFamilies, onCo
                           ) : (
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-medium text-[#212121]">
-                                {translation?.name || '—'}
+                                {market.language === 'All Languages'
+                                  ? category.canonical_name
+                                  : (translation?.name || '—')}
                               </span>
 
-                              {!translation?.detected && category.source !== 'manual' && (
+                              {!translation?.detected && category.source !== 'manual' && market.language !== 'All Languages' && (
                                 <span className="px-1.5 py-0.5 text-xs bg-[#FFF3E0] text-[#F57C00] rounded">
                                   Translated
                                 </span>

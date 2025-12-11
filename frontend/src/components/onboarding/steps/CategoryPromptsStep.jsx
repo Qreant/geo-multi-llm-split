@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
-import { ChevronDown, ChevronUp, Edit2, RotateCcw, ArrowLeft, ArrowRight, Loader, Target } from 'lucide-react';
+import { ChevronDown, ChevronUp, Edit2, RotateCcw, ArrowLeft, ArrowRight, Loader, Target, Plus, X } from 'lucide-react';
 
 // English visibility templates (will be translated by LLM for other languages)
 const ENGLISH_VISIBILITY_TEMPLATES = [
@@ -162,49 +162,123 @@ export default function CategoryPromptsStep({ entity, markets, categoryFamilies,
     setEditingQuestion(null);
   };
 
+  const addQuestion = (type) => {
+    const existingQuestions = categoryQuestions[selectedMarket]?.[selectedCategory]?.[type] || [];
+    const prefix = type === 'visibility' ? 'VIS' : 'COMP';
+    const newId = `${prefix}_Q${existingQuestions.length + 1}_${Date.now()}`;
+    const newQuestion = {
+      id: newId,
+      type,
+      question: '',
+      editable: true,
+      isCustom: true
+    };
+    setCategoryQuestions(prev => ({
+      ...prev,
+      [selectedMarket]: {
+        ...prev[selectedMarket],
+        [selectedCategory]: {
+          ...prev[selectedMarket]?.[selectedCategory],
+          [type]: [...(prev[selectedMarket]?.[selectedCategory]?.[type] || []), newQuestion]
+        }
+      }
+    }));
+    // Auto-focus the new question for editing
+    setEditingQuestion(`${type}-${selectedMarket}-${selectedCategory}-${existingQuestions.length}`);
+  };
+
+  const removeQuestion = (type, index) => {
+    setCategoryQuestions(prev => ({
+      ...prev,
+      [selectedMarket]: {
+        ...prev[selectedMarket],
+        [selectedCategory]: {
+          ...prev[selectedMarket]?.[selectedCategory],
+          [type]: prev[selectedMarket]?.[selectedCategory]?.[type]?.filter((_, i) => i !== index)
+        }
+      }
+    }));
+  };
+
   const currentMarket = markets.find(m => m.code === selectedMarket) || markets[0];
   const currentCategory = categoryFamilies.find(c => c.id === selectedCategory) || categoryFamilies[0];
   const currentQuestions = categoryQuestions[selectedMarket]?.[selectedCategory] || {};
 
-  // Helper to render question list
-  const renderQuestionList = (questionList, type) => (
-    <div className="space-y-2">
-      {(questionList || []).map((q, index) => {
-        const isEditing = editingQuestion === `${type}-${selectedMarket}-${selectedCategory}-${index}`;
-        return (
-          <div
-            key={q.id}
-            className="flex items-start gap-3 p-3 bg-white rounded border border-[#E0E0E0]"
-          >
-            <span className="text-xs text-[#9E9E9E] font-mono w-16 pt-1">{q.id}</span>
-            {isEditing ? (
-              <input
-                type="text"
-                defaultValue={q.question}
-                autoFocus
-                className="flex-1 px-3 py-2 text-sm border border-[#10B981] rounded focus:outline-none focus:ring-1 focus:ring-[#10B981]"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') updateQuestion(type, index, e.target.value);
-                  if (e.key === 'Escape') setEditingQuestion(null);
-                }}
-                onBlur={(e) => updateQuestion(type, index, e.target.value)}
-              />
-            ) : (
-              <>
-                <span className="flex-1 text-sm text-[#212121]">{q.question}</span>
-                <button
-                  onClick={() => setEditingQuestion(`${type}-${selectedMarket}-${selectedCategory}-${index}`)}
-                  className="p-1 text-[#757575] hover:text-[#10B981] hover:bg-[#E8F5E9] rounded transition-colors"
-                >
-                  <Edit2 className="w-4 h-4" />
-                </button>
-              </>
-            )}
-          </div>
-        );
-      })}
-    </div>
+  // Check if all markets/categories have valid questions (no empty questions)
+  const hasEmptyQuestions = Object.values(categoryQuestions).some(marketData =>
+    Object.values(marketData || {}).some(categoryData =>
+      (categoryData?.visibility || []).some(q => !q.question?.trim()) ||
+      (categoryData?.competitive || []).some(q => !q.question?.trim())
+    )
   );
+  const canProceed = !hasEmptyQuestions && Object.keys(categoryQuestions).length > 0;
+
+  // Helper to render question list
+  const renderQuestionList = (questionList, type) => {
+    const canDelete = (questionList || []).length > 1;
+    return (
+      <div className="space-y-2">
+        {(questionList || []).map((q, index) => {
+          const isEditing = editingQuestion === `${type}-${selectedMarket}-${selectedCategory}-${index}`;
+          return (
+            <div
+              key={q.id}
+              className="flex items-start gap-3 p-3 bg-white rounded border border-[#E0E0E0]"
+            >
+              <span className="text-xs text-[#9E9E9E] font-mono w-16 pt-1">{q.id}</span>
+              {isEditing ? (
+                <input
+                  type="text"
+                  defaultValue={q.question}
+                  autoFocus
+                  placeholder="Enter your question..."
+                  className="flex-1 px-3 py-2 text-sm border border-[#10B981] rounded focus:outline-none focus:ring-1 focus:ring-[#10B981]"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') updateQuestion(type, index, e.target.value);
+                    if (e.key === 'Escape') setEditingQuestion(null);
+                  }}
+                  onBlur={(e) => updateQuestion(type, index, e.target.value)}
+                />
+              ) : (
+                <>
+                  <span className={`flex-1 text-sm ${q.question ? 'text-[#212121]' : 'text-[#9E9E9E] italic'}`}>
+                    {q.question || 'Click edit to add question...'}
+                  </span>
+                  <button
+                    onClick={() => setEditingQuestion(`${type}-${selectedMarket}-${selectedCategory}-${index}`)}
+                    className="p-1 text-[#757575] hover:text-[#10B981] hover:bg-[#E8F5E9] rounded transition-colors"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => removeQuestion(type, index)}
+                    disabled={!canDelete}
+                    className={`p-1 rounded transition-colors ${
+                      canDelete
+                        ? 'text-[#757575] hover:text-red-500 hover:bg-red-50'
+                        : 'text-[#E0E0E0] cursor-not-allowed'
+                    }`}
+                    title={canDelete ? 'Remove question' : 'At least one question is required'}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </>
+              )}
+            </div>
+          );
+        })}
+
+        {/* Add Question Button */}
+        <button
+          onClick={() => addQuestion(type)}
+          className="w-full flex items-center justify-center gap-2 p-3 border-2 border-dashed border-[#E0E0E0] rounded hover:border-[#10B981] hover:bg-[#E8F5E9] text-[#757575] hover:text-[#10B981] transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          <span className="text-sm font-medium">Add Question</span>
+        </button>
+      </div>
+    );
+  };
 
   if (loading) {
     return (
@@ -357,6 +431,15 @@ export default function CategoryPromptsStep({ entity, markets, categoryFamilies,
         )}
       </div>
 
+      {/* Validation Warning */}
+      {hasEmptyQuestions && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <p className="text-sm text-amber-700">
+            <strong>Warning:</strong> Some questions are empty. Please fill in all questions before continuing.
+          </p>
+        </div>
+      )}
+
       {/* Navigation */}
       <div className="flex justify-between">
         <button
@@ -368,7 +451,13 @@ export default function CategoryPromptsStep({ entity, markets, categoryFamilies,
         </button>
         <button
           onClick={() => onComplete(categoryQuestions)}
-          className="px-6 py-3 bg-[#10B981] text-white font-medium rounded-lg hover:bg-[#059669] transition-colors flex items-center gap-2"
+          disabled={!canProceed}
+          className={`px-6 py-3 font-medium rounded-lg transition-colors flex items-center gap-2 ${
+            canProceed
+              ? 'bg-[#10B981] text-white hover:bg-[#059669]'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          }`}
+          title={!canProceed ? 'Please fill in all questions' : ''}
         >
           Review & Launch
           <ArrowRight className="w-5 h-5" />

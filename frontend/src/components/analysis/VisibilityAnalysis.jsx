@@ -1,7 +1,38 @@
-import { useState, useMemo } from 'react';
-import { Trophy, AlertCircle, TrendingUp, Eye, Sparkles, MessageSquare, ChevronDown, ChevronRight, Layers } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { Trophy, AlertCircle, TrendingUp, Eye, ChevronDown, ChevronRight, Layers, BarChart3 } from 'lucide-react';
 import SourceAnalysis from './SourceAnalysis';
 import EntityTrendsChart from './EntityTrendsChart';
+
+/**
+ * Generate Brandfetch logo URL from brand name
+ * Uses the simple hotlinking format: https://cdn.brandfetch.io/:domain?c=CLIENT_ID
+ */
+function generateBrandLogoUrl(brandName) {
+  // Get client ID from environment
+  const clientId = import.meta.env.VITE_LOGO_API_KEY;
+  if (!clientId || !brandName) return null;
+
+  // Convert brand name to likely domain
+  const domain = brandName
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, '')
+    .trim() + '.com';
+
+  // Use the simple hotlinking format from Brandfetch docs
+  return `https://cdn.brandfetch.io/${domain}?c=${clientId}`;
+}
+
+/**
+ * Generate Brandfetch logo URL for LLM providers
+ */
+function getLLMLogoUrl(llm) {
+  const clientId = import.meta.env.VITE_LOGO_API_KEY;
+  if (!clientId) return null;
+
+  const domain = llm === 'gemini' ? 'google.com' : 'openai.com';
+  return `https://cdn.brandfetch.io/${domain}?c=${clientId}`;
+}
 
 /**
  * VisibilityAnalysis Component
@@ -232,99 +263,139 @@ export default function VisibilityAnalysis({ data, entity, allSources = [], sele
         </p>
       </div>
 
-      {/* Top Metrics Grid - 2 columns for summary cards */}
-      <div className="grid grid-cols-2 gap-6">
+      {/* Top Metrics Grid - 3 columns for summary cards */}
+      <div className="grid grid-cols-3 gap-4">
         {/* Brand Visibility Card */}
-        <div className="bg-white border border-[#E0E0E0] rounded-lg p-6">
-          <h3 className="text-lg font-medium text-[#212121] mb-1">Brand Visibility</h3>
-          <p className="text-sm text-[#757575] mb-6">Percentage of answers mentioning your brand</p>
+        <div className="bg-white border border-[#E0E0E0] rounded-lg p-5">
+          <h3 className="text-base font-medium text-[#212121] mb-0.5">Brand Visibility</h3>
+          <p className="text-xs text-[#757575] mb-4">Answers mentioning your brand</p>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             {/* Circular Progress */}
-            <div className="relative w-32 h-32">
-              <svg className="transform -rotate-90 w-32 h-32">
+            <div className="relative w-20 h-20 flex-shrink-0">
+              <svg className="transform -rotate-90 w-20 h-20">
                 <circle
-                  cx="64"
-                  cy="64"
-                  r="56"
+                  cx="40"
+                  cy="40"
+                  r="34"
                   stroke="#F5F5F5"
-                  strokeWidth="8"
+                  strokeWidth="6"
                   fill="none"
                 />
                 <circle
-                  cx="64"
-                  cy="64"
-                  r="56"
+                  cx="40"
+                  cy="40"
+                  r="34"
                   stroke="#2196F3"
-                  strokeWidth="8"
+                  strokeWidth="6"
                   fill="none"
-                  strokeDasharray={`${2 * Math.PI * 56}`}
-                  strokeDashoffset={`${2 * Math.PI * 56 * (1 - visibilityPercent / 100)}`}
+                  strokeDasharray={`${2 * Math.PI * 34}`}
+                  strokeDashoffset={`${2 * Math.PI * 34 * (1 - visibilityPercent / 100)}`}
                   strokeLinecap="round"
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <Eye className="w-8 h-8 text-[#2196F3]" />
+                <Eye className="w-5 h-5 text-[#2196F3]" />
               </div>
             </div>
 
             {/* Metrics */}
             <div>
-              <div className="text-4xl font-light text-[#212121] mb-2">
-                {visibilityPercent.toFixed(2)}%
+              <div className="text-3xl font-light text-[#212121]">
+                {visibilityPercent.toFixed(0)}%
               </div>
-              <div className="text-sm text-[#757575]">
-                Average Position <span className="font-medium text-[#212121]">{avgPosition.toFixed(1)}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Average Position Card */}
+        <div className="bg-white border border-[#E0E0E0] rounded-lg p-5">
+          <h3 className="text-base font-medium text-[#212121] mb-0.5">Average Position</h3>
+          <p className="text-xs text-[#757575] mb-4">Typical rank in AI responses</p>
+
+          <div className="flex items-center gap-4">
+            {/* Circular Progress - Position based (1 is best, lower is better) */}
+            <div className="relative w-20 h-20 flex-shrink-0">
+              <svg className="transform -rotate-90 w-20 h-20">
+                <circle
+                  cx="40"
+                  cy="40"
+                  r="34"
+                  stroke="#F5F5F5"
+                  strokeWidth="6"
+                  fill="none"
+                />
+                <circle
+                  cx="40"
+                  cy="40"
+                  r="34"
+                  stroke="#9C27B0"
+                  strokeWidth="6"
+                  fill="none"
+                  strokeDasharray={`${2 * Math.PI * 34}`}
+                  strokeDashoffset={`${2 * Math.PI * 34 * (Math.min(avgPosition, 5) / 5)}`}
+                  strokeLinecap="round"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-[#9C27B0]" />
+              </div>
+            </div>
+
+            {/* Metrics */}
+            <div>
+              <div className="text-3xl font-light text-[#212121]">
+                #{avgPosition.toFixed(1)}
               </div>
             </div>
           </div>
         </div>
 
         {/* Brand Share of Voice Card */}
-        <div className="bg-white border border-[#E0E0E0] rounded-lg p-6">
-          <h3 className="text-lg font-medium text-[#212121] mb-1">Brand Share of Voice</h3>
-          <p className="text-sm text-[#757575] mb-6">Visibility weighted by average position</p>
+        <div className="bg-white border border-[#E0E0E0] rounded-lg p-5">
+          <h3 className="text-base font-medium text-[#212121] mb-0.5">Share of Voice</h3>
+          <p className="text-xs text-[#757575] mb-4">Visibility weighted by position</p>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             {/* Circular Progress */}
-            <div className="relative w-32 h-32">
-              <svg className="transform -rotate-90 w-32 h-32">
+            <div className="relative w-20 h-20 flex-shrink-0">
+              <svg className="transform -rotate-90 w-20 h-20">
                 <circle
-                  cx="64"
-                  cy="64"
-                  r="56"
+                  cx="40"
+                  cy="40"
+                  r="34"
                   stroke="#F5F5F5"
-                  strokeWidth="8"
+                  strokeWidth="6"
                   fill="none"
                 />
                 <circle
-                  cx="64"
-                  cy="64"
-                  r="56"
+                  cx="40"
+                  cy="40"
+                  r="34"
                   stroke={sovStatusColor}
-                  strokeWidth="8"
+                  strokeWidth="6"
                   fill="none"
-                  strokeDasharray={`${2 * Math.PI * 56}`}
-                  strokeDashoffset={`${2 * Math.PI * 56 * (1 - sovPercent / 100)}`}
+                  strokeDasharray={`${2 * Math.PI * 34}`}
+                  strokeDashoffset={`${2 * Math.PI * 34 * (1 - sovPercent / 100)}`}
                   strokeLinecap="round"
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <TrendingUp className="w-8 h-8" style={{ color: sovStatusColor }} />
+                <TrendingUp className="w-5 h-5" style={{ color: sovStatusColor }} />
               </div>
             </div>
 
             {/* Metrics */}
             <div>
-              <div className="text-4xl font-light text-[#212121] mb-2">
-                {sovPercent.toFixed(2)}%
+              <div className="text-3xl font-light text-[#212121]">
+                {sovPercent.toFixed(0)}%
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 mt-1">
                 <div
-                  className="w-3 h-3 rounded-full"
+                  className="w-2 h-2 rounded-full"
                   style={{ backgroundColor: sovStatusColor }}
                 />
-                <span className="text-sm font-medium" style={{ color: sovStatusColor }}>
+                <span className="text-xs font-medium" style={{ color: sovStatusColor }}>
                   {sovStatus}
                 </span>
               </div>
@@ -394,13 +465,39 @@ export default function VisibilityAnalysis({ data, entity, allSources = [], sele
                       {index > 0 && <span className="text-sm font-medium text-[#757575]">{index + 1}</span>}
                     </div>
 
-                    {/* Brand Name with expand indicator */}
-                    <div className="flex-1 min-w-0 flex items-center gap-2">
+                    {/* Brand Logo with fallback */}
+                    <div className="w-6 h-6 flex-shrink-0 relative">
+                      <img
+                        src={generateBrandLogoUrl(competitor.name)}
+                        alt=""
+                        className="w-6 h-6 object-contain"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          if (e.target.nextElementSibling) e.target.nextElementSibling.style.display = 'flex';
+                        }}
+                      />
+                      <div
+                        className="w-6 h-6 rounded bg-[#E0E0E0] items-center justify-center text-xs font-medium text-[#757575]"
+                        style={{ display: 'none' }}
+                      >
+                        {competitor.name?.charAt(0)?.toUpperCase() || '?'}
+                      </div>
+                    </div>
+
+                    {/* Expand arrow (if has variants) - fixed width container */}
+                    <div className="w-5 flex-shrink-0">
                       {hasVariants && (
-                        isExpanded
-                          ? <ChevronDown className="w-4 h-4 text-[#757575] flex-shrink-0" />
-                          : <ChevronRight className="w-4 h-4 text-[#757575] flex-shrink-0" />
+                        <div className="flex items-center justify-center">
+                          {isExpanded
+                            ? <ChevronDown className="w-4 h-4 text-[#757575]" />
+                            : <ChevronRight className="w-4 h-4 text-[#757575]" />
+                          }
+                        </div>
                       )}
+                    </div>
+
+                    {/* Brand Name */}
+                    <div className="flex-1 min-w-0 flex items-center gap-2">
                       <div className="text-sm font-medium text-[#212121] truncate">
                         {competitor.name}
                       </div>
@@ -540,9 +637,9 @@ export default function VisibilityAnalysis({ data, entity, allSources = [], sele
 
             <div className="space-y-4">
               {rankedFirstEntries.map((entry) => (
-                <div key={entry.key} className="bg-[#E8F5E9] border border-[#4CAF50] rounded-lg p-6">
+                <div key={entry.key} className="bg-green-50 border border-green-200 rounded-xl p-6">
                   <div className="flex items-start gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-[#4CAF50] flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
                       <Trophy className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1">
@@ -582,11 +679,14 @@ export default function VisibilityAnalysis({ data, entity, allSources = [], sele
                   {entry.bothAgree ? (
                     <div className="space-y-3">
                       {entry.gemini && (
-                        <div className="bg-white border-l-4 border-[#4CAF50] p-4 rounded">
+                        <div className="bg-white border-l-4 border-green-500 p-4 rounded-lg">
                           <div className="flex items-center gap-2 mb-2">
-                            <div className="w-6 h-6 rounded bg-[#4285F4] flex items-center justify-center">
-                              <Sparkles className="w-3.5 h-3.5 text-white" />
-                            </div>
+                            <img
+                              src={getLLMLogoUrl('gemini')}
+                              alt="Gemini"
+                              className="w-5 h-5 rounded object-contain"
+                              onError={(e) => { e.target.style.display = 'none'; }}
+                            />
                             <span className="text-sm font-medium text-[#212121]">Gemini</span>
                             <span className="text-xs text-[#757575]">— Why {entity} is ranked #1:</span>
                           </div>
@@ -606,11 +706,14 @@ export default function VisibilityAnalysis({ data, entity, allSources = [], sele
                         </div>
                       )}
                       {entry.openai && (
-                        <div className="bg-white border-l-4 border-[#4CAF50] p-4 rounded">
+                        <div className="bg-white border-l-4 border-green-500 p-4 rounded-lg">
                           <div className="flex items-center gap-2 mb-2">
-                            <div className="w-6 h-6 rounded bg-[#10A37F] flex items-center justify-center">
-                              <MessageSquare className="w-3.5 h-3.5 text-white" />
-                            </div>
+                            <img
+                              src={getLLMLogoUrl('openai')}
+                              alt="ChatGPT"
+                              className="w-5 h-5 rounded object-contain"
+                              onError={(e) => { e.target.style.display = 'none'; }}
+                            />
                             <span className="text-sm font-medium text-[#212121]">ChatGPT</span>
                             <span className="text-xs text-[#757575]">— Why {entity} is ranked #1:</span>
                           </div>
@@ -632,17 +735,14 @@ export default function VisibilityAnalysis({ data, entity, allSources = [], sele
                     </div>
                   ) : (
                     /* Single LLM ranked target #1 (disagreement) */
-                    <div className="bg-white border-l-4 border-[#4CAF50] p-4 rounded">
+                    <div className="bg-white border-l-4 border-green-500 p-4 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
-                        {entry.llm === 'gemini' ? (
-                          <div className="w-6 h-6 rounded bg-[#4285F4] flex items-center justify-center">
-                            <Sparkles className="w-3.5 h-3.5 text-white" />
-                          </div>
-                        ) : (
-                          <div className="w-6 h-6 rounded bg-[#10A37F] flex items-center justify-center">
-                            <MessageSquare className="w-3.5 h-3.5 text-white" />
-                          </div>
-                        )}
+                        <img
+                          src={getLLMLogoUrl(entry.llm)}
+                          alt={entry.llm === 'gemini' ? 'Gemini' : 'ChatGPT'}
+                          className="w-5 h-5 rounded object-contain"
+                          onError={(e) => { e.target.style.display = 'none'; }}
+                        />
                         <span className="text-sm font-medium text-[#212121]">{entry.llm === 'gemini' ? 'Gemini' : 'ChatGPT'}</span>
                         <span className="text-xs text-[#757575]">— Why {entity} is ranked #1:</span>
                       </div>
@@ -761,8 +861,8 @@ export default function VisibilityAnalysis({ data, entity, allSources = [], sele
               {notRankedFirstEntries.map((entry) => (
                 <div key={entry.key} className="bg-white border border-[#E0E0E0] rounded-lg p-6">
                   <div className="flex items-start gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-[#FFEBEE] flex items-center justify-center flex-shrink-0">
-                      <AlertCircle className="w-5 h-5 text-[#EF5350]" />
+                    <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                      <AlertCircle className="w-5 h-5 text-red-500" />
                     </div>
                     <div className="flex-1">
                       <h4 className="text-base font-medium text-[#212121] mb-3">
@@ -819,11 +919,14 @@ export default function VisibilityAnalysis({ data, entity, allSources = [], sele
                   {entry.bothAgree ? (
                     <div className="space-y-3">
                       {entry.gemini && (
-                        <div className="bg-[#FFEBEE] border-l-4 border-[#EF5350] p-4 rounded">
+                        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
                           <div className="flex items-center gap-2 mb-2">
-                            <div className="w-6 h-6 rounded bg-[#4285F4] flex items-center justify-center">
-                              <Sparkles className="w-3.5 h-3.5 text-white" />
-                            </div>
+                            <img
+                              src={getLLMLogoUrl('gemini')}
+                              alt="Gemini"
+                              className="w-5 h-5 rounded object-contain"
+                              onError={(e) => { e.target.style.display = 'none'; }}
+                            />
                             <span className="text-sm font-medium text-[#212121]">Gemini</span>
                             <span className="text-xs text-[#757575]">— Why {entry.gemini.topBrand} was chosen:</span>
                           </div>
@@ -831,7 +934,7 @@ export default function VisibilityAnalysis({ data, entity, allSources = [], sele
                             {entry.gemini.comment}
                           </p>
                           {entry.gemini.targetComment && (
-                            <div className="mt-3 pt-3 border-t border-[#FFCDD2]">
+                            <div className="mt-3 pt-3 border-t border-red-200">
                               <p className="text-xs text-[#757575] mb-1">{entity} Status:</p>
                               <p className="text-sm text-[#212121]">
                                 {entry.gemini.targetComment}
@@ -839,7 +942,7 @@ export default function VisibilityAnalysis({ data, entity, allSources = [], sele
                             </div>
                           )}
                           {entry.gemini.sources?.length > 0 && (
-                            <div className="mt-3 pt-3 border-t border-[#FFCDD2]">
+                            <div className="mt-3 pt-3 border-t border-red-200">
                               <p className="text-xs text-[#757575] mb-1">Associated Sources:</p>
                               {entry.gemini.sources.slice(0, 2).map((source, idx) => (
                                 <a key={idx} href={source.url} target="_blank" rel="noopener noreferrer" className="block text-xs text-[#2196F3] hover:underline">
@@ -851,11 +954,14 @@ export default function VisibilityAnalysis({ data, entity, allSources = [], sele
                         </div>
                       )}
                       {entry.openai && (
-                        <div className="bg-[#FFEBEE] border-l-4 border-[#EF5350] p-4 rounded">
+                        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
                           <div className="flex items-center gap-2 mb-2">
-                            <div className="w-6 h-6 rounded bg-[#10A37F] flex items-center justify-center">
-                              <MessageSquare className="w-3.5 h-3.5 text-white" />
-                            </div>
+                            <img
+                              src={getLLMLogoUrl('openai')}
+                              alt="ChatGPT"
+                              className="w-5 h-5 rounded object-contain"
+                              onError={(e) => { e.target.style.display = 'none'; }}
+                            />
                             <span className="text-sm font-medium text-[#212121]">ChatGPT</span>
                             <span className="text-xs text-[#757575]">— Why {entry.openai.topBrand} was chosen:</span>
                           </div>
@@ -863,7 +969,7 @@ export default function VisibilityAnalysis({ data, entity, allSources = [], sele
                             {entry.openai.comment}
                           </p>
                           {entry.openai.targetComment && (
-                            <div className="mt-3 pt-3 border-t border-[#FFCDD2]">
+                            <div className="mt-3 pt-3 border-t border-red-200">
                               <p className="text-xs text-[#757575] mb-1">{entity} Status:</p>
                               <p className="text-sm text-[#212121]">
                                 {entry.openai.targetComment}
@@ -871,7 +977,7 @@ export default function VisibilityAnalysis({ data, entity, allSources = [], sele
                             </div>
                           )}
                           {entry.openai.sources?.length > 0 && (
-                            <div className="mt-3 pt-3 border-t border-[#FFCDD2]">
+                            <div className="mt-3 pt-3 border-t border-red-200">
                               <p className="text-xs text-[#757575] mb-1">Associated Sources:</p>
                               {entry.openai.sources.slice(0, 2).map((source, idx) => (
                                 <a key={idx} href={source.url} target="_blank" rel="noopener noreferrer" className="block text-xs text-[#2196F3] hover:underline">
@@ -885,17 +991,14 @@ export default function VisibilityAnalysis({ data, entity, allSources = [], sele
                     </div>
                   ) : (
                     /* Single LLM did NOT rank target #1 (disagreement) - one card */
-                    <div className="bg-[#FFEBEE] border-l-4 border-[#EF5350] p-4 rounded">
+                    <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
-                        {entry.llm === 'gemini' ? (
-                          <div className="w-6 h-6 rounded bg-[#4285F4] flex items-center justify-center">
-                            <Sparkles className="w-3.5 h-3.5 text-white" />
-                          </div>
-                        ) : (
-                          <div className="w-6 h-6 rounded bg-[#10A37F] flex items-center justify-center">
-                            <MessageSquare className="w-3.5 h-3.5 text-white" />
-                          </div>
-                        )}
+                        <img
+                          src={getLLMLogoUrl(entry.llm)}
+                          alt={entry.llm === 'gemini' ? 'Gemini' : 'ChatGPT'}
+                          className="w-5 h-5 rounded object-contain"
+                          onError={(e) => { e.target.style.display = 'none'; }}
+                        />
                         <span className="text-sm font-medium text-[#212121]">{entry.llm === 'gemini' ? 'Gemini' : 'ChatGPT'}</span>
                         <span className="text-xs text-[#757575]">— Why {entry.topBrand} was chosen:</span>
                       </div>
@@ -903,7 +1006,7 @@ export default function VisibilityAnalysis({ data, entity, allSources = [], sele
                         {entry.comment}
                       </p>
                       {entry.targetComment && (
-                        <div className="mt-3 pt-3 border-t border-[#FFCDD2]">
+                        <div className="mt-3 pt-3 border-t border-red-200">
                           <p className="text-xs text-[#757575] mb-1">{entity} Status:</p>
                           <p className="text-sm text-[#212121]">
                             {entry.targetComment}
@@ -911,7 +1014,7 @@ export default function VisibilityAnalysis({ data, entity, allSources = [], sele
                         </div>
                       )}
                       {entry.sources?.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-[#FFCDD2]">
+                        <div className="mt-3 pt-3 border-t border-red-200">
                           <p className="text-xs text-[#757575] mb-1">Associated Sources:</p>
                           {entry.sources.slice(0, 2).map((source, idx) => (
                             <a key={idx} href={source.url} target="_blank" rel="noopener noreferrer" className="block text-xs text-[#2196F3] hover:underline">

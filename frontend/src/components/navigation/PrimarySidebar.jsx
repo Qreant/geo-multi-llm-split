@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Globe, TrendingUp, Eye, Trophy, ChevronDown, ChevronUp, Lightbulb, MapPin, LayoutDashboard, Sparkles, MessageSquare } from 'lucide-react';
+import { Globe, TrendingUp, Eye, Trophy, ChevronDown, ChevronUp, Lightbulb, LayoutDashboard } from 'lucide-react';
 import PropTypes from 'prop-types';
 
 /**
@@ -16,12 +16,6 @@ const PrimarySidebar = ({
   report,
   // Multi-market props
   isMultiMarket,
-  markets,
-  selectedMarket,
-  onMarketChange,
-  // LLM filter props
-  selectedLLMs,
-  onLLMToggle,
   // Shared view mode
   isSharedView = false
 }) => {
@@ -43,77 +37,6 @@ const PrimarySidebar = ({
 
   return (
     <div className="card-base p-4">
-      {/* Market Selector Section - Only for multi-market reports */}
-      {isMultiMarket && markets && markets.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-xs font-semibold text-[#9E9E9E] uppercase tracking-wide mb-3">
-            Market
-          </h3>
-
-          <div className="relative">
-            <select
-              value={selectedMarket || ''}
-              onChange={(e) => onMarketChange && onMarketChange(e.target.value)}
-              className="w-full appearance-none bg-white border border-[#E0E0E0] rounded-lg px-3 py-2 pr-8 text-sm font-medium text-[#212121] cursor-pointer hover:border-[#2196F3] focus:outline-none focus:ring-2 focus:ring-[#2196F3]/20 focus:border-[#2196F3] transition-colors"
-            >
-              {markets.map((market) => (
-                <option key={market.code} value={market.code}>
-                  {market.country} ({market.language})
-                  {market.isPrimary ? ' ★' : ''}
-                </option>
-              ))}
-            </select>
-            <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#757575] pointer-events-none" />
-          </div>
-
-          {/* Market count badge */}
-          <div className="mt-2 text-xs text-[#757575]">
-            {markets.length} market{markets.length !== 1 ? 's' : ''} analyzed
-          </div>
-        </div>
-      )}
-
-      {/* LLM Filter Section */}
-      {selectedLLMs && onLLMToggle && (
-        <div className="mb-6">
-          <h3 className="text-xs font-semibold text-[#9E9E9E] uppercase tracking-wide mb-3">
-            Data Source
-          </h3>
-          <div className="space-y-2">
-            {/* Gemini Toggle */}
-            <button
-              onClick={() => onLLMToggle('gemini')}
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                selectedLLMs.includes('gemini')
-                  ? 'bg-[#E8F0FE] text-[#4285F4]'
-                  : 'bg-[#F5F5F5] text-[#9E9E9E] opacity-50 hover:opacity-70'
-              }`}
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>Gemini</span>
-              {selectedLLMs.includes('gemini') && (
-                <span className="ml-auto w-2 h-2 rounded-full bg-[#4285F4]" />
-              )}
-            </button>
-            {/* ChatGPT Toggle */}
-            <button
-              onClick={() => onLLMToggle('openai')}
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                selectedLLMs.includes('openai')
-                  ? 'bg-[#E6F4F1] text-[#10A37F]'
-                  : 'bg-[#F5F5F5] text-[#9E9E9E] opacity-50 hover:opacity-70'
-              }`}
-            >
-              <MessageSquare className="w-4 h-4" />
-              <span>ChatGPT</span>
-              {selectedLLMs.includes('openai') && (
-                <span className="ml-auto w-2 h-2 rounded-full bg-[#10A37F]" />
-              )}
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Overview Section - Show for multi-market OR multi-category */}
       {(isMultiMarket || categories.length > 1) && (
         <div className="mb-6">
@@ -121,15 +44,27 @@ const PrimarySidebar = ({
             Overview
           </h3>
 
-          <button
-            onClick={() => handleViewChange({ type: 'overview' })}
-            className={`nav-item ${
-              activeView.type === 'overview' ? 'nav-item-active' : ''
-            }`}
-          >
-            <LayoutDashboard className="w-4 h-4" />
-            <span>Cross-Category Overview</span>
-          </button>
+          <div className="space-y-1">
+            <button
+              onClick={() => handleViewChange({ type: 'overview' })}
+              className={`nav-item ${
+                activeView.type === 'overview' ? 'nav-item-active' : ''
+              }`}
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              <span>Overview</span>
+            </button>
+
+            <button
+              onClick={() => handleViewChange({ type: 'insights' })}
+              className={`nav-item ${
+                activeView.type === 'insights' ? 'nav-item-active' : ''
+              }`}
+            >
+              <Lightbulb className="w-4 h-4" />
+              <span>PR Insights</span>
+            </button>
+          </div>
         </div>
       )}
 
@@ -222,23 +157,6 @@ const PrimarySidebar = ({
         </div>
       )}
 
-      {/* PR Insights Section */}
-      <div className="mb-6">
-        <h3 className="text-xs font-semibold text-[#9E9E9E] uppercase tracking-wide mb-3">
-          Recommendations
-        </h3>
-
-        <button
-          onClick={() => handleViewChange({ type: 'insights' })}
-          className={`nav-item ${
-            activeView.type === 'insights' ? 'nav-item-active' : ''
-          }`}
-        >
-          <Lightbulb className="w-4 h-4" />
-          <span>PR Insights</span>
-        </button>
-      </div>
-
       {/* Locations Section - Only for non-multi-market reports */}
       {!isMultiMarket && (
         <div>
@@ -278,22 +196,7 @@ PrimarySidebar.propTypes = {
   countries: PropTypes.arrayOf(PropTypes.string),
   languages: PropTypes.arrayOf(PropTypes.string),
   report: PropTypes.object,
-  // Multi-market props
   isMultiMarket: PropTypes.bool,
-  markets: PropTypes.arrayOf(
-    PropTypes.shape({
-      code: PropTypes.string.isRequired,
-      country: PropTypes.string.isRequired,
-      language: PropTypes.string.isRequired,
-      isPrimary: PropTypes.bool
-    })
-  ),
-  selectedMarket: PropTypes.string,
-  onMarketChange: PropTypes.func,
-  // LLM filter props
-  selectedLLMs: PropTypes.arrayOf(PropTypes.string),
-  onLLMToggle: PropTypes.func,
-  // Shared view mode
   isSharedView: PropTypes.bool
 };
 
@@ -303,11 +206,6 @@ PrimarySidebar.defaultProps = {
   countries: [],
   languages: [],
   isMultiMarket: false,
-  markets: [],
-  selectedMarket: null,
-  onMarketChange: null,
-  selectedLLMs: ['gemini', 'openai'],
-  onLLMToggle: null,
   isSharedView: false
 };
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import Highcharts from 'highcharts';
-import { Loader, XCircle, Lock, BarChart3, Lightbulb } from 'lucide-react';
+import { Loader, XCircle, Lock, BarChart3, Lightbulb, Sparkles, MessageSquare } from 'lucide-react';
 
 // Import navigation components
 import PrimarySidebar from '../components/navigation/PrimarySidebar';
@@ -547,46 +547,97 @@ export default function SharedReportPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 lg:px-8 py-8">
         <div className="space-y-6">
-          {/* Header Card */}
-          <div className="card-base">
-            <div className="flex items-start justify-between">
-              <div>
-                <h1 className="text-xxl font-bold text-[#212121] mb-2">{report.entity}</h1>
-                {isMultiMarket ? (
-                  <>
-                    <p className="text-base text-[#757575]">
-                      {report.categoryFamilies?.length || 0} categor{report.categoryFamilies?.length === 1 ? 'y' : 'ies'} across {report.markets?.length || 0} market{report.markets?.length === 1 ? '' : 's'}
+          {/* Sticky Header Card with Filters */}
+          <div className="sticky top-0 z-20 bg-[#F5F5F5] pb-4 -mx-6 px-6 pt-2 -mt-2">
+            <div className="card-base">
+              <div className="flex items-center justify-between">
+                {/* Left: Entity Info */}
+                <div className="flex items-center gap-6">
+                  <div>
+                    <h1 className="text-xl font-bold text-[#212121]">{report.entity}</h1>
+                    <p className="text-sm text-[#757575]">
+                      {isMultiMarket ? (
+                        <>{report.categoryFamilies?.length || 0} categor{report.categoryFamilies?.length === 1 ? 'y' : 'ies'} across {report.markets?.length || 0} market{report.markets?.length === 1 ? '' : 's'}</>
+                      ) : (
+                        report.category && (
+                          <>Category: <span className="text-[#212121] font-medium">{report.category}</span></>
+                        )
+                      )}
                     </p>
-                    {selectedMarket && (
-                      <p className="text-sm text-[#9E9E9E] mt-1">
-                        Viewing: {report.markets?.find(m => m.code === selectedMarket)?.country} ({report.markets?.find(m => m.code === selectedMarket)?.language})
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    {report.category && (
-                      <p className="text-base text-[#757575]">
-                        Category: <span className="text-[#212121] font-medium">{report.category}</span>
-                      </p>
-                    )}
-                  </>
-                )}
-              </div>
+                  </div>
+                </div>
 
-              <div className="text-right">
-                <p className="text-xs text-[#757575]">Generated</p>
-                <p className="text-sm font-medium text-[#212121]">
-                  {new Date(report.created_at).toLocaleString()}
-                </p>
+                {/* Right: Filters */}
+                <div className="flex items-center gap-4">
+                  {/* Market Selector */}
+                  {isMultiMarket && report.markets && report.markets.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-[#9E9E9E] uppercase">Market</span>
+                      <select
+                        value={selectedMarket || ''}
+                        onChange={(e) => setSelectedMarket(e.target.value)}
+                        className="appearance-none bg-white border border-[#E0E0E0] rounded-lg px-3 py-1.5 pr-8 text-sm font-medium text-[#212121] cursor-pointer hover:border-[#2196F3] focus:outline-none focus:ring-2 focus:ring-[#2196F3]/20 focus:border-[#2196F3] transition-colors"
+                      >
+                        {report.markets.map((market) => (
+                          <option key={market.code} value={market.code}>
+                            {market.country} ({market.language}){market.isPrimary ? ' ★' : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Divider */}
+                  {isMultiMarket && <div className="w-px h-8 bg-[#E0E0E0]" />}
+
+                  {/* LLM Toggle Buttons */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-[#9E9E9E] uppercase">Source</span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleLLMToggle('gemini')}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                          selectedLLMs.includes('gemini')
+                            ? 'bg-[#E8F0FE] text-[#4285F4]'
+                            : 'bg-[#F5F5F5] text-[#9E9E9E] hover:bg-[#EEEEEE]'
+                        }`}
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        Gemini
+                      </button>
+                      <button
+                        onClick={() => handleLLMToggle('openai')}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                          selectedLLMs.includes('openai')
+                            ? 'bg-[#E6F4F1] text-[#10A37F]'
+                            : 'bg-[#F5F5F5] text-[#9E9E9E] hover:bg-[#EEEEEE]'
+                        }`}
+                      >
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        ChatGPT
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="w-px h-8 bg-[#E0E0E0]" />
+
+                  {/* Generated Date */}
+                  <div className="text-right">
+                    <p className="text-xs text-[#9E9E9E]">Generated</p>
+                    <p className="text-sm font-medium text-[#212121]">
+                      {new Date(report.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Hierarchical Layout: Sidebar + Content */}
-          <div className="flex gap-6">
-            {/* Left Sidebar */}
-            <aside className="w-60 flex-shrink-0">
+          <div className="flex gap-4">
+            {/* Left Sidebar - sticky below header */}
+            <aside className="w-[220px] flex-shrink-0 sticky top-[88px] self-start max-h-[calc(100vh-96px)] overflow-y-auto">
               <PrimarySidebar
                 activeView={activeView}
                 onViewChange={setActiveView}
@@ -596,11 +647,6 @@ export default function SharedReportPage() {
                 languages={report.languages}
                 report={report}
                 isMultiMarket={isMultiMarket}
-                markets={report.markets || []}
-                selectedMarket={selectedMarket}
-                onMarketChange={setSelectedMarket}
-                selectedLLMs={selectedLLMs}
-                onLLMToggle={handleLLMToggle}
                 isSharedView={true}
               />
             </aside>

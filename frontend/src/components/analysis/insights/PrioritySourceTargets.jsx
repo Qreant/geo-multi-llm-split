@@ -6,6 +6,23 @@ import {
 } from 'lucide-react';
 
 /**
+ * Generate Brandfetch icon URL from domain
+ * Uses the simple hotlinking format: https://cdn.brandfetch.io/:domain?c=CLIENT_ID
+ */
+function generateDomainIconUrl(domain) {
+  const clientId = import.meta.env.VITE_LOGO_API_KEY;
+  if (!clientId || !domain) return null;
+  // Clean the domain
+  const cleanDomain = domain
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/\/.*$/, '')
+    .toLowerCase()
+    .trim();
+  return `https://cdn.brandfetch.io/${cleanDomain}?c=${clientId}`;
+}
+
+/**
  * PrioritySourceTargets Component
  * Displays domain and URL-level priority targets for PR outreach
  */
@@ -67,8 +84,22 @@ export default function PrioritySourceTargets({ sourceTargets }) {
         >
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-3">
-              <div className={`p-2 rounded-lg ${colors.bg}`}>
-                <Icon className={`w-5 h-5 ${colors.text}`} />
+              <div className={`p-2 rounded-lg ${colors.bg} flex items-center justify-center`}>
+                {domain.icon_url || generateDomainIconUrl(domain.domain) ? (
+                  <img
+                    src={domain.icon_url || generateDomainIconUrl(domain.domain)}
+                    alt=""
+                    className="w-5 h-5 object-contain"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextElementSibling.style.display = 'block';
+                    }}
+                  />
+                ) : null}
+                <Icon
+                  className={`w-5 h-5 ${colors.text}`}
+                  style={{ display: (domain.icon_url || generateDomainIconUrl(domain.domain)) ? 'none' : 'block' }}
+                />
               </div>
               <div>
                 <div className="flex items-center gap-2">

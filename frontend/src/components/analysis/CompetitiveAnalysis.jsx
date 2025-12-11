@@ -1,8 +1,37 @@
 import { useMemo } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
-import { Trophy, AlertCircle, Check, X, Sparkles, MessageSquare } from 'lucide-react';
+import { Trophy, AlertCircle, Check, X } from 'lucide-react';
 import SourceAnalysis from './SourceAnalysis';
+
+/**
+ * Generate Brandfetch logo URL from brand name
+ * Uses the simple hotlinking format: https://cdn.brandfetch.io/:domain?c=CLIENT_ID
+ */
+function generateBrandLogoUrl(brandName) {
+  const clientId = import.meta.env.VITE_LOGO_API_KEY;
+  if (!clientId || !brandName) return null;
+
+  // Convert brand name to likely domain
+  const domain = brandName
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, '')
+    .trim() + '.com';
+
+  return `https://cdn.brandfetch.io/${domain}?c=${clientId}`;
+}
+
+/**
+ * Generate Brandfetch logo URL for LLM providers
+ */
+function getLLMLogoUrl(llm) {
+  const clientId = import.meta.env.VITE_LOGO_API_KEY;
+  if (!clientId) return null;
+
+  const domain = llm === 'gemini' ? 'google.com' : 'openai.com';
+  return `https://cdn.brandfetch.io/${domain}?c=${clientId}`;
+}
 
 /**
  * CompetitiveAnalysis Component
@@ -22,12 +51,43 @@ export default function CompetitiveAnalysis({ data, category, entity, competitor
     );
   }
 
-  const entitiesRanking = data.entities_ranking || [];
+  const rawEntitiesRanking = data.entities_ranking || [];
   const prosConsData = data.pros_cons || {};
   const sourceAnalysis = data.source_analysis || {};
   const rankedFirst = data.ranked_first_questions || [];
   const notRankedFirst = data.not_ranked_first_questions || [];
   const competitiveLlmPerformance = data.competitive_llm_performance || [];
+
+  // Normalize entities_ranking to merge case-insensitive duplicates (e.g., "Nike" and "nike")
+  const entitiesRanking = useMemo(() => {
+    const merged = new Map(); // lowercase -> { sov, count, displayNames: Map }
+    rawEntitiesRanking.forEach(item => {
+      const key = item.name?.toLowerCase().trim();
+      if (!key) return;
+      if (!merged.has(key)) {
+        merged.set(key, { sov: 0, count: 0, displayNames: new Map() });
+      }
+      const entry = merged.get(key);
+      entry.sov += item.sov || 0;
+      entry.count += item.count || 1;
+      entry.displayNames.set(item.name, (entry.displayNames.get(item.name) || 0) + (item.count || 1));
+    });
+
+    return Array.from(merged.entries())
+      .map(([key, { sov, count, displayNames }]) => {
+        // Use most common display name
+        let bestName = key;
+        let maxCount = 0;
+        displayNames.forEach((cnt, name) => {
+          if (cnt > maxCount) {
+            maxCount = cnt;
+            bestName = name;
+          }
+        });
+        return { name: bestName, sov, count };
+      })
+      .sort((a, b) => b.sov - a.sov);
+  }, [rawEntitiesRanking]);
 
   // Check which LLMs are selected for filtering
   const showGemini = selectedLLMs.includes('gemini');
@@ -47,34 +107,50 @@ export default function CompetitiveAnalysis({ data, category, entity, competitor
   // Calculate SOV per entity from question data based on selected LLMs
   const filteredSovData = useMemo(() => {
     const allQuestions = [...rankedFirst, ...notRankedFirst];
-    const entityCounts = new Map();
+    // Use lowercase key for aggregation, but track the display name (most common casing)
+    const entityCounts = new Map(); // lowercase -> { count, displayNames: Map<original, count> }
     let totalChoices = 0;
+
+    const addBrand = (brandName) => {
+      if (!brandName) return;
+      const key = brandName.toLowerCase().trim();
+      if (!entityCounts.has(key)) {
+        entityCounts.set(key, { count: 0, displayNames: new Map() });
+      }
+      const entry = entityCounts.get(key);
+      entry.count++;
+      entry.displayNames.set(brandName, (entry.displayNames.get(brandName) || 0) + 1);
+      totalChoices++;
+    };
 
     allQuestions.forEach(item => {
       // Get top brand from each selected LLM
       if (showGemini && item.llm_responses?.gemini) {
-        const topBrand = item.llm_responses.gemini.top_brand;
-        if (topBrand) {
-          entityCounts.set(topBrand, (entityCounts.get(topBrand) || 0) + 1);
-          totalChoices++;
-        }
+        addBrand(item.llm_responses.gemini.top_brand);
       }
       if (showOpenai && item.llm_responses?.openai) {
-        const topBrand = item.llm_responses.openai.top_brand;
-        if (topBrand) {
-          entityCounts.set(topBrand, (entityCounts.get(topBrand) || 0) + 1);
-          totalChoices++;
-        }
+        addBrand(item.llm_responses.openai.top_brand);
       }
     });
 
-    // Convert to array and calculate percentages
+    // Convert to array and calculate percentages, using the most common display name
     const sovArray = Array.from(entityCounts.entries())
-      .map(([name, count]) => ({
-        name,
-        count,
-        sov: totalChoices > 0 ? count / totalChoices : 0
-      }))
+      .map(([key, { count, displayNames }]) => {
+        // Find the most frequently used display name
+        let bestName = key;
+        let maxCount = 0;
+        displayNames.forEach((cnt, name) => {
+          if (cnt > maxCount) {
+            maxCount = cnt;
+            bestName = name;
+          }
+        });
+        return {
+          name: bestName,
+          count,
+          sov: totalChoices > 0 ? count / totalChoices : 0
+        };
+      })
       .sort((a, b) => b.sov - a.sov)
       .slice(0, 8);
 
@@ -83,22 +159,87 @@ export default function CompetitiveAnalysis({ data, category, entity, competitor
 
   // 1. Share of Voice by LLM (Pie Chart) - use filtered data when only one LLM selected
   const sovPieData = useMemo(() => {
+    let sourceData;
+
     // If both LLMs selected, use combined entities_ranking
     if (bothSelected) {
-      return entitiesRanking.slice(0, 8).map((comp, index) => ({
-        name: comp.name,
-        y: (comp.sov || 0) * 100,
-        color: CHART_COLORS[index % CHART_COLORS.length]
-      }));
+      sourceData = entitiesRanking;
+    } else {
+      // Otherwise, use recalculated SOV from questions (without the slice)
+      const allQuestions = [...rankedFirst, ...notRankedFirst];
+      const entityCounts = new Map();
+      let totalChoices = 0;
+
+      const addBrand = (brandName) => {
+        if (!brandName) return;
+        const key = brandName.toLowerCase().trim();
+        if (!entityCounts.has(key)) {
+          entityCounts.set(key, { count: 0, displayNames: new Map() });
+        }
+        const entry = entityCounts.get(key);
+        entry.count++;
+        entry.displayNames.set(brandName, (entry.displayNames.get(brandName) || 0) + 1);
+        totalChoices++;
+      };
+
+      allQuestions.forEach(item => {
+        if (showGemini && item.llm_responses?.gemini) {
+          addBrand(item.llm_responses.gemini.top_brand);
+        }
+        if (showOpenai && item.llm_responses?.openai) {
+          addBrand(item.llm_responses.openai.top_brand);
+        }
+      });
+
+      sourceData = Array.from(entityCounts.entries())
+        .map(([key, { count, displayNames }]) => {
+          let bestName = key;
+          let maxCount = 0;
+          displayNames.forEach((cnt, name) => {
+            if (cnt > maxCount) {
+              maxCount = cnt;
+              bestName = name;
+            }
+          });
+          return {
+            name: bestName,
+            count,
+            sov: totalChoices > 0 ? count / totalChoices : 0
+          };
+        })
+        .sort((a, b) => b.sov - a.sov);
     }
 
-    // Otherwise, use recalculated SOV from questions
-    return filteredSovData.entities.map((comp, index) => ({
-      name: comp.name,
-      y: (comp.sov || 0) * 100,
-      color: CHART_COLORS[index % CHART_COLORS.length]
-    }));
-  }, [entitiesRanking, filteredSovData, bothSelected]);
+    // Calculate total SOV to normalize to 100%
+    const totalSov = sourceData.reduce((sum, comp) => sum + (comp.sov || 0), 0);
+    const normalizeFactor = totalSov > 0 ? 1 / totalSov : 1;
+
+    // Show top 7 brands, group rest as "Others"
+    const MAX_BRANDS = 7;
+    const result = [];
+
+    sourceData.slice(0, MAX_BRANDS).forEach((comp, index) => {
+      result.push({
+        name: comp.name,
+        y: (comp.sov || 0) * normalizeFactor * 100,
+        color: CHART_COLORS[index % CHART_COLORS.length]
+      });
+    });
+
+    // Group remaining brands as "Others"
+    if (sourceData.length > MAX_BRANDS) {
+      const othersSov = sourceData.slice(MAX_BRANDS).reduce((sum, comp) => sum + (comp.sov || 0), 0);
+      if (othersSov > 0) {
+        result.push({
+          name: 'Others',
+          y: othersSov * normalizeFactor * 100,
+          color: '#9E9E9E' // Grey for "Others"
+        });
+      }
+    }
+
+    return result;
+  }, [entitiesRanking, rankedFirst, notRankedFirst, showGemini, showOpenai, bothSelected]);
 
   // Donut chart configuration
   const sovDonutOptions = {
@@ -115,15 +256,7 @@ export default function CompetitiveAnalysis({ data, category, entity, competitor
         allowPointSelect: true,
         cursor: 'pointer',
         dataLabels: {
-          enabled: true,
-          format: '<b>{point.name}</b>: {point.percentage:.0f}%',
-          style: {
-            fontSize: '12px',
-            fontFamily: 'Inter, system-ui, sans-serif',
-            fontWeight: '500',
-            textOutline: 'none'
-          },
-          distance: 20
+          enabled: false
         },
         showInLegend: false,
         borderWidth: 2,
@@ -191,77 +324,98 @@ export default function CompetitiveAnalysis({ data, category, entity, competitor
         </p>
       </div>
 
-      {/* Share of Voice by LLM - Donut Chart */}
+      {/* Share of Voice & LLM Performance - Combined Card */}
       <div className="bg-white border border-[#E0E0E0] rounded-lg p-6">
         <div className="mb-4">
-          <h3 className="text-lg font-medium text-[#212121] mb-1">Share of Voice by LLM</h3>
-          <p className="text-sm text-[#757575]">Percentage of times each brand is chosen by LLMs</p>
+          <h3 className="text-lg font-medium text-[#212121] mb-1">Share of Voice</h3>
+          <p className="text-sm text-[#757575]">Brand selection distribution across AI engines</p>
         </div>
-        {sovPieData.length > 0 ? (
-          <HighchartsReact highcharts={Highcharts} options={sovDonutOptions} />
-        ) : (
-          <div className="h-64 flex items-center justify-center text-[#757575]">
-            No data available
-          </div>
-        )}
-      </div>
 
-      {/* Choice by LLM - Per-LLM Performance Metrics */}
-      {filteredLlmPerformance.length > 0 && (
-        <div className="bg-white border border-[#E0E0E0] rounded-lg p-6">
-          <div className="mb-4">
-            <h3 className="text-lg font-medium text-[#212121] mb-1">Choice by LLM</h3>
-            <p className="text-sm text-[#757575]">How often {entity} is chosen as top recommendation by each LLM</p>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            {filteredLlmPerformance.map((perf) => (
-              <div
-                key={perf.llm}
-                className={`p-4 rounded-lg border ${
-                  perf.llm === 'gemini'
-                    ? 'border-[#4285F4] bg-[#E8F0FE]'
-                    : 'border-[#10A37F] bg-[#E6F4F1]'
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-3">
-                  {perf.llm === 'gemini' ? (
-                    <div className="w-8 h-8 rounded bg-[#4285F4] flex items-center justify-center">
-                      <Sparkles className="w-4 h-4 text-white" />
+        <div className="flex gap-6">
+          {/* Left: Donut Chart with Custom Legend */}
+          <div className="flex-1 min-w-0">
+            {sovPieData.length > 0 ? (
+              <>
+                <HighchartsReact highcharts={Highcharts} options={sovDonutOptions} />
+                {/* Custom Legend with Brand Logos */}
+                <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-2">
+                  {sovPieData.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-1.5">
+                      <div
+                        className="w-3 h-3 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: item.color }}
+                      />
+                      <img
+                        src={generateBrandLogoUrl(item.name)}
+                        alt=""
+                        className="w-4 h-4 rounded object-contain"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                      <span className="text-xs font-medium text-[#212121]">{item.name}</span>
+                      <span className="text-xs text-[#757575]">{item.y.toFixed(0)}%</span>
                     </div>
-                  ) : (
-                    <div className="w-8 h-8 rounded bg-[#10A37F] flex items-center justify-center">
-                      <MessageSquare className="w-4 h-4 text-white" />
-                    </div>
-                  )}
-                  <span className="font-medium text-[#212121]">{perf.displayName || (perf.llm === 'gemini' ? 'Gemini' : 'ChatGPT')}</span>
+                  ))}
                 </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-[#757575]">Choice Rate</span>
-                    <span className="text-lg font-semibold text-[#212121]">
+              </>
+            ) : (
+              <div className="h-64 flex items-center justify-center text-[#757575]">
+                No data available
+              </div>
+            )}
+          </div>
+
+          {/* Right: LLM Performance Metrics */}
+          {filteredLlmPerformance.length > 0 && (
+            <div className="w-64 flex-shrink-0 flex flex-col gap-3 justify-center">
+              <h4 className="text-xs font-medium text-[#9E9E9E] uppercase tracking-wide mb-1">
+                {entity} Choice Rate
+              </h4>
+              {filteredLlmPerformance.map((perf) => (
+                <div
+                  key={perf.llm}
+                  className={`p-3 rounded-lg ${
+                    perf.llm === 'gemini'
+                      ? 'bg-[#F8FAFF] border border-[#E8F0FE]'
+                      : 'bg-[#F6FBF9] border border-[#E6F4F1]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={perf.llm === 'gemini'
+                          ? `https://cdn.brandfetch.io/google.com?c=${import.meta.env.VITE_LOGO_API_KEY}`
+                          : `https://cdn.brandfetch.io/openai.com?c=${import.meta.env.VITE_LOGO_API_KEY}`
+                        }
+                        alt={perf.llm === 'gemini' ? 'Gemini' : 'ChatGPT'}
+                        className="w-5 h-5 rounded object-contain"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                      <span className="text-sm font-medium text-[#212121]">
+                        {perf.llm === 'gemini' ? 'Gemini' : 'ChatGPT'}
+                      </span>
+                    </div>
+                    <span className={`text-xl font-bold ${
+                      perf.llm === 'gemini' ? 'text-[#4285F4]' : 'text-[#10A37F]'
+                    }`}>
                       {((perf.brandChoicePercent || 0) * 100).toFixed(0)}%
                     </span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-[#757575]">Questions Won</span>
-                    <span className="text-sm font-medium text-[#212121]">
-                      {perf.targetChosen || 0} / {perf.totalQuestions || 0}
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[#757575]">
+                      Won {perf.targetChosen || 0} of {perf.totalQuestions || 0}
                     </span>
-                  </div>
-                  {perf.topChoice && perf.topChoice !== entity && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-[#757575]">Top Choice</span>
-                      <span className="text-sm font-medium text-[#E65100]">
-                        {perf.topChoice}
+                    {perf.topChoice && perf.topChoice.toLowerCase() !== entity.toLowerCase() && (
+                      <span className="text-[#E65100] font-medium">
+                        Top: {perf.topChoice}
                       </span>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Row 2: Pros and Cons by Brand Table */}
       {prosConsByBrand.size > 0 && (
@@ -400,16 +554,23 @@ export default function CompetitiveAnalysis({ data, category, entity, competitor
             {chosenEntries.length > 0 ? (
               <div className="space-y-4">
                 {chosenEntries.map((entry) => (
-                  <div key={entry.key} className="bg-[#E8F5E9] border border-[#4CAF50] rounded-lg p-5">
+                  <div key={entry.key} className="bg-green-50 border border-green-200 rounded-xl p-5">
                     <div className="flex items-start gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-full bg-[#4CAF50] flex items-center justify-center flex-shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
                         <Trophy className="w-5 h-5 text-white" />
                       </div>
                       <div className="flex-1">
                         <h4 className="text-base font-medium text-[#212121]">{entry.question}</h4>
                       </div>
-                      <div className="text-sm font-medium text-[#4CAF50]">
-                        Chosen: {entity}
+                      <div className="flex items-center gap-2 text-sm font-medium text-green-600">
+                        <span>Chosen:</span>
+                        <img
+                          src={generateBrandLogoUrl(entity)}
+                          alt=""
+                          className="w-5 h-5 rounded object-contain"
+                          onError={(e) => { e.target.style.display = 'none'; }}
+                        />
+                        <span>{entity}</span>
                       </div>
                     </div>
 
@@ -417,11 +578,14 @@ export default function CompetitiveAnalysis({ data, category, entity, competitor
                     {entry.bothAgree ? (
                       <div className="space-y-3">
                         {entry.gemini && (
-                          <div className="bg-white border-l-4 border-[#4CAF50] p-4 rounded">
+                          <div className="bg-white border-l-4 border-green-500 p-4 rounded-lg">
                             <div className="flex items-center gap-2 mb-2">
-                              <div className="w-6 h-6 rounded bg-[#4285F4] flex items-center justify-center">
-                                <Sparkles className="w-3.5 h-3.5 text-white" />
-                              </div>
+                              <img
+                                src={getLLMLogoUrl('gemini')}
+                                alt="Gemini"
+                                className="w-5 h-5 rounded object-contain"
+                                onError={(e) => { e.target.style.display = 'none'; }}
+                              />
                               <span className="text-sm font-medium text-[#212121]">Gemini</span>
                               <span className="text-xs text-[#757575]">— Why {entity} was chosen:</span>
                             </div>
@@ -439,11 +603,14 @@ export default function CompetitiveAnalysis({ data, category, entity, competitor
                           </div>
                         )}
                         {entry.openai && (
-                          <div className="bg-white border-l-4 border-[#4CAF50] p-4 rounded">
+                          <div className="bg-white border-l-4 border-green-500 p-4 rounded-lg">
                             <div className="flex items-center gap-2 mb-2">
-                              <div className="w-6 h-6 rounded bg-[#10A37F] flex items-center justify-center">
-                                <MessageSquare className="w-3.5 h-3.5 text-white" />
-                              </div>
+                              <img
+                                src={getLLMLogoUrl('openai')}
+                                alt="ChatGPT"
+                                className="w-5 h-5 rounded object-contain"
+                                onError={(e) => { e.target.style.display = 'none'; }}
+                              />
                               <span className="text-sm font-medium text-[#212121]">ChatGPT</span>
                               <span className="text-xs text-[#757575]">— Why {entity} was chosen:</span>
                             </div>
@@ -463,17 +630,14 @@ export default function CompetitiveAnalysis({ data, category, entity, competitor
                       </div>
                     ) : (
                       /* Single LLM chose target (disagreement) - show only that LLM's response */
-                      <div className="bg-white border-l-4 border-[#4CAF50] p-4 rounded">
+                      <div className="bg-white border-l-4 border-green-500 p-4 rounded-lg">
                         <div className="flex items-center gap-2 mb-2">
-                          {entry.llm === 'gemini' ? (
-                            <div className="w-6 h-6 rounded bg-[#4285F4] flex items-center justify-center">
-                              <Sparkles className="w-3.5 h-3.5 text-white" />
-                            </div>
-                          ) : (
-                            <div className="w-6 h-6 rounded bg-[#10A37F] flex items-center justify-center">
-                              <MessageSquare className="w-3.5 h-3.5 text-white" />
-                            </div>
-                          )}
+                          <img
+                            src={getLLMLogoUrl(entry.llm)}
+                            alt={entry.llm === 'gemini' ? 'Gemini' : 'ChatGPT'}
+                            className="w-5 h-5 rounded object-contain"
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                          />
                           <span className="text-sm font-medium text-[#212121]">{entry.llm === 'gemini' ? 'Gemini' : 'ChatGPT'}</span>
                           <span className="text-xs text-[#757575]">— Why {entity} was chosen:</span>
                         </div>
@@ -592,12 +756,26 @@ export default function CompetitiveAnalysis({ data, category, entity, competitor
                     <div className="flex items-start justify-between mb-4">
                       <h4 className="text-base font-medium text-[#212121] flex-1 pr-4">{entry.question}</h4>
                       {entry.bothAgree ? (
-                        <div className="flex-shrink-0 px-3 py-1 bg-[#F5F5F5] rounded text-sm font-medium text-[#212121]">
-                          Chosen: {entry.gemini?.chosenBrand || entry.openai?.chosenBrand}
+                        <div className="flex-shrink-0 flex items-center gap-2 px-3 py-1 bg-[#F5F5F5] rounded text-sm font-medium text-[#212121]">
+                          <span>Chosen:</span>
+                          <img
+                            src={generateBrandLogoUrl(entry.gemini?.chosenBrand || entry.openai?.chosenBrand)}
+                            alt=""
+                            className="w-5 h-5 rounded object-contain"
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                          />
+                          <span>{entry.gemini?.chosenBrand || entry.openai?.chosenBrand}</span>
                         </div>
                       ) : (
-                        <div className="flex-shrink-0 px-3 py-1 bg-[#F5F5F5] rounded text-sm font-medium text-[#212121]">
-                          Chosen: {entry.chosenBrand}
+                        <div className="flex-shrink-0 flex items-center gap-2 px-3 py-1 bg-[#F5F5F5] rounded text-sm font-medium text-[#212121]">
+                          <span>Chosen:</span>
+                          <img
+                            src={generateBrandLogoUrl(entry.chosenBrand)}
+                            alt=""
+                            className="w-5 h-5 rounded object-contain"
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                          />
+                          <span>{entry.chosenBrand}</span>
                         </div>
                       )}
                     </div>
@@ -606,11 +784,14 @@ export default function CompetitiveAnalysis({ data, category, entity, competitor
                     {entry.bothAgree ? (
                       <div className="space-y-3">
                         {entry.gemini && (
-                          <div className="bg-[#FFEBEE] border-l-4 border-[#EF5350] p-4 rounded">
+                          <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
                             <div className="flex items-center gap-2 mb-2">
-                              <div className="w-6 h-6 rounded bg-[#4285F4] flex items-center justify-center">
-                                <Sparkles className="w-3.5 h-3.5 text-white" />
-                              </div>
+                              <img
+                                src={getLLMLogoUrl('gemini')}
+                                alt="Gemini"
+                                className="w-5 h-5 rounded object-contain"
+                                onError={(e) => { e.target.style.display = 'none'; }}
+                              />
                               <span className="text-sm font-medium text-[#212121]">Gemini</span>
                               <span className="text-xs text-[#757575]">— Why {entry.gemini.chosenBrand} was chosen:</span>
                             </div>
@@ -628,11 +809,14 @@ export default function CompetitiveAnalysis({ data, category, entity, competitor
                           </div>
                         )}
                         {entry.openai && (
-                          <div className="bg-[#FFEBEE] border-l-4 border-[#EF5350] p-4 rounded">
+                          <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
                             <div className="flex items-center gap-2 mb-2">
-                              <div className="w-6 h-6 rounded bg-[#10A37F] flex items-center justify-center">
-                                <MessageSquare className="w-3.5 h-3.5 text-white" />
-                              </div>
+                              <img
+                                src={getLLMLogoUrl('openai')}
+                                alt="ChatGPT"
+                                className="w-5 h-5 rounded object-contain"
+                                onError={(e) => { e.target.style.display = 'none'; }}
+                              />
                               <span className="text-sm font-medium text-[#212121]">ChatGPT</span>
                               <span className="text-xs text-[#757575]">— Why {entry.openai.chosenBrand} was chosen:</span>
                             </div>
@@ -652,17 +836,14 @@ export default function CompetitiveAnalysis({ data, category, entity, competitor
                       </div>
                     ) : (
                       /* Single LLM chose competitor (disagreement) - show only that LLM's response */
-                      <div className="bg-[#FFEBEE] border-l-4 border-[#EF5350] p-4 rounded">
+                      <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
                         <div className="flex items-center gap-2 mb-2">
-                          {entry.llm === 'gemini' ? (
-                            <div className="w-6 h-6 rounded bg-[#4285F4] flex items-center justify-center">
-                              <Sparkles className="w-3.5 h-3.5 text-white" />
-                            </div>
-                          ) : (
-                            <div className="w-6 h-6 rounded bg-[#10A37F] flex items-center justify-center">
-                              <MessageSquare className="w-3.5 h-3.5 text-white" />
-                            </div>
-                          )}
+                          <img
+                            src={getLLMLogoUrl(entry.llm)}
+                            alt={entry.llm === 'gemini' ? 'Gemini' : 'ChatGPT'}
+                            className="w-5 h-5 rounded object-contain"
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                          />
                           <span className="text-sm font-medium text-[#212121]">{entry.llm === 'gemini' ? 'Gemini' : 'ChatGPT'}</span>
                           <span className="text-xs text-[#757575]">— Why {entry.chosenBrand} was chosen:</span>
                         </div>

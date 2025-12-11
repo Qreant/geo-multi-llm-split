@@ -260,6 +260,67 @@ export class Report {
     }));
   }
 
+  /**
+   * Get sources with logos joined from domain_logos table
+   */
+  static getSourcesWithLogos(reportId) {
+    const db = getDatabase();
+    try {
+      const stmt = db.prepare(`
+        SELECT s.*, dl.logo_url, dl.icon_url, dl.fetch_status as logo_status
+        FROM sources s
+        LEFT JOIN domain_logos dl ON s.domain = dl.domain
+        WHERE s.report_id = ?
+        ORDER BY s.created_at ASC
+      `);
+
+      const sources = stmt.all(reportId);
+      return sources.map(source => ({
+        ...source,
+        cited_by: JSON.parse(source.cited_by || '[]'),
+        logo_url: source.logo_url || null,
+        icon_url: source.icon_url || null,
+        logo_status: source.logo_status || 'pending'
+      }));
+    } catch (e) {
+      // Fall back to regular getSources if domain_logos table doesn't exist
+      return this.getSources(reportId);
+    }
+  }
+
+  /**
+   * Get logos for a list of domains from cache
+   */
+  static getLogosForDomains(domains) {
+    if (!domains || domains.length === 0) {
+      return {};
+    }
+
+    const db = getDatabase();
+    try {
+      const placeholders = domains.map(() => '?').join(',');
+      const stmt = db.prepare(`
+        SELECT domain, logo_url, icon_url, fetch_status
+        FROM domain_logos
+        WHERE domain IN (${placeholders})
+      `);
+      const rows = stmt.all(...domains);
+
+      const result = {};
+      rows.forEach(row => {
+        result[row.domain] = {
+          logo_url: row.logo_url,
+          icon_url: row.icon_url,
+          fetch_status: row.fetch_status
+        };
+      });
+      return result;
+    } catch (e) {
+      // Table might not exist yet
+      return {};
+    }
+  }
+
   static delete(id) {
     const db = getDatabase();
     const stmt = db.prepare('DELETE FROM reports WHERE id = ?');
@@ -1333,6 +1394,34 @@ export class Report {
       ? categoriesWithWinRate.reduce((sum, c) => sum + c.winRate, 0) / categoriesWithWinRate.length
       : null;
 
+    // ==========================================
+    // Logo Methods (inline for overview data)
+    // ==========================================
+
+    // Get logos for unique domains in sources
+    const uniqueDomains = [...new Set(sources.map(s => s.domain).filter(Boolean))];
+    const logoMap = {};
+    if (uniqueDomains.length > 0) {
+      try {
+        const placeholders = uniqueDomains.map(() => '?').join(',');
+        const logoStmt = db.prepare(`
+          SELECT domain, logo_url, icon_url, fetch_status
+          FROM domain_logos
+          WHERE domain IN (${placeholders})
+        `);
+        const logoRows = logoStmt.all(...uniqueDomains);
+        logoRows.forEach(row => {
+          logoMap[row.domain] = {
+            logo_url: row.logo_url,
+            icon_url: row.icon_url,
+            fetch_status: row.fetch_status
+          };
+        });
+      } catch (e) {
+        // Table might not exist yet, ignore
+      }
+    }
+
     // Aggregate source analysis
     const sourceTypeDistribution = {};
     const domainCounts = {};
@@ -1359,7 +1448,10 @@ export class Report {
             citations: 0,
             sourceType: source.source_type || 'Other',
             isYouTube: true,
-            videos: []
+            videos: [],
+            // YouTube uses its own icon, but include logo data for consistency
+            icon_url: logoMap['youtube.com']?.icon_url || null,
+            logo_url: logoMap['youtube.com']?.logo_url || null
           };
         }
         domainCounts[youtubeKey].citations += 1;
@@ -1378,17 +1470,34 @@ export class Report {
           domainCounts[youtubeKey].videos.push(videoEntry);
         }
       } else {
-        // Regular domain handling
+        // Regular domain handling - track individual pages
         const domain = source.domain || 'unknown';
         if (!domainCounts[domain]) {
           domainCounts[domain] = {
             domain,
             citations: 0,
             sourceType: source.source_type || 'Other',
-            isYouTube: false
+            isYouTube: false,
+            pages: [],
+            // Include logo data from cache
+            icon_url: logoMap[domain]?.icon_url || null,
+            logo_url: logoMap[domain]?.logo_url || null
           };
         }
         domainCounts[domain].citations += 1;
+
+        // Add page details if we have a URL
+        const pageEntry = {
+          url: source.url,
+          title: source.title && source.title !== source.domain && source.title !== source.url
+            ? source.title
+            : source.url
+        };
+
+        // Only add if not already in the list (by URL)
+        if (!domainCounts[domain].pages.find(p => p.url === source.url)) {
+          domainCounts[domain].pages.push(pageEntry);
+        }
       }
     });
 

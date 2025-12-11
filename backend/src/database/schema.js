@@ -234,8 +234,24 @@ export function initDatabase() {
     )
   `);
 
+  // ==========================================
+  // Domain Logos Cache Table
+  // ==========================================
+
+  // Domain logos cache - shared across all reports for efficiency
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS domain_logos (
+      domain TEXT PRIMARY KEY,
+      logo_url TEXT,
+      icon_url TEXT,
+      fetch_status TEXT DEFAULT 'pending',
+      fetched_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
   // Create indexes for better query performance
   db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_domain_logos_status ON domain_logos(fetch_status);
     CREATE INDEX IF NOT EXISTS idx_reports_created_at ON reports(created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_reports_entity ON reports(entity);
     CREATE INDEX IF NOT EXISTS idx_analysis_results_report ON analysis_results(report_id, analysis_type);

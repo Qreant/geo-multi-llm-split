@@ -23,14 +23,16 @@ export default function ReviewStep({ config, onLaunch, onBack, onEditStep, error
     return competitors[categoryId]?.[marketCode]?.length || 0;
   };
 
-  // Calculate total questions from reputation + category questions
-  const getTotalQuestions = () => {
-    let total = 0;
+  // Calculate question counts by type
+  const getQuestionCounts = () => {
+    let reputation = 0;
+    let visibility = 0;
+    let competitive = 0;
 
     // Count reputation questions per market
     if (reputationQuestions) {
       Object.values(reputationQuestions).forEach(questions => {
-        total += questions?.length || 0;
+        reputation += questions?.length || 0;
       });
     }
 
@@ -38,14 +40,19 @@ export default function ReviewStep({ config, onLaunch, onBack, onEditStep, error
     if (categoryQuestions) {
       Object.values(categoryQuestions).forEach(marketQuestions => {
         Object.values(marketQuestions || {}).forEach(catQuestions => {
-          total += catQuestions?.visibility?.length || 0;
-          total += catQuestions?.competitive?.length || 0;
+          visibility += catQuestions?.visibility?.length || 0;
+          competitive += catQuestions?.competitive?.length || 0;
         });
       });
     }
 
-    return total;
+    return { reputation, visibility, competitive, total: reputation + visibility + competitive };
   };
+
+  const questionCounts = getQuestionCounts();
+
+  // Calculate total questions from reputation + category questions
+  const getTotalQuestions = () => questionCounts.total;
 
   const calculateEstimatedTime = () => {
     const totalQuestions = getTotalQuestions();
@@ -104,6 +111,26 @@ export default function ReviewStep({ config, onLaunch, onBack, onEditStep, error
           <div className="text-center p-4 bg-white rounded-lg border border-[#E0E0E0]">
             <div className="text-3xl font-bold text-[#9C27B0]">{getTotalQuestions()}</div>
             <div className="text-xs text-[#757575] uppercase tracking-wide mt-1">Total Questions</div>
+          </div>
+        </div>
+
+        {/* Question Breakdown */}
+        <div className="mt-4 pt-4 border-t border-[#E0E0E0]">
+          <div className="text-sm text-[#757575] text-center">
+            <span className="inline-flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-[#2196F3]"></span>
+              {questionCounts.reputation} reputation
+            </span>
+            <span className="mx-2">+</span>
+            <span className="inline-flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-[#10B981]"></span>
+              {questionCounts.visibility} visibility
+            </span>
+            <span className="mx-2">+</span>
+            <span className="inline-flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-[#F57C00]"></span>
+              {questionCounts.competitive} competitive
+            </span>
           </div>
         </div>
       </div>

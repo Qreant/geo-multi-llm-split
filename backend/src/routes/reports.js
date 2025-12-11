@@ -5,6 +5,7 @@
 import express from 'express';
 import { Report } from '../models/Report.js';
 import { resolveVertexRedirect } from '../services/llmService.js';
+import { getBrandLogos, batchFetchLogos } from '../services/logoService.js';
 
 const router = express.Router();
 
@@ -141,7 +142,7 @@ router.get('/:id', (req, res) => {
 
     const configuration = Report.getConfiguration(id);
     const llmResponses = Report.getLLMResponses(id);
-    const sources = Report.getSources(id);
+    const sources = Report.getSourcesWithLogos(id);
 
     // Check if this is a multi-market report
     const markets = Report.getMarkets(id);
@@ -418,7 +419,7 @@ router.get('/shared/:token', (req, res) => {
     // Get all report data (same as regular GET but via token)
     const configuration = Report.getConfiguration(report.id);
     const llmResponses = Report.getLLMResponses(report.id);
-    const sources = Report.getSources(report.id);
+    const sources = Report.getSourcesWithLogos(report.id);
 
     const markets = Report.getMarkets(report.id);
     const isMultiMarket = markets && markets.length > 0;
@@ -464,6 +465,62 @@ router.get('/shared/:token', (req, res) => {
     }
   } catch (error) {
     console.error('Error fetching shared report:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ==========================================
+// Logo Routes
+// ==========================================
+
+/**
+ * GET /api/reports/:id/brand-logos
+ * Get logos for entity and competitors (for visibility rankings)
+ */
+router.get('/:id/brand-logos', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const report = Report.findById(id);
+    if (!report) {
+      return res.status(404).json({ error: 'Report not found' });
+    }
+
+    // Get entity and all competitors
+    const brands = [report.entity, ...report.competitors];
+
+    // Generate logo URLs for all brands
+    const brandLogos = getBrandLogos(brands);
+
+    // Also try to fetch and cache logos for any new domains
+    if (process.env.LOGO_API_KEY) {
+      const domains = Object.values(brandLogos)
+        .map(b => {
+          if (b.icon_url) {
+            // Extract domain from the icon_url
+            const match = b.icon_url.match(/cdn\.brandfetch\.io\/([^\/]+)/);
+            return match ? match[1] : null;
+          }
+          return null;
+        })
+        .filter(Boolean);
+
+      if (domains.length > 0) {
+        try {
+          await batchFetchLogos(domains);
+        } catch (e) {
+          console.warn('Brand logo caching failed:', e.message);
+        }
+      }
+    }
+
+    res.json({
+      entity: report.entity,
+      competitors: report.competitors,
+      logos: brandLogos
+    });
+  } catch (error) {
+    console.error('Error fetching brand logos:', error);
     res.status(500).json({ error: error.message });
   }
 });

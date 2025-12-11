@@ -98,7 +98,7 @@ export default function ReputationAnalysis({ data, entity, categoriesAssociated 
             Categories Associated with {entity}
           </h3>
           <p className="text-sm text-[#757575]">
-            Category presence with SOV, visibility, and ranking metrics
+            Category presence and top competitors
           </p>
         </div>
 
@@ -110,19 +110,10 @@ export default function ReputationAnalysis({ data, entity, categoriesAssociated 
                   <th className="px-4 py-3 text-left text-xs font-medium text-[#757575] uppercase tracking-wide">
                     Category
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-[#757575] uppercase tracking-wide w-24">
-                    SOV
+                  <th className="px-4 py-3 text-center text-xs font-medium text-[#757575] uppercase tracking-wide w-28">
+                    Appearances
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-[#757575] uppercase tracking-wide w-24">
-                    Visibility
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-[#757575] uppercase tracking-wide w-24">
-                    Avg Position
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-[#757575] uppercase tracking-wide w-20">
-                    Mentions
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-[#757575] uppercase tracking-wide w-64">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-[#757575] uppercase tracking-wide">
                     Top Competitors
                   </th>
                 </tr>
@@ -144,31 +135,10 @@ export default function ReputationAnalysis({ data, entity, categoriesAssociated 
                       </div>
                     </td>
 
-                    {/* SOV */}
-                    <td className="px-4 py-4 text-center">
-                      <span className="inline-flex items-center px-2 py-1 rounded text-sm font-medium bg-[#E3F2FD] text-[#1976D2]">
-                        {category.sov}
-                      </span>
-                    </td>
-
-                    {/* Visibility */}
+                    {/* Appearances */}
                     <td className="px-4 py-4 text-center">
                       <span className="inline-flex items-center px-2 py-1 rounded text-sm font-medium bg-[#E8F5E9] text-[#388E3C]">
                         {category.appearance}
-                      </span>
-                    </td>
-
-                    {/* Avg Position */}
-                    <td className="px-4 py-4 text-center">
-                      <span className="text-sm font-medium text-[#212121]">
-                        {category.avgPosition}
-                      </span>
-                    </td>
-
-                    {/* Mentions */}
-                    <td className="px-4 py-4 text-center">
-                      <span className="text-sm text-[#757575]">
-                        {category.mentions}
                       </span>
                     </td>
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
-import { ChevronDown, ChevronUp, Edit2, RotateCcw, ArrowLeft, ArrowRight, Loader, MessageSquare } from 'lucide-react';
+import { ChevronDown, ChevronUp, Edit2, RotateCcw, ArrowLeft, ArrowRight, Loader, MessageSquare, Plus, X } from 'lucide-react';
 
 // English templates (will be translated by LLM for other languages)
 const ENGLISH_TEMPLATES = [
@@ -97,8 +97,39 @@ export default function ReputationPromptsStep({ entity, markets, reputationQuest
     setEditingQuestion(null);
   };
 
+  const addQuestion = (marketCode) => {
+    const existingQuestions = reputationQuestions[marketCode] || [];
+    const newId = `REP_Q${existingQuestions.length + 1}_${Date.now()}`;
+    const newQuestion = {
+      id: newId,
+      type: 'reputation',
+      question: '',
+      editable: true,
+      isCustom: true
+    };
+    setReputationQuestions(prev => ({
+      ...prev,
+      [marketCode]: [...(prev[marketCode] || []), newQuestion]
+    }));
+    // Auto-focus the new question for editing
+    setEditingQuestion(`${marketCode}-${existingQuestions.length}`);
+  };
+
+  const removeQuestion = (marketCode, index) => {
+    setReputationQuestions(prev => ({
+      ...prev,
+      [marketCode]: prev[marketCode].filter((_, i) => i !== index)
+    }));
+  };
+
   const currentMarket = markets.find(m => m.code === selectedMarket) || markets[0];
   const currentQuestions = reputationQuestions[selectedMarket] || [];
+
+  // Check if all markets have valid questions (no empty questions)
+  const hasEmptyQuestions = Object.values(reputationQuestions).some(marketQuestions =>
+    marketQuestions?.some(q => !q.question?.trim())
+  );
+  const canProceed = !hasEmptyQuestions && Object.keys(reputationQuestions).length > 0;
 
   if (loading) {
     return (
@@ -184,6 +215,7 @@ export default function ReputationPromptsStep({ entity, markets, reputationQuest
           <div className="border-t border-[#E0E0E0] bg-[#F4F6F8] p-4 space-y-2">
             {currentQuestions.map((q, index) => {
               const isEditing = editingQuestion === `${selectedMarket}-${index}`;
+              const canDelete = currentQuestions.length > 1;
               return (
                 <div
                   key={q.id}
@@ -195,6 +227,7 @@ export default function ReputationPromptsStep({ entity, markets, reputationQuest
                       type="text"
                       defaultValue={q.question}
                       autoFocus
+                      placeholder="Enter your question..."
                       className="flex-1 px-3 py-2 text-sm border border-[#10B981] rounded focus:outline-none focus:ring-1 focus:ring-[#10B981]"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') updateQuestion(selectedMarket, index, e.target.value);
@@ -204,18 +237,41 @@ export default function ReputationPromptsStep({ entity, markets, reputationQuest
                     />
                   ) : (
                     <>
-                      <span className="flex-1 text-sm text-[#212121]">{q.question}</span>
+                      <span className={`flex-1 text-sm ${q.question ? 'text-[#212121]' : 'text-[#9E9E9E] italic'}`}>
+                        {q.question || 'Click edit to add question...'}
+                      </span>
                       <button
                         onClick={() => setEditingQuestion(`${selectedMarket}-${index}`)}
                         className="p-1 text-[#757575] hover:text-[#10B981] hover:bg-[#E8F5E9] rounded transition-colors"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
+                      <button
+                        onClick={() => removeQuestion(selectedMarket, index)}
+                        disabled={!canDelete}
+                        className={`p-1 rounded transition-colors ${
+                          canDelete
+                            ? 'text-[#757575] hover:text-red-500 hover:bg-red-50'
+                            : 'text-[#E0E0E0] cursor-not-allowed'
+                        }`}
+                        title={canDelete ? 'Remove question' : 'At least one question is required'}
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
                     </>
                   )}
                 </div>
               );
             })}
+
+            {/* Add Question Button */}
+            <button
+              onClick={() => addQuestion(selectedMarket)}
+              className="w-full flex items-center justify-center gap-2 p-3 border-2 border-dashed border-[#E0E0E0] rounded hover:border-[#10B981] hover:bg-[#E8F5E9] text-[#757575] hover:text-[#10B981] transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="text-sm font-medium">Add Question</span>
+            </button>
           </div>
         )}
       </div>
@@ -228,6 +284,15 @@ export default function ReputationPromptsStep({ entity, markets, reputationQuest
         </p>
       </div>
 
+      {/* Validation Warning */}
+      {hasEmptyQuestions && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <p className="text-sm text-amber-700">
+            <strong>Warning:</strong> Some questions are empty. Please fill in all questions before continuing.
+          </p>
+        </div>
+      )}
+
       {/* Navigation */}
       <div className="flex justify-between">
         <button
@@ -239,7 +304,13 @@ export default function ReputationPromptsStep({ entity, markets, reputationQuest
         </button>
         <button
           onClick={() => onComplete(reputationQuestions)}
-          className="px-6 py-3 bg-[#10B981] text-white font-medium rounded-lg hover:bg-[#059669] transition-colors flex items-center gap-2"
+          disabled={!canProceed}
+          className={`px-6 py-3 font-medium rounded-lg transition-colors flex items-center gap-2 ${
+            canProceed
+              ? 'bg-[#10B981] text-white hover:bg-[#059669]'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          }`}
+          title={!canProceed ? 'Please fill in all questions' : ''}
         >
           Category Prompts
           <ArrowRight className="w-5 h-5" />

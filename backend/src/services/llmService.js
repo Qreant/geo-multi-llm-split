@@ -38,6 +38,48 @@ function extractDomain(url) {
 }
 
 /**
+ * Extract domain from page title (many titles have format "Page Title | SiteName" or "Page Title - Company.com")
+ * Returns a domain-like URL if extraction succeeds, null otherwise
+ */
+function extractDomainFromTitle(title) {
+  if (!title || typeof title !== 'string') return null;
+
+  // Common separators between page title and site name
+  const separators = [' | ', ' - ', ' — ', ' – ', ' : '];
+
+  for (const sep of separators) {
+    if (title.includes(sep)) {
+      const parts = title.split(sep);
+      const lastPart = parts[parts.length - 1].trim();
+
+      // Check if last part looks like a domain or company name
+      if (lastPart.includes('.') && lastPart.length < 50) {
+        // Looks like a domain (e.g., "tesla.com")
+        const domain = lastPart.toLowerCase().replace(/\s+/g, '');
+        return `https://${domain}`;
+      } else if (lastPart.length > 0 && lastPart.length < 30) {
+        // Company name - convert to likely domain
+        const domainGuess = lastPart.toLowerCase()
+          .replace(/[^a-z0-9]/g, '')  // Remove non-alphanumeric
+          .replace(/\s+/g, '');
+        if (domainGuess.length >= 3) {
+          return `https://${domainGuess}.com`;
+        }
+      }
+    }
+  }
+
+  // Try to find domain-like patterns in the title itself
+  const domainPattern = /([a-z0-9][-a-z0-9]*\.(?:com|org|net|io|co|gov|edu|fr|de|uk|ca|au|jp)[a-z]*)/i;
+  const match = title.match(domainPattern);
+  if (match) {
+    return `https://${match[1].toLowerCase()}`;
+  }
+
+  return null;
+}
+
+/**
  * Batch resolve Vertex AI redirect URLs
  * Follows redirects and captures the final URL
  */
@@ -100,30 +142,59 @@ async function batchResolveRedirects(urlsToResolve) {
 
   responses.forEach((response, index) => {
     const originalUrl = vertexUrls[index].url;
-    const sourceDomain = vertexUrls[index].sourceDomain;
+    const sourceTitle = vertexUrls[index].sourceDomain; // This is actually the page title
     const finalUrl = response?.finalUrl;
+
+    // Helper to get fallback URL from title
+    const getFallbackUrl = () => {
+      // First try to extract domain from title (e.g., "Powerwall | Tesla" -> https://tesla.com)
+      const extractedDomain = extractDomainFromTitle(sourceTitle);
+      if (extractedDomain) {
+        return extractedDomain;
+      }
+      // If title looks like a valid URL, use it
+      if (sourceTitle && sourceTitle.trim()) {
+        if (sourceTitle.startsWith('http')) {
+          return sourceTitle;
+        }
+        // If it looks like a domain, make it a URL
+        if (sourceTitle.includes('.') && !sourceTitle.includes(' ')) {
+          return `https://${sourceTitle.replace(/^www\./, '')}`;
+        }
+      }
+      // Last resort: return null to indicate we couldn't extract anything
+      return null;
+    };
 
     // Check if we got a useful resolved URL
     if (finalUrl && !finalUrl.includes('vertexaisearch.cloud.google.com')) {
       // Check if it's a Google Search page (not useful)
       if (finalUrl.includes('google.com/search') || finalUrl.includes('google.com/url')) {
-        // Fallback to domain URL
-        const cleanDomain = sourceDomain && sourceDomain.trim()
-          ? (sourceDomain.startsWith('http') ? sourceDomain : `https://${sourceDomain}`)
-          : originalUrl;
-        redirectMap[originalUrl] = cleanDomain;
-        console.log(`   ⚠️  ${originalUrl.substring(0, 50)}... -> Google search (using domain: ${cleanDomain})`);
+        // Fallback to domain extracted from title
+        const fallbackUrl = getFallbackUrl();
+        if (fallbackUrl) {
+          redirectMap[originalUrl] = fallbackUrl;
+          console.log(`   ⚠️  ${originalUrl.substring(0, 50)}... -> Google search (using: ${extractDomain(fallbackUrl)})`);
+        } else {
+          // No fallback available - mark as unresolved but don't keep Vertex URL
+          redirectMap[originalUrl] = `unresolved://${sourceTitle || 'unknown'}`;
+          console.log(`   ⚠️  ${originalUrl.substring(0, 50)}... -> Google search (no fallback)`);
+        }
       } else {
         // Use the final resolved URL
         redirectMap[originalUrl] = finalUrl;
       }
     } else {
-      // Resolution failed, fallback to domain
-      const cleanDomain = sourceDomain && sourceDomain.trim()
-        ? (sourceDomain.startsWith('http') ? sourceDomain : `https://${sourceDomain}`)
-        : originalUrl;
-      redirectMap[originalUrl] = cleanDomain;
-      console.log(`   ⚠️  ${originalUrl.substring(0, 50)}... -> Failed (using domain: ${cleanDomain})`);
+      // Resolution failed, fallback to domain extracted from title
+      const fallbackUrl = getFallbackUrl();
+      if (fallbackUrl) {
+        redirectMap[originalUrl] = fallbackUrl;
+        console.log(`   ⚠️  ${originalUrl.substring(0, 50)}... -> Failed (using: ${extractDomain(fallbackUrl)})`);
+      } else {
+        // No fallback available - mark as unresolved but don't keep Vertex URL
+        redirectMap[originalUrl] = `unresolved://${sourceTitle || 'unknown'}`;
+        console.log(`   ⚠️  ${originalUrl.substring(0, 50)}... -> Failed (no fallback)`);
+      }
     }
   });
 
@@ -138,10 +209,23 @@ async function batchResolveRedirects(urlsToResolve) {
 /**
  * Resolve a single Vertex AI redirect URL - exported for re-resolution utility
  */
-export async function resolveVertexRedirect(url, sourceDomain = '') {
+export async function resolveVertexRedirect(url, sourceTitle = '') {
   if (!url || !url.includes('vertexaisearch.cloud.google.com/grounding-api-redirect/')) {
     return url;
   }
+
+  // Helper to get fallback URL from title
+  const getFallbackUrl = () => {
+    const extractedDomain = extractDomainFromTitle(sourceTitle);
+    if (extractedDomain) return extractedDomain;
+    if (sourceTitle && sourceTitle.trim()) {
+      if (sourceTitle.startsWith('http')) return sourceTitle;
+      if (sourceTitle.includes('.') && !sourceTitle.includes(' ')) {
+        return `https://${sourceTitle.replace(/^www\./, '')}`;
+      }
+    }
+    return null;
+  };
 
   try {
     const response = await axios.get(url, {
@@ -162,23 +246,20 @@ export async function resolveVertexRedirect(url, sourceDomain = '') {
     // Check if resolution was successful
     if (finalUrl && !finalUrl.includes('vertexaisearch.cloud.google.com')) {
       if (finalUrl.includes('google.com/search') || finalUrl.includes('google.com/url')) {
-        // Fallback to domain
-        return sourceDomain && sourceDomain.trim()
-          ? (sourceDomain.startsWith('http') ? sourceDomain : `https://${sourceDomain}`)
-          : url;
+        // Fallback to domain extracted from title
+        const fallbackUrl = getFallbackUrl();
+        return fallbackUrl || `unresolved://${sourceTitle || 'unknown'}`;
       }
       return finalUrl;
     }
 
-    // Fallback to domain
-    return sourceDomain && sourceDomain.trim()
-      ? (sourceDomain.startsWith('http') ? sourceDomain : `https://${sourceDomain}`)
-      : url;
+    // Fallback to domain extracted from title
+    const fallbackUrl = getFallbackUrl();
+    return fallbackUrl || `unresolved://${sourceTitle || 'unknown'}`;
   } catch (error) {
-    // Fallback to domain
-    return sourceDomain && sourceDomain.trim()
-      ? (sourceDomain.startsWith('http') ? sourceDomain : `https://${sourceDomain}`)
-      : url;
+    // Fallback to domain extracted from title
+    const fallbackUrl = getFallbackUrl();
+    return fallbackUrl || `unresolved://${sourceTitle || 'unknown'}`;
   }
 }
 
@@ -392,16 +473,47 @@ async function extractGeminiResponse(result) {
     chunks.forEach(chunk => {
       const originalUrl = chunk.web.uri;
       const isVertexRedirect = originalUrl.includes('vertexaisearch.cloud.google.com/grounding-api-redirect/');
+      const pageTitle = chunk.web.title || '';
 
-      const resolvedUrl = redirectMap[originalUrl] || originalUrl;
-      const domain = extractDomain(resolvedUrl);
+      let resolvedUrl = redirectMap[originalUrl] || originalUrl;
+      let domain;
+      let sourceType = isVertexRedirect ? 'grounded_resolved' : 'grounded_direct';
+
+      // Handle unresolved:// protocol - extract info from title
+      if (resolvedUrl.startsWith('unresolved://')) {
+        // Try to get domain from title
+        const extractedUrl = extractDomainFromTitle(pageTitle);
+        if (extractedUrl) {
+          resolvedUrl = extractedUrl;
+          domain = extractDomain(extractedUrl);
+        } else {
+          // Use title as-is for domain display, URL remains unresolved
+          domain = pageTitle || 'unknown source';
+          resolvedUrl = null; // Mark as no valid URL
+        }
+        sourceType = 'grounded_unresolved';
+      }
+      // Handle any Vertex URLs that might have slipped through
+      else if (resolvedUrl.includes('vertexaisearch.cloud.google.com')) {
+        const extractedUrl = extractDomainFromTitle(pageTitle);
+        if (extractedUrl) {
+          resolvedUrl = extractedUrl;
+          domain = extractDomain(extractedUrl);
+        } else {
+          domain = pageTitle || 'unknown source';
+          resolvedUrl = null;
+        }
+        sourceType = 'grounded_unresolved';
+      } else {
+        domain = extractDomain(resolvedUrl);
+      }
 
       groundedSources.push({
         url: resolvedUrl,
         domain: domain,
-        title: chunk.web.title || domain,
+        title: pageTitle || domain,
         relevance_score: 0.95,
-        source_type: isVertexRedirect ? 'grounded_resolved' : 'grounded_direct'
+        source_type: sourceType
       });
     });
   }

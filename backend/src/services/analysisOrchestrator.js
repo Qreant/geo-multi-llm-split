@@ -14,6 +14,7 @@ import { aggregateCategoryAnalysis } from './aggregators/categoryAggregator.js';
 import { classifySourceTypes } from './sourceClassifier.js';
 import { aggregatePRInsights } from './aggregators/prInsightsAggregator.js';
 import { batchGenerateCollaborations } from './aiCollaborationService.js';
+import { batchFetchLogos } from './logoService.js';
 
 /**
  * Extract and merge sources from parsed JSON data with grounded sources
@@ -350,6 +351,24 @@ export async function runAnalysis(reportId, questions, config, geminiApiKey, ope
       }
     });
     console.log(`   ✅ Sources saved to database`);
+
+    // Logo fetching phase (non-blocking, graceful failure)
+    const uniqueDomains = [...new Set(classifiedSources.map(s => s.domain).filter(Boolean))];
+    if (uniqueDomains.length > 0 && process.env.LOGO_API_KEY) {
+      console.log(`\n🖼️ Fetching logos for ${uniqueDomains.length} domains...`);
+      sendProgressUpdate(reportId, {
+        type: 'status',
+        status: 'fetching_logos',
+        progress: 87,
+        message: 'Fetching domain logos...'
+      });
+      try {
+        await batchFetchLogos(uniqueDomains);
+        console.log(`   ✅ Logos cached for ${uniqueDomains.length} domains`);
+      } catch (logoError) {
+        console.warn(`   ⚠️ Logo fetching failed (non-critical): ${logoError.message}`);
+      }
+    }
 
     // Aggregation phase
     console.log('\n🔄 ========== AGGREGATING RESULTS ==========');

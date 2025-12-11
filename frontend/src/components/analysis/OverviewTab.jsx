@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { api } from '../../lib/api';
-import { Eye, TrendingUp, BarChart3, MessageSquare, Loader, AlertCircle, Trophy } from 'lucide-react';
+import { Eye, TrendingUp, BarChart3, Loader, AlertCircle, Trophy } from 'lucide-react';
 
 import MetricCard from '../shared/MetricCard';
 import AggregatedSourceAnalysis from './AggregatedSourceAnalysis';
@@ -94,34 +94,43 @@ export default function OverviewTab({ reportId, entity }) {
       </div>
 
       {/* Top Metrics Row */}
-      <div className={`grid grid-cols-2 gap-4 ${hasCompetitiveData ? 'md:grid-cols-5' : 'md:grid-cols-4'}`}>
+      <div className={`grid gap-4 ${hasCompetitiveData ? 'grid-cols-4' : 'grid-cols-3'}`}>
         <MetricCard
           icon={Eye}
-          label="Avg Visibility"
+          label="Visibility"
+          subtitle="Brand mention rate"
           value={formatPercent(overallMetrics.avgVisibility)}
-        />
-        <MetricCard
-          icon={TrendingUp}
-          label="Avg SOV"
-          value={formatPercent(overallMetrics.avgSOV)}
+          progress={(overallMetrics.avgVisibility || 0) * 100}
+          color="#2196F3"
         />
         <MetricCard
           icon={BarChart3}
           label="Avg Position"
-          value={formatPosition(overallMetrics.avgPosition)}
+          subtitle="Typical AI rank"
+          value={`#${formatPosition(overallMetrics.avgPosition)}`}
+          progress={Math.max(0, 100 - ((overallMetrics.avgPosition || 1) - 1) * 20)}
+          color="#9C27B0"
+        />
+        <MetricCard
+          icon={TrendingUp}
+          label="Share of Voice"
+          subtitle="Position-weighted visibility"
+          value={formatPercent(overallMetrics.avgSOV)}
+          progress={(overallMetrics.avgSOV || 0) * 100}
+          color={(overallMetrics.avgSOV || 0) > 0.5 ? '#4CAF50' : (overallMetrics.avgSOV || 0) > 0.25 ? '#FF9800' : '#EF5350'}
+          status={(overallMetrics.avgSOV || 0) > 0.5 ? 'Good' : (overallMetrics.avgSOV || 0) > 0.25 ? 'Fair' : 'Poor'}
+          statusColor={(overallMetrics.avgSOV || 0) > 0.5 ? '#4CAF50' : (overallMetrics.avgSOV || 0) > 0.25 ? '#FF9800' : '#EF5350'}
         />
         {hasCompetitiveData && (
           <MetricCard
             icon={Trophy}
-            label="Avg LLM Choice"
+            label="LLM Choice"
+            subtitle="First choice rate"
             value={formatPercent(overallMetrics.avgWinRate)}
+            progress={(overallMetrics.avgWinRate || 0) * 100}
+            color="#FF9800"
           />
         )}
-        <MetricCard
-          icon={MessageSquare}
-          label="Total Mentions"
-          value={overallMetrics.totalMentions}
-        />
       </div>
 
       {/* Visibility-Competitiveness Matrix (conditional) */}

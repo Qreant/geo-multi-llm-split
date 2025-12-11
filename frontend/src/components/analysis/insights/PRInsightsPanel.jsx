@@ -5,6 +5,7 @@ import PrioritySummary from './PrioritySummary';
 import OpportunityCard from './OpportunityCard';
 import ExecutionHistorySidebar from './ExecutionHistorySidebar';
 import PrioritySourceTargets from './PrioritySourceTargets';
+import OwnedMediaAnalysis from './OwnedMediaAnalysis';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -267,6 +268,14 @@ export default function PRInsightsPanel({ reportId, entity }) {
           {/* Panorama Tab - Shows Priority Source Targets */}
           {activeTab === 'panorama' && (
             <div className="space-y-6">
+              {/* Owned Media Analysis Alert */}
+              {insights?.owned_media_analysis && (
+                <OwnedMediaAnalysis
+                  analysis={insights.owned_media_analysis}
+                  entity={entity}
+                />
+              )}
+
               {/* Priority Summary */}
               <PrioritySummary
                 summary={insights?.priority_summary}
