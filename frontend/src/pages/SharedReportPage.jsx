@@ -14,6 +14,22 @@ import CompetitiveAnalysis from '../components/analysis/CompetitiveAnalysis';
 import OverviewTab from '../components/analysis/OverviewTab';
 import { PRInsightsPanel } from '../components/analysis/insights';
 
+/**
+ * Generate Brandfetch logo URL for a brand/entity name
+ */
+function generateBrandLogoUrl(brandName) {
+  const clientId = import.meta.env.VITE_LOGO_API_KEY;
+  if (!clientId || !brandName) return null;
+
+  const cleanName = brandName
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, '')
+    .trim();
+
+  return `https://cdn.brandfetch.io/${cleanName}.com?c=${clientId}`;
+}
+
 // Configure Highcharts defaults
 Highcharts.setOptions({
   colors: ['#10B981', '#2196F3', '#EF5350', '#9E9E9E', '#4CAF50', '#FF9800'],
@@ -552,7 +568,16 @@ export default function SharedReportPage() {
             <div className="card-base">
               <div className="flex items-center justify-between">
                 {/* Left: Entity Info */}
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-4">
+                  {/* Brand Logo */}
+                  {generateBrandLogoUrl(report.entity) && (
+                    <img
+                      src={generateBrandLogoUrl(report.entity)}
+                      alt={`${report.entity} logo`}
+                      className="w-10 h-10 object-contain rounded-lg"
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                  )}
                   <div>
                     <h1 className="text-xl font-bold text-[#212121]">{report.entity}</h1>
                     <p className="text-sm text-[#757575]">
