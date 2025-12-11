@@ -30,9 +30,7 @@ export default function OnboardingWizard() {
   // Configuration state
   const [config, setConfig] = useState({
     entity: '',
-    markets: [
-      { country: 'Global', language: 'All Languages', code: 'all-GL', isPrimary: true }
-    ],
+    markets: [], // Start empty - user must add at least one market
     categoryFamilies: [],
     competitors: {}, // { [categoryId]: { [marketCode]: ['competitor1', 'competitor2'] } }
     reputationQuestions: {}, // { [marketCode]: [...questions] }

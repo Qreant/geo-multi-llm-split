@@ -88,14 +88,18 @@ export default function SharedReportPage() {
 
       // Handle multi-market vs legacy reports
       if (response.data.isMultiMarket) {
-        // Set default to 'master' (all markets aggregated)
-        setSelectedMarket('master');
-
         const markets = response.data.markets || [];
         const marketResults = response.data.marketResults || {};
         const primaryMarket = markets.find(m => m.isPrimary) || markets[0];
         const firstMarketResults = primaryMarket ? marketResults[primaryMarket.code] : null;
         const categoryFamilies = response.data.categoryFamilies || [];
+
+        // Set default selected market: single market = that market, multiple = master
+        if (markets.length === 1) {
+          setSelectedMarket(markets[0].code);
+        } else {
+          setSelectedMarket('master');
+        }
 
         if (markets.length > 1 || categoryFamilies.length > 1) {
           setActiveView({ type: 'overview' });
@@ -157,6 +161,64 @@ export default function SharedReportPage() {
   // Extract data based on report type
   const isMultiMarket = report.isMultiMarket;
 
+  // Helper function to merge entity rankings from multiple markets
+  const mergeEntityRankings = (rankingsArrays) => {
+    const entityMap = new Map();
+    rankingsArrays.flat().forEach(entity => {
+      const key = entity.name?.toLowerCase();
+      if (!key) return;
+      if (entityMap.has(key)) {
+        const existing = entityMap.get(key);
+        existing.visibility = ((existing.visibility || 0) + (entity.visibility || 0)) / 2;
+        existing.sov = ((existing.sov || 0) + (entity.sov || 0)) / 2;
+        existing.average_rank = ((existing.average_rank || 0) + (entity.average_rank || 0)) / 2;
+        existing.mentions = (existing.mentions || 0) + (entity.mentions || 0);
+      } else {
+        entityMap.set(key, { ...entity });
+      }
+    });
+    return Array.from(entityMap.values()).sort((a, b) => (b.sov || 0) - (a.sov || 0));
+  };
+
+  // Helper function to merge brand family rankings from multiple markets
+  const mergeBrandFamilyRankings = (rankingsArrays) => {
+    const brandMap = new Map();
+    rankingsArrays.flat().forEach(brand => {
+      const key = brand.name?.toLowerCase();
+      if (!key) return;
+      if (brandMap.has(key)) {
+        const existing = brandMap.get(key);
+        existing.visibility = ((existing.visibility || 0) + (brand.visibility || 0)) / 2;
+        existing.sov = ((existing.sov || 0) + (brand.sov || 0)) / 2;
+        existing.average_rank = ((existing.average_rank || 0) + (brand.average_rank || 0)) / 2;
+        existing.mentions = (existing.mentions || 0) + (brand.mentions || 0);
+      } else {
+        brandMap.set(key, { ...brand });
+      }
+    });
+    return Array.from(brandMap.values()).sort((a, b) => (b.sov || 0) - (a.sov || 0));
+  };
+
+  // Helper function to merge LLM performance data from multiple markets
+  const mergeLLMPerformance = (performanceArrays) => {
+    const llmMap = new Map();
+    performanceArrays.flat().forEach(perf => {
+      const llm = perf.llm;
+      if (!llm) return;
+      if (llmMap.has(llm)) {
+        const existing = llmMap.get(llm);
+        existing.visibility = ((existing.visibility || 0) + (perf.visibility || 0)) / 2;
+        existing.sov = ((existing.sov || 0) + (perf.sov || 0)) / 2;
+        existing.avgPosition = ((existing.avgPosition || 0) + (perf.avgPosition || 0)) / 2;
+        existing.mentions = (existing.mentions || 0) + (perf.mentions || 0);
+        existing.totalQuestions = (existing.totalQuestions || 0) + (perf.totalQuestions || 0);
+      } else {
+        llmMap.set(llm, { ...perf });
+      }
+    });
+    return Array.from(llmMap.values());
+  };
+
   const getMarketData = () => {
     if (!isMultiMarket) {
       const analysisResults = report.analysisResults || {};
@@ -190,7 +252,7 @@ export default function SharedReportPage() {
           .map(m => marketResults[m.code]?.categories?.[family.id])
           .filter(Boolean);
 
-        // Simple aggregation: use first market's data as base, average visibility metrics
+        // Aggregate visibility data across all markets
         let aggregatedVisibility = null;
         const visibilityDataList = categoryDataFromAllMarkets.map(c => c.visibility).filter(Boolean);
         if (visibilityDataList.length > 0) {
@@ -203,14 +265,28 @@ export default function SharedReportPage() {
           };
           aggregatedVisibility = {
             ...visibilityDataList[0],
-            visibility: avgMetrics
+            visibility: avgMetrics,
+            // Merge all question arrays from all markets
+            ranked_first_questions: visibilityDataList.flatMap(v => v.ranked_first_questions || []),
+            not_ranked_first_questions: visibilityDataList.flatMap(v => v.not_ranked_first_questions || []),
+            entities_ranking: mergeEntityRankings(visibilityDataList.map(v => v.entities_ranking || [])),
+            brand_family_ranking: mergeBrandFamilyRankings(visibilityDataList.map(v => v.brand_family_ranking || [])),
+            llm_performance: mergeLLMPerformance(visibilityDataList.map(v => v.llm_performance || []))
           };
         }
 
+        // Aggregate competitive data across all markets
         let aggregatedCompetitive = null;
         const competitiveDataList = categoryDataFromAllMarkets.map(c => c.competitive).filter(Boolean);
         if (competitiveDataList.length > 0) {
-          aggregatedCompetitive = competitiveDataList[0]; // Simplified for shared view
+          aggregatedCompetitive = {
+            ...competitiveDataList[0],
+            // Merge all question arrays from all markets
+            ranked_first_questions: competitiveDataList.flatMap(c => c.ranked_first_questions || []),
+            not_ranked_first_questions: competitiveDataList.flatMap(c => c.not_ranked_first_questions || []),
+            missed_opportunities: competitiveDataList.flatMap(c => c.missed_opportunities || []),
+            competitive_llm_performance: mergeLLMPerformance(competitiveDataList.map(c => c.competitive_llm_performance || []))
+          };
         }
 
         return {

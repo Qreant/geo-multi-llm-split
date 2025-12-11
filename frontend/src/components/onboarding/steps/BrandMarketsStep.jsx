@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Plus, X, Star, Globe, ArrowRight } from 'lucide-react';
+import { Plus, X, Star, Globe, ArrowRight, HelpCircle } from 'lucide-react';
 
 const COUNTRIES = [
-  { value: 'Global', label: 'Global', flag: '🌍' },
   { value: 'United States', label: 'United States', flag: '🇺🇸' },
   { value: 'United Kingdom', label: 'United Kingdom', flag: '🇬🇧' },
   { value: 'Canada', label: 'Canada', flag: '🇨🇦' },
@@ -34,7 +33,6 @@ const COUNTRIES = [
 ];
 
 const LANGUAGES = [
-  { value: 'All Languages', label: 'All Languages' },
   { value: 'English', label: 'English' },
   { value: 'French', label: 'French' },
   { value: 'German', label: 'German' },
@@ -54,41 +52,6 @@ const LANGUAGES = [
   { value: 'Arabic', label: 'Arabic' },
 ];
 
-const MARKET_PRESETS = [
-  {
-    name: 'US & UK',
-    markets: [
-      { country: 'United States', language: 'English' },
-      { country: 'United Kingdom', language: 'English' }
-    ]
-  },
-  {
-    name: 'Major EU',
-    markets: [
-      { country: 'France', language: 'French' },
-      { country: 'Germany', language: 'German' },
-      { country: 'Spain', language: 'Spanish' },
-      { country: 'Italy', language: 'Italian' }
-    ]
-  },
-  {
-    name: 'APAC',
-    markets: [
-      { country: 'Japan', language: 'Japanese' },
-      { country: 'South Korea', language: 'Korean' },
-      { country: 'Singapore', language: 'English' },
-      { country: 'Australia', language: 'English' }
-    ]
-  },
-  {
-    name: 'LATAM',
-    markets: [
-      { country: 'Brazil', language: 'Portuguese' },
-      { country: 'Mexico', language: 'Spanish' }
-    ]
-  }
-];
-
 function generateMarketCode(country, language) {
   const langCode = language.toLowerCase().slice(0, 2);
   const countryCode = country.replace(/\s+/g, '').slice(0, 2).toUpperCase();
@@ -100,9 +63,9 @@ export default function BrandMarketsStep({ entity: initialEntity, markets: initi
   const [markets, setMarkets] = useState(
     initialMarkets.length > 0
       ? initialMarkets
-      : [{ country: 'Global', language: 'All Languages', code: 'all-GL', isPrimary: true }]
+      : [] // Start with empty markets - user must add at least one
   );
-  const [showAddMarket, setShowAddMarket] = useState(false);
+  const [showAddMarket, setShowAddMarket] = useState(initialMarkets.length === 0); // Show add form by default if no markets
   const [newMarket, setNewMarket] = useState({ country: '', language: '' });
 
   const addMarket = () => {
@@ -130,8 +93,6 @@ export default function BrandMarketsStep({ entity: initialEntity, markets: initi
   };
 
   const removeMarket = (index) => {
-    if (markets.length <= 1) return;
-
     const removedWasPrimary = markets[index].isPrimary;
     const newMarkets = markets.filter((_, i) => i !== index);
 
@@ -141,6 +102,11 @@ export default function BrandMarketsStep({ entity: initialEntity, markets: initi
     }
 
     setMarkets(newMarkets);
+
+    // Show add form if no markets left
+    if (newMarkets.length === 0) {
+      setShowAddMarket(true);
+    }
   };
 
   const setPrimaryMarket = (index) => {
@@ -150,15 +116,6 @@ export default function BrandMarketsStep({ entity: initialEntity, markets: initi
         isPrimary: i === index
       }))
     );
-  };
-
-  const applyPreset = (preset) => {
-    const newMarkets = preset.markets.map((m, idx) => ({
-      ...m,
-      code: generateMarketCode(m.country, m.language),
-      isPrimary: idx === 0
-    }));
-    setMarkets(newMarkets);
   };
 
   const getCountryFlag = (countryName) => {
@@ -193,20 +150,6 @@ export default function BrandMarketsStep({ entity: initialEntity, markets: initi
           <Globe className="w-6 h-6 text-[#2196F3]" />
         </div>
 
-        {/* Market Presets */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          <span className="text-xs text-[#757575] py-1">Quick presets:</span>
-          {MARKET_PRESETS.map(preset => (
-            <button
-              key={preset.name}
-              onClick={() => applyPreset(preset)}
-              className="px-3 py-1 text-xs font-medium text-[#2196F3] bg-[#E3F2FD] rounded-full hover:bg-[#BBDEFB] transition-colors"
-            >
-              {preset.name}
-            </button>
-          ))}
-        </div>
-
         {/* Market List */}
         <div className="space-y-2 mb-4">
           {markets.map((market, index) => (
@@ -221,16 +164,23 @@ export default function BrandMarketsStep({ entity: initialEntity, markets: initi
                   <span className="text-[#757575] mx-2">·</span>
                   <span className="text-[#757575]">{market.language}</span>
                 </div>
-                {market.isPrimary && (
-                  <span className="flex items-center gap-1 px-2 py-0.5 bg-[#FFF8E1] text-[#F57C00] text-xs font-medium rounded-full">
-                    <Star className="w-3 h-3" />
-                    Primary
-                  </span>
+                {market.isPrimary && markets.length > 1 && (
+                  <div className="relative group">
+                    <span className="flex items-center gap-1 px-2 py-0.5 bg-[#FFF8E1] text-[#F57C00] text-xs font-medium rounded-full cursor-help">
+                      <Star className="w-3 h-3" />
+                      Primary
+                      <HelpCircle className="w-3 h-3 opacity-60" />
+                    </span>
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-[#212121] text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-10">
+                      Categories and competitors are entered in this language first, then translated to other markets
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#212121]"></div>
+                    </div>
+                  </div>
                 )}
               </div>
 
               <div className="flex items-center gap-2">
-                {!market.isPrimary && (
+                {!market.isPrimary && markets.length > 1 && (
                   <button
                     onClick={() => setPrimaryMarket(index)}
                     className="p-1.5 text-[#757575] hover:text-[#F57C00] hover:bg-[#FFF8E1] rounded transition-colors"
@@ -239,15 +189,13 @@ export default function BrandMarketsStep({ entity: initialEntity, markets: initi
                     <Star className="w-4 h-4" />
                   </button>
                 )}
-                {markets.length > 1 && (
-                  <button
-                    onClick={() => removeMarket(index)}
-                    className="p-1.5 text-[#757575] hover:text-[#EF5350] hover:bg-red-50 rounded transition-colors"
-                    title="Remove market"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
+                <button
+                  onClick={() => removeMarket(index)}
+                  className="p-1.5 text-[#757575] hover:text-[#EF5350] hover:bg-red-50 rounded transition-colors"
+                  title="Remove market"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
             </div>
           ))}

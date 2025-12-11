@@ -162,7 +162,7 @@ export default function CompetitorsStep({ entity, markets, categoryFamilies, com
                             <span className="font-medium text-[#212121]">{market.country}</span>
                             <span className="text-[#757575]">·</span>
                             <span className="text-[#757575]">{market.language}</span>
-                            {market.isPrimary && (
+                            {market.isPrimary && markets.length > 1 && (
                               <span className="px-2 py-0.5 text-xs bg-[#FFF8E1] text-[#F57C00] rounded-full">
                                 Primary
                               </span>

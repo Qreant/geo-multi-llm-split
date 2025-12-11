@@ -157,15 +157,19 @@ export default function ReportDetailPage() {
 
       // Handle multi-market vs legacy reports
       if (response.data.isMultiMarket) {
-        // Set default selected market to 'master' (all markets aggregated)
-        setSelectedMarket('master');
-
         // Auto-select first available view based on market results
         const markets = response.data.markets || [];
         const marketResults = response.data.marketResults || {};
         const primaryMarket = markets.find(m => m.isPrimary) || markets[0];
         const firstMarketResults = primaryMarket ? marketResults[primaryMarket.code] : null;
         const categoryFamilies = response.data.categoryFamilies || [];
+
+        // Set default selected market: single market = that market, multiple = master
+        if (markets.length === 1) {
+          setSelectedMarket(markets[0].code);
+        } else {
+          setSelectedMarket('master');
+        }
 
         // Default to Overview if multiple markets OR multiple categories
         if (markets.length > 1 || categoryFamilies.length > 1) {
@@ -586,11 +590,34 @@ export default function ReportDetailPage() {
       },
       // Merge brand family rankings
       brand_family_ranking: mergeBrandFamilyRankings(visibilityDataList.map(v => v.brand_family_ranking || [])),
-      // Merge ranked questions
-      ranked_questions: visibilityDataList.flatMap(v => v.ranked_questions || []),
+      // Merge entity rankings
+      entities_ranking: mergeEntityRankings(visibilityDataList.map(v => v.entities_ranking || [])),
+      // Merge ranked first questions (brand is #1)
+      ranked_first_questions: visibilityDataList.flatMap(v => v.ranked_first_questions || []),
+      // Merge not ranked first questions (brand is not #1)
+      not_ranked_first_questions: visibilityDataList.flatMap(v => v.not_ranked_first_questions || []),
       // Merge LLM performance
       llm_performance: mergeLLMPerformance(visibilityDataList.map(v => v.llm_performance || []))
     };
+  };
+
+  // Helper function to merge entity rankings from multiple markets
+  const mergeEntityRankings = (rankingsArrays) => {
+    const entityMap = new Map();
+    rankingsArrays.flat().forEach(entity => {
+      const key = entity.name?.toLowerCase();
+      if (!key) return;
+      if (entityMap.has(key)) {
+        const existing = entityMap.get(key);
+        existing.visibility = ((existing.visibility || 0) + (entity.visibility || 0)) / 2;
+        existing.sov = ((existing.sov || 0) + (entity.sov || 0)) / 2;
+        existing.average_rank = ((existing.average_rank || 0) + (entity.average_rank || 0)) / 2;
+        existing.mentions = (existing.mentions || 0) + (entity.mentions || 0);
+      } else {
+        entityMap.set(key, { ...entity });
+      }
+    });
+    return Array.from(entityMap.values()).sort((a, b) => (b.sov || 0) - (a.sov || 0));
   };
 
   // Helper function to merge brand family rankings
@@ -639,9 +666,11 @@ export default function ReportDetailPage() {
 
     return {
       ...competitiveDataList[0],
-      // Merge ranked first questions
+      // Merge ranked first questions (brand wins)
       ranked_first_questions: competitiveDataList.flatMap(c => c.ranked_first_questions || []),
-      // Merge missed opportunities
+      // Merge not ranked first questions (brand doesn't win)
+      not_ranked_first_questions: competitiveDataList.flatMap(c => c.not_ranked_first_questions || []),
+      // Merge missed opportunities (legacy field)
       missed_opportunities: competitiveDataList.flatMap(c => c.missed_opportunities || []),
       // Merge LLM performance
       competitive_llm_performance: mergeLLMPerformance(competitiveDataList.map(c => c.competitive_llm_performance || [])),
