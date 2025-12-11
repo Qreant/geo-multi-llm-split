@@ -1,0 +1,78 @@
+{
+  "exportedAt": "2025-12-11T00:43:59.824Z",
+  "metadata": {
+    "timestamp": "2025-12-11T00:43:59.824Z",
+    "testSourceCount": 100,
+    "warmupRuns": 0,
+    "testRuns": 1,
+    "models": [
+      "gemini-flash-lite"
+    ],
+    "batchSizes": [
+      50
+    ]
+  },
+  "results": [
+    {
+      "modelId": "gemini-flash-lite",
+      "batchSize": 50,
+      "testRuns": 1,
+      "warmupRuns": 0,
+      "successRate": 1,
+      "successRateStdDev": 0,
+      "avgLatencyMs": 12620,
+      "minLatencyMs": 12620,
+      "maxLatencyMs": 12620,
+      "p50LatencyMs": 9938,
+      "p95LatencyMs": 15302,
+      "latencyStdDev": 0,
+      "avgLatencyPerSource": 252.4,
+      "p50LatencyPerSource": 198.76,
+      "p95LatencyPerSource": 306.04,
+      "avgInputTokens": 15713,
+      "avgOutputTokens": 8112,
+      "totalTokens": 23825,
+      "avgCostPerRun": 0.0018060374999999999,
+      "costPer500Sources": 0.0018060374999999999,
+      "totalFailedBatches": 0,
+      "failureReasons": {},
+      "primaryFailureReason": null,
+      "accuracyGolden": null
+    }
+  ],
+  "recommendations": {
+    "bestOverall": {
+      "modelId": "gemini-flash-lite",
+      "batchSize": 50,
+      "score": 0.4,
+      "details": "gemini-flash-lite @ batch 50: 100% success, 252ms/source, $0.0018/500"
+    },
+    "bestLatency": {
+      "modelId": "gemini-flash-lite",
+      "batchSize": 50,
+      "latencyPerSource": 252.4,
+      "details": "gemini-flash-lite @ batch 50: 100% success, 252ms/source, $0.0018/500"
+    },
+    "bestCost": {
+      "modelId": "gemini-flash-lite",
+      "batchSize": 50,
+      "costPer500": 0.0018060374999999999,
+      "details": "gemini-flash-lite @ batch 50: 100% success, 252ms/source, $0.0018/500"
+    },
+    "bestAccuracy": null,
+    "bestReliability": {
+      "modelId": "gemini-flash-lite",
+      "batchSize": 50,
+      "successRate": 1,
+      "details": "gemini-flash-lite @ batch 50: 100% success, 252ms/source, $0.0018/500"
+    },
+    "allRankings": [
+      {
+        "rank": 1,
+        "modelId": "gemini-flash-lite",
+        "batchSize": 50,
+        "overallScore": "0.400"
+      }
+    ]
+  }
+}

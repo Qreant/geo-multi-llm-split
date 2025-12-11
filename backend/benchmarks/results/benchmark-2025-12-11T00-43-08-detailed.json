@@ -1,0 +1,76 @@
+{
+  "exportedAt": "2025-12-11T00:43:08.106Z",
+  "metadata": {
+    "timestamp": "2025-12-11T00:43:08.106Z",
+    "testSourceCount": 100,
+    "warmupRuns": 0,
+    "testRuns": 1,
+    "models": [
+      "deepseek-chat"
+    ],
+    "batchSizes": [
+      50
+    ]
+  },
+  "results": [
+    {
+      "modelId": "deepseek-chat",
+      "batchSize": 50,
+      "testRuns": 1,
+      "warmupRuns": 0,
+      "successRate": 0.5,
+      "successRateStdDev": 0,
+      "avgLatencyMs": 82023.5,
+      "minLatencyMs": 82023.5,
+      "maxLatencyMs": 82023.5,
+      "p50LatencyMs": 103766,
+      "p95LatencyMs": 103766,
+      "latencyStdDev": 0,
+      "avgLatencyPerSource": 1640.47,
+      "p50LatencyPerSource": 2075.32,
+      "p95LatencyPerSource": 2075.32,
+      "avgInputTokens": 7624,
+      "avgOutputTokens": 3043,
+      "totalTokens": 10667,
+      "avgCostPerRun": 0.0019194000000000001,
+      "costPer500Sources": 0.0019194000000000001,
+      "totalFailedBatches": 1,
+      "failureReasons": {
+        "unknown": 1
+      },
+      "primaryFailureReason": "unknown",
+      "accuracyGolden": null
+    }
+  ],
+  "recommendations": {
+    "error": "All configurations had >50% failure rate",
+    "bestAttempt": {
+      "modelId": "deepseek-chat",
+      "batchSize": 50,
+      "testRuns": 1,
+      "warmupRuns": 0,
+      "successRate": 0.5,
+      "successRateStdDev": 0,
+      "avgLatencyMs": 82023.5,
+      "minLatencyMs": 82023.5,
+      "maxLatencyMs": 82023.5,
+      "p50LatencyMs": 103766,
+      "p95LatencyMs": 103766,
+      "latencyStdDev": 0,
+      "avgLatencyPerSource": 1640.47,
+      "p50LatencyPerSource": 2075.32,
+      "p95LatencyPerSource": 2075.32,
+      "avgInputTokens": 7624,
+      "avgOutputTokens": 3043,
+      "totalTokens": 10667,
+      "avgCostPerRun": 0.0019194000000000001,
+      "costPer500Sources": 0.0019194000000000001,
+      "totalFailedBatches": 1,
+      "failureReasons": {
+        "unknown": 1
+      },
+      "primaryFailureReason": "unknown",
+      "accuracyGolden": null
+    }
+  }
+}

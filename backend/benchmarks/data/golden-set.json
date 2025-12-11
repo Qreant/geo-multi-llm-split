@@ -1,0 +1,422 @@
+{
+  "metadata": {
+    "createdAt": "2024-12-11",
+    "description": "Manually verified source classifications for accuracy evaluation",
+    "version": "1.0",
+    "categories": [
+      "Corporate Blogs & Content",
+      "Journalism",
+      "Government/NGO",
+      "Aggregators / Encyclopedic",
+      "Academic/Research",
+      "Owned Media",
+      "Competitor Media",
+      "Paid/Advertorial",
+      "Social / UGC",
+      "Press Release"
+    ],
+    "notes": "Classifications verified based on domain, content type, and publisher identity"
+  },
+  "sources": [
+    {
+      "url": "https://www.reuters.com/business/autos-transportation/byd-2023-success-story-2023-07-20/",
+      "title": "BYD Gains Momentum as EV Leader in Affordability",
+      "domain": "reuters.com",
+      "golden_type": "Journalism",
+      "confidence": "high",
+      "notes": "Reuters is a major international news agency"
+    },
+    {
+      "url": "https://www.bbc.com/news/business-asia-byd-expansion",
+      "title": "BYD: Challenges in Entering the West",
+      "domain": "bbc.com",
+      "golden_type": "Journalism",
+      "confidence": "high",
+      "notes": "BBC News is a major news organization"
+    },
+    {
+      "url": "https://www.theverge.com/2023/6/15/tesla-cybertruck-new-design",
+      "title": "Tesla Cybertruck: Durable Design and Features",
+      "domain": "theverge.com",
+      "golden_type": "Journalism",
+      "confidence": "high",
+      "notes": "The Verge is a major technology news publication"
+    },
+    {
+      "url": "https://electrek.co/2025/01/14/top-10-best-selling-evs-us-2024/",
+      "title": "Top 10 Best-Selling EVs US 2024",
+      "domain": "electrek.co",
+      "golden_type": "Journalism",
+      "confidence": "high",
+      "notes": "Electrek is a major EV and clean energy news site"
+    },
+    {
+      "url": "https://www.cnbc.com/2023/04/05/ford-ev-sales-rise-as-demand-for-mustang-mach-e-and-f-150-lightning-soars.html",
+      "title": "Ford EV sales rise as Mustang Mach-E and F-150 Lightning lead the charge",
+      "domain": "cnbc.com",
+      "golden_type": "Journalism",
+      "confidence": "high",
+      "notes": "CNBC is a major business news network"
+    },
+    {
+      "url": "https://insideevs.com/news/614506/lucid-air-performance-durability-engineering/",
+      "title": "Lucid Air: Performance and Durability Driven by Engineering",
+      "domain": "insideevs.com",
+      "golden_type": "Journalism",
+      "confidence": "high",
+      "notes": "InsideEVs is a dedicated EV news publication"
+    },
+    {
+      "url": "https://www.runnersworld.com/gear/a23554492/walking-shoes/",
+      "title": "Best Walking Shoes",
+      "domain": "runnersworld.com",
+      "golden_type": "Journalism",
+      "confidence": "high",
+      "notes": "Runner's World is a major running/fitness publication"
+    },
+    {
+      "url": "https://www.outsideonline.com/outdoor-gear/run/best-running-shoes/",
+      "title": "Best Running Shoes",
+      "domain": "outsideonline.com",
+      "golden_type": "Journalism",
+      "confidence": "high",
+      "notes": "Outside Magazine is a major outdoor publication"
+    },
+    {
+      "url": "https://www.roadandtrack.com/rankings/g41992724/best-electric-cars/",
+      "title": "Best Electric Cars",
+      "domain": "roadandtrack.com",
+      "golden_type": "Journalism",
+      "confidence": "high",
+      "notes": "Road & Track is a major automotive publication"
+    },
+    {
+      "url": "https://www.quechoisir.org/guide-d-achat-batteries-et-stockage-d-energie-n95423/",
+      "title": "Guide d'achat : Batteries et stockage d'énergie",
+      "domain": "quechoisir.org",
+      "golden_type": "Journalism",
+      "confidence": "high",
+      "notes": "Que Choisir is a French consumer advocacy/journalism organization"
+    },
+    {
+      "url": "https://uk.trustpilot.com/review/puma.com",
+      "title": "Puma Reviews on Trustpilot",
+      "domain": "uk.trustpilot.com",
+      "golden_type": "Social / UGC",
+      "confidence": "high",
+      "notes": "Trustpilot is a user-generated review platform"
+    },
+    {
+      "url": "https://www.reddit.com/r/electricvehicles/comments/1b5z123/the_10_bestselling_evs_of_2025_so_far/",
+      "title": "The 10 Bestselling EVs of 2025 (So Far) : r/electricvehicles",
+      "domain": "reddit.com",
+      "golden_type": "Social / UGC",
+      "confidence": "high",
+      "notes": "Reddit is a user-generated content platform"
+    },
+    {
+      "url": "https://www.reddit.com/r/BuyItForLife/comments/uw6tva/comfortable_and_durable_sneakers_brand/",
+      "title": "Comfortable and durable sneakers brand",
+      "domain": "reddit.com",
+      "golden_type": "Social / UGC",
+      "confidence": "high",
+      "notes": "Reddit is a user-generated content platform"
+    },
+    {
+      "url": "https://www.reddit.com/r/F150Lightning/comments/16lqj9o/give_me_pros_and_cons_for_ford_lightning/",
+      "title": "Give me pros and cons for Ford lightning?",
+      "domain": "reddit.com",
+      "golden_type": "Social / UGC",
+      "confidence": "high",
+      "notes": "Reddit is a user-generated content platform"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=HGMKd45Yqp4",
+      "title": "YouTube Video",
+      "domain": "youtube.com",
+      "golden_type": "Social / UGC",
+      "confidence": "medium",
+      "notes": "YouTube video - likely user-generated content (creator/influencer)"
+    },
+    {
+      "url": "https://www.hyundai.fr/decouvrez-les-vehicules-electriques",
+      "title": "Découvrez les véhicules électriques Hyundai",
+      "domain": "hyundai.fr",
+      "golden_type": "Competitor Media",
+      "confidence": "high",
+      "notes": "Official Hyundai France website - competitor to Tesla/other EVs"
+    },
+    {
+      "url": "https://www.linkar.fr/blog/modele-ford-a-eviter-pannes-frequentes",
+      "title": "Modèles des modèles Ford à éviter pour éviter les pannes fréquentes",
+      "domain": "linkar.fr",
+      "golden_type": "Corporate Blogs & Content",
+      "confidence": "medium",
+      "notes": "Third-party automotive blog, not Ford official"
+    },
+    {
+      "url": "https://www.vwwlaurentien.com/fr/blog/fiabilite-volkswagen-analyse-et-conseils",
+      "title": "Fiabilité Volkswagen : analyse et conseils",
+      "domain": "vwwlaurentien.com",
+      "golden_type": "Corporate Blogs & Content",
+      "confidence": "medium",
+      "notes": "VW dealership blog - corporate content"
+    },
+    {
+      "url": "https://allo.solar/blog/post/quelle-est-la-meilleure-batterie-domestique.html",
+      "title": "Quelle est la meilleure batterie domestique",
+      "domain": "allo.solar",
+      "golden_type": "Corporate Blogs & Content",
+      "confidence": "high",
+      "notes": "Corporate blog from a solar company"
+    },
+    {
+      "url": "https://goalzero.com/collections/home-energy-storage-kits",
+      "title": "Home Energy Storage Kits",
+      "domain": "goalzero.com",
+      "golden_type": "Corporate Blogs & Content",
+      "confidence": "high",
+      "notes": "Goal Zero product pages - corporate content"
+    },
+    {
+      "url": "https://www.outdoorgearlab.com/topics/shoes-and-boots/best-running-shoes",
+      "title": "Best Running Shoes",
+      "domain": "outdoorgearlab.com",
+      "golden_type": "Aggregators / Encyclopedic",
+      "confidence": "high",
+      "notes": "Outdoor Gear Lab is a review aggregation site"
+    },
+    {
+      "url": "https://www.myfxbook.com/forex-brokers/fxtm",
+      "title": "FXTM Broker Review",
+      "domain": "myfxbook.com",
+      "golden_type": "Aggregators / Encyclopedic",
+      "confidence": "high",
+      "notes": "MyFXBook is a forex broker comparison/aggregation site"
+    },
+    {
+      "url": "https://www.dailyforex.com/forex-brokers/fxtm-review/fees",
+      "title": "FXTM Review - Fees",
+      "domain": "dailyforex.com",
+      "golden_type": "Aggregators / Encyclopedic",
+      "confidence": "high",
+      "notes": "DailyForex is a forex broker comparison site"
+    },
+    {
+      "url": "https://www.quora.com/What-are-some-pros-and-cons-of-BYD-auto-companys-electric-vehicles",
+      "title": "What are some pros and cons of BYD auto company's electric vehicles?",
+      "domain": "quora.com",
+      "golden_type": "Social / UGC",
+      "confidence": "high",
+      "notes": "Quora is a Q&A platform with user-generated content"
+    },
+    {
+      "url": "https://daa.sites.umanitoba.ca/wp-content/uploads/sites/12/ninja-forms/2/pp-Reference-Letter-pp-1.pdf",
+      "title": "University of Manitoba Document",
+      "domain": "umanitoba.ca",
+      "golden_type": "Academic/Research",
+      "confidence": "high",
+      "notes": "University of Manitoba is an academic institution (.ca university)"
+    },
+    {
+      "url": "https://www.tesla.com/fr_be/support/vehicle-maintenance",
+      "title": "Tesla Vehicle Maintenance",
+      "domain": "tesla.com",
+      "golden_type": "Owned Media",
+      "confidence": "high",
+      "notes": "Official Tesla website - brand owned media"
+    },
+    {
+      "url": "https://adidas.com",
+      "title": "Adidas Official",
+      "domain": "adidas.com",
+      "golden_type": "Owned Media",
+      "confidence": "high",
+      "notes": "Official Adidas website - if Adidas is the brand being analyzed"
+    },
+    {
+      "url": "https://report.adidas-group.com/2023/en/group-management-report-our-company/global-brands.html",
+      "title": "Adidas Group Report",
+      "domain": "adidas-group.com",
+      "golden_type": "Owned Media",
+      "confidence": "high",
+      "notes": "Official Adidas corporate report - owned media"
+    },
+    {
+      "url": "https://s1.q4cdn.com/806093406/files/doc_downloads/2021/07/nke-20210531-(2)-Exhibits_IR.pdf",
+      "title": "Nike Investor Relations Document",
+      "domain": "q4cdn.com",
+      "golden_type": "Press Release",
+      "confidence": "high",
+      "notes": "Q4 CDN hosts investor relations/press materials for companies"
+    },
+    {
+      "url": "https://www.consumerreports.org/cars/hybrids-evs/america-s-top-electric-vehicle-brands-a1190924950/",
+      "title": "America's top electric vehicle brands",
+      "domain": "consumerreports.org",
+      "golden_type": "Journalism",
+      "confidence": "high",
+      "notes": "Consumer Reports is a nonprofit consumer advocacy organization with journalism"
+    },
+    {
+      "url": "https://www.caranddriver.com/tesla",
+      "title": "Tesla - Car and Driver",
+      "domain": "caranddriver.com",
+      "golden_type": "Journalism",
+      "confidence": "high",
+      "notes": "Car and Driver is a major automotive publication"
+    },
+    {
+      "url": "https://www.motortrend.com/cars/tesla/cybertruck/2023/durability-testing-and-review/",
+      "title": "Tesla Cybertruck Durability Review",
+      "domain": "motortrend.com",
+      "golden_type": "Journalism",
+      "confidence": "high",
+      "notes": "MotorTrend is a major automotive publication"
+    },
+    {
+      "url": "https://www.topgear.com/car-news/electric/best-electric-pickups-14-trucks-you-need-check-out-now",
+      "title": "Best Electric Pickups",
+      "domain": "topgear.com",
+      "golden_type": "Journalism",
+      "confidence": "high",
+      "notes": "Top Gear is a major automotive publication"
+    },
+    {
+      "url": "https://civicscience.com/brand-to-watch-new-balance/",
+      "title": "Brand to Watch: New Balance",
+      "domain": "civicscience.com",
+      "golden_type": "Corporate Blogs & Content",
+      "confidence": "medium",
+      "notes": "CivicScience is a market research company blog"
+    },
+    {
+      "url": "https://www.energy-storage.news/stem-inc-profits-increase-as-pivot-from-battery-storage-to-software-and-services-continues/",
+      "title": "Stem Inc profits increase",
+      "domain": "energy-storage.news",
+      "golden_type": "Journalism",
+      "confidence": "high",
+      "notes": "Energy Storage News is an industry news publication"
+    },
+    {
+      "url": "https://thedriven.io/2025/12/09/tesla-produces-4-million-evs-at-its-most-productive-factory/",
+      "title": "Tesla produces 4 million EVs",
+      "domain": "thedriven.io",
+      "golden_type": "Journalism",
+      "confidence": "high",
+      "notes": "The Driven is an EV/clean energy news site"
+    },
+    {
+      "url": "https://www.frandroid.com/guide-d-achat/voitures-electriques/1651081_meilleures-voitures-electriques-sans-permis",
+      "title": "Meilleures voitures électriques sans permis",
+      "domain": "frandroid.com",
+      "golden_type": "Journalism",
+      "confidence": "high",
+      "notes": "Frandroid is a French technology news site"
+    },
+    {
+      "url": "https://www.automobile-propre.com/avis/hyundai-kona-electrique-avis-membres/",
+      "title": "Avis Hyundai Kona électrique",
+      "domain": "automobile-propre.com",
+      "golden_type": "Social / UGC",
+      "confidence": "high",
+      "notes": "User reviews section of Automobile Propre"
+    },
+    {
+      "url": "https://www.caradisiac.com/que-vaut-la-peugeot-e-208-au-classement-des-vehicules-electriques-2022-194765.htm",
+      "title": "Que vaut la Peugeot e-208",
+      "domain": "caradisiac.com",
+      "golden_type": "Journalism",
+      "confidence": "high",
+      "notes": "Caradisiac is a French automotive news site"
+    },
+    {
+      "url": "https://www.largus.fr/actualite-automobile/meilleurs-vehicules-electriques-en-france-en-2023-11099834.html",
+      "title": "Les meilleurs véhicules électriques en France",
+      "domain": "largus.fr",
+      "golden_type": "Journalism",
+      "confidence": "high",
+      "notes": "L'Argus is a French automotive publication"
+    },
+    {
+      "url": "https://www.place-des-energies.fr/stockage-energie-entreprise-benefices-perspectives/",
+      "title": "Stockage d'énergie en entreprise",
+      "domain": "place-des-energies.fr",
+      "golden_type": "Corporate Blogs & Content",
+      "confidence": "high",
+      "notes": "Corporate blog about energy solutions"
+    },
+    {
+      "url": "https://www.happ-e.fr/blog/step-stockage-energie-hydraulique",
+      "title": "Les STEP : le stockage de l'énergie hydraulique",
+      "domain": "happ-e.fr",
+      "golden_type": "Corporate Blogs & Content",
+      "confidence": "high",
+      "notes": "Happ-e by ENGIE corporate blog"
+    },
+    {
+      "url": "https://runtothefinish.com/marathon-running-shoes/",
+      "title": "Marathon Running Shoes",
+      "domain": "runtothefinish.com",
+      "golden_type": "Corporate Blogs & Content",
+      "confidence": "medium",
+      "notes": "Personal/corporate running blog"
+    },
+    {
+      "url": "https://thestrategystory.com/blog/nike-swot-analysis/",
+      "title": "Nike SWOT Analysis",
+      "domain": "thestrategystory.com",
+      "golden_type": "Corporate Blogs & Content",
+      "confidence": "medium",
+      "notes": "Business strategy blog"
+    },
+    {
+      "url": "https://www.interactivecrypto.com/fxtm-review-2024-comprehensive-guide-for-traders",
+      "title": "FXTM Review 2024",
+      "domain": "interactivecrypto.com",
+      "golden_type": "Aggregators / Encyclopedic",
+      "confidence": "medium",
+      "notes": "Crypto/trading review aggregation site"
+    },
+    {
+      "url": "https://www.fxempire.com/brokers/fxtm",
+      "title": "FXTM Broker Review",
+      "domain": "fxempire.com",
+      "golden_type": "Aggregators / Encyclopedic",
+      "confidence": "high",
+      "notes": "FX Empire is a forex broker comparison site"
+    },
+    {
+      "url": "https://www.evannex.com/blogs/news/should-i-buy-a-tesla-the-pros-cons-of-owning-a-tesla",
+      "title": "Should I Buy a Tesla? The Pros & Cons",
+      "domain": "evannex.com",
+      "golden_type": "Corporate Blogs & Content",
+      "confidence": "high",
+      "notes": "EVANNEX is a Tesla accessories company blog"
+    },
+    {
+      "url": "https://www.byrdie.com/2025-sneaker-trends-8780067",
+      "title": "2025 Sneaker Trends",
+      "domain": "byrdie.com",
+      "golden_type": "Journalism",
+      "confidence": "high",
+      "notes": "Byrdie is a fashion/lifestyle publication (Dotdash Meredith)"
+    },
+    {
+      "url": "https://culted.com/hoka-clifton-9-sneaker-collaboration-running-shoes/",
+      "title": "Hoka Clifton 9 Sneaker",
+      "domain": "culted.com",
+      "golden_type": "Journalism",
+      "confidence": "medium",
+      "notes": "Culted is a culture/lifestyle publication"
+    },
+    {
+      "url": "https://simplywall.st/stocks/us/consumer-durables/nyse-nke/nike/news/reassessing-nike-nke-valuation-after-a-steady-earnings-expan",
+      "title": "Reassessing Nike Valuation",
+      "domain": "simplywall.st",
+      "golden_type": "Aggregators / Encyclopedic",
+      "confidence": "high",
+      "notes": "Simply Wall St is a stock analysis/aggregation platform"
+    }
+  ]
+}

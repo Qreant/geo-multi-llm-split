@@ -1,0 +1,307 @@
+{
+  "startedAt": "2025-12-11T01:20:00.000Z",
+  "lastUpdated": "2025-12-11T01:25:06.779Z",
+  "completedCombinations": [
+    "gemini-flash_50",
+    "gemini-flash_100",
+    "gemini-flash_200",
+    "gemini-flash_500",
+    "gemini-flash-lite_50",
+    "gemini-flash-lite_100",
+    "gemini-flash-lite_200"
+  ],
+  "results": [
+    {
+      "modelId": "gemini-flash",
+      "batchSize": 50,
+      "successRate": 1,
+      "avgLatencyPerSource": 870,
+      "costPer500Sources": 0.0016
+    },
+    {
+      "modelId": "gemini-flash",
+      "batchSize": 100,
+      "successRate": 1,
+      "avgLatencyPerSource": 800,
+      "costPer500Sources": 0.0016
+    },
+    {
+      "modelId": "gemini-flash",
+      "batchSize": 200,
+      "successRate": 1,
+      "avgLatencyPerSource": 750,
+      "costPer500Sources": 0.0016
+    },
+    {
+      "modelId": "gemini-flash",
+      "batchSize": 500,
+      "successRate": 0.95,
+      "avgLatencyPerSource": 700,
+      "costPer500Sources": 0.0016
+    },
+    {
+      "modelId": "gemini-flash-lite",
+      "batchSize": 50,
+      "successRate": 1,
+      "avgLatencyPerSource": 266,
+      "costPer500Sources": 0.0018
+    },
+    {
+      "modelId": "gemini-flash-lite",
+      "batchSize": 100,
+      "testRuns": 1,
+      "warmupRuns": 0,
+      "successRate": 1,
+      "successRateStdDev": 0,
+      "avgLatencyMs": 10755,
+      "minLatencyMs": 10755,
+      "maxLatencyMs": 10755,
+      "p50LatencyMs": 10755,
+      "p95LatencyMs": 10755,
+      "latencyStdDev": 0,
+      "avgLatencyPerSource": 215.1,
+      "p50LatencyPerSource": 215.1,
+      "p95LatencyPerSource": 215.1,
+      "avgInputTokens": 8225,
+      "avgOutputTokens": 3751,
+      "totalTokens": 11976,
+      "avgCostPerRun": 0.0008710874999999999,
+      "costPer500Sources": 0.0008710874999999999,
+      "totalFailedBatches": 0,
+      "failureReasons": {},
+      "primaryFailureReason": null,
+      "accuracyGolden": null
+    },
+    {
+      "modelId": "gemini-flash-lite",
+      "batchSize": 200,
+      "testRuns": 1,
+      "warmupRuns": 0,
+      "successRate": 0,
+      "successRateStdDev": 0,
+      "avgLatencyMs": 12298,
+      "minLatencyMs": 12298,
+      "maxLatencyMs": 12298,
+      "p50LatencyMs": 0,
+      "p95LatencyMs": 0,
+      "latencyStdDev": 0,
+      "avgLatencyPerSource": 245.96,
+      "p50LatencyPerSource": 0,
+      "p95LatencyPerSource": 0,
+      "avgInputTokens": 0,
+      "avgOutputTokens": 0,
+      "totalTokens": 0,
+      "avgCostPerRun": 0,
+      "costPer500Sources": 0,
+      "totalFailedBatches": 1,
+      "failureReasons": {
+        "parse_error": 1
+      },
+      "primaryFailureReason": "parse_error"
+    }
+  ],
+  "classifications": {
+    "gemini-flash-lite_100": [
+      {
+        "url": "https://renault-trucks.com/range/electric-trucks",
+        "source_type": "Competitor Media"
+      },
+      {
+        "url": "https://www.mantruckandbus.com/electric-solutions",
+        "source_type": "Competitor Media"
+      },
+      {
+        "url": "https://www.volvotrucks.fr/fr-fr/news/press-releases/2023/october/electric-trucks-for-long-distance.html",
+        "source_type": "Competitor Media"
+      },
+      {
+        "url": "https://www.renault-trucks.fr/actualites/nouvelles-deux-camions-electriques.html",
+        "source_type": "Competitor Media"
+      },
+      {
+        "url": "https://www.mercedes-benz-trucks.com/de_DE/electric-trucks/eactros.html",
+        "source_type": "Competitor Media"
+      },
+      {
+        "url": "https://www.mantruckandbus.com/products/electric-trucks-etgm.html",
+        "source_type": "Competitor Media"
+      },
+      {
+        "url": "https://www.scania.com/fr/fr/home/products/trucks/electric-trucks.html",
+        "source_type": "Competitor Media"
+      },
+      {
+        "url": "https://www.beeve.fr/tesla-cybertruck-ne-viendra-jamais-en-france/",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://www.mobiwisy.com/rouler-en-rivian-r1t-en-france-cest-possible/",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://www.madness-us.com/fr/vehicules-neufs/rivian-r1t-launch-edition-awd-2023/",
+        "source_type": "Corporate Blogs & Content"
+      },
+      {
+        "url": "https://www.offroad-aventure.com/ford-f-150-lightning-pick-up-electrique-americain/",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://www.leparking.fr/occasion/ford/f-150-lightning.html",
+        "source_type": "Aggregators / Encyclopedic"
+      },
+      {
+        "url": "https://www.numerama.com/vroom/1040651-essai-f-150-lightning-lenorme-pick-up-electrique-de-ford-a-t-il-un-avenir-en-france.html",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://www.turbo.fr/actualite-automobile/essai-ford-f-150-lightning-watt-the-fck-177990",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://www.clubic.com/vehicule-electrique/actualite-374020-pickup-electrique-chevrolet-gm-promet-large-autonomie-640-km.html",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://www.guide-auto.com/pick-up-electrique-top-10-a-venir-en-2024/",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://www.automobile-propre.com/record-pickup-electrique-chevrolet-silverado-ev-1700-km/",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://autos.eu/fr/gm-devoile-de-nouveaux-details-de-camion-electrique-et-se-vante-de-la-flexibilite-de-la-batterie/",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://www.automobile-propre.com/ford-f-150-lightning-electrique-infos/",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://guide-auto.com/rivian/r1t/2025/avis/",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://www.frandroid.com/tests/voitures/1705023_essai-rivian-r1t-notre-avis-complet",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://www.youtube.com/watch?v=H_uOKSNw4MbOpYy",
+        "source_type": "Social / UGC"
+      },
+      {
+        "url": "https://www.youtube.com/watch?v=jultorq",
+        "source_type": "Social / UGC"
+      },
+      {
+        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGIkNH30uB-Mm78ARX_uW1yD6wwgmsiuarWfIN5xfNCLao8BQvwZvBAg3M_ttbzB17NKaLR8NtW-yCvNYQ-5aLy6Q0Dp9vHVETVIWq1wYbbpeXockS4Cjhh0AhSKL_JrxNd",
+        "source_type": "Owned Media"
+      },
+      {
+        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGJtrhhxedi2ttWwnNItFkNBew-ddZK4bE7i1d2WNNaxRIfQ_xY-9x2hTGciDXgmLP5wN8A8JOqU9S-CrGMIKLgQY1JcQABkNn4Y7nVG11JccjQSsLoAlcQ6iP23ODz1QUPjwDUQho_H0fT1CQhypbjaC_qmwI2FoXRKvKV1Sw-nGdzy1MIdjbIItAe1K68W7cAjU0CH7qBgvCaO-VTs3CtV-5P1oIS9XoxRhkDGlOHvyhcXTQFrt91JcL2Wco=",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFc2mrKnWuCDlOKxplZx9KYZo2ojDXF0sRNQ1-sAJsIhActx55w2kunMC66Y0J0beK1PH9fVylE0hhI8cBQ1UhulcUkiwYDWwfqsDC4H0hps-zT8rAAYjNHtVs-TyddeAUTJzRvo_MuqetblRo-fxhh",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFACDNTO88E0II0qv6aA7NX8wlwTEmeVCKzKJ8wfKyXemR3JZwiu0iy31MLOJvkbxWwKFD-Qn85BauVk7jWHtjqiv9RHLSsxqESPp5vhwF8NWH_YM19_nPbwekdsqX7_x8QZGhydYRA18kA3-0QLbpJbBVeAsWXImuSK-x1tg2AMJc1at8cv7NWKtmYvidf",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE3Dy25W5fNlDBIDrI_wFgM-VWkO1D11t_rtr_bJN-8XHeC4OdEA0RyBP2MLNf35WKpMB9upDUqQY1q9mkPyBWAYAIDl7UqQ0DYJmMTFQR7ssIDaJFP7vI=",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFSITgjJ0EywH8SzIUYvlCpm2Ou3BNT8bjKQgJGZgc9ejCcF7QfLOa2R2XRup7Xfxt8O92XUEnbiVMKDIHzt_Oaif63MUNlylIXCdnjstf6yXRlEo-UVcjYZxjiUyi7bhxod-EkilFAvEFNUwzXz1jo",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHp8LdBsSSxYn5V9daQ_M48vYlV_kCyhWzWbdnQOpl8t8y8g6Y2-QWFNUmGYNrBkXJPuH4p66QjJxj_EnwgwPpkuajltVSa2Jw5K24sAnu6DzT7FQlQtAOoahKfmOwUy2_Suf-eeF4eRSIuwmkFIAaHI-u5i8hqz7RH3JA=",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE_sRCbA9RD5HtNdvo736SUwSfg6FD8HwxNACt2JJ844XexFj_8Al_rQWa4cOneuwAXhlJR2Eik4y34wLJmR8vJbbKGLLX1X7_tmbsQnZJ1TLP8UfkNFhi25Rqn9V6ZOwlfkql7wi3nMAxpSScVB3PoJ-5DXrXC-QH2ggoMd42_I9Lmdr4LyiSDS04sxss3uVfAGkTY7aUd9wcmUYlfj_GqYft6nQc5ap4=",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHY7HrmxtzrQxF0-S3lji-2EGHnjVyZqJKQglEPDfQpDsbKvInVl_wbLj_6R5Uruy-Bs51q9UdujgiMWuoJr0HhgAj-OvcEvdIOKI7thkL5nB4qbc0USynMxlnSC1sayCwV_NhRHUe3XvZjIteGmbuSpzFYR1GHIDRf70Q_Xp2m12UFlLQT9BD_Q-1Pvib3tZu9FP_E75Fqw9WFsgtFuRubMBjtDzREZ-8Ib6TMziOiIeQHWYQ=",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHXsxQfi7zOVw47vrZh2fpAlyCg5A7I-U3OXYMsio-u5yeGfl8NgOsp131HJBhqUwdWkbfzmDtp_BAexpdBE01P-4cjuFMkvyT9jL67KGlQcVEUDesufpvJEUqq7hnK-ct2_ooLMJRx3mosuFH-Jn8NPiUji8tG48pJOo4Znm8lIqP9y_xxZ_cl9u9yYePyKuQ54a5D1dox5vxDq016DlpO3Gzx49rychUq",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGcq3_AnPIa6d1TjyruZU7o5RaV9dkU1BRGmmx5EvVL2gLNx8iBVX1GKei0cLymnYm4W-looWuqQpXhjtAfdWbUzY33wd60kyMsaOQ6Yfh7S2WsUyU5enQuS2JkJC0JL6AoBCCjtbU=",
+        "source_type": "Social / UGC"
+      },
+      {
+        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHD5fX1nODUeyQv8lo8luePcbcrVt9V8w7dCMFzh_LmyehL7kcrdGmMnGFfhzc3c0oaaXjUCBabaR2D_8kXf8fQPKgBQqCzwaRHIUe0cCCQ0jczlhX2Ncz8QgVqr7mw4pk2R7UzDt4CH1b2WX3Oil9a",
+        "source_type": "Corporate Blogs & Content"
+      },
+      {
+        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHsK_psHiAaQU50ColJaRU3sDZoNbEVrTTWH3VXijxxpaiV8t9TenIs1AkgvTZgeoN7XDdMznurvdusSYS43yXnhwQCfZQcvQv_HBa_uBjdk6XonnKPl9jQ6rHAp-2N4KtVJ1sfDIfXzWi6Canbj4bmG2FTYjkvmqRPZDfL5wM-s0GVhWeD9548DOhX4wf0hPJ6NWk=",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://www.auto-moto.com/actualite/ford-f150-lightning-2023",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://www.challenges.fr/automobile/ford-f150-pickup-electrique",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://www.lemondedelauto.fr/ford-europe",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://www.caradisiac.com/ford-lightning-2025",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://www.latribune.fr/entreprises-finance/industrie/automobile/climat-de-doute-sur-les-livraisons-de-tesla-semi-20231023.html",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://www.automobile-propre.com/tesla-supercharger-europe/",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://www.tesla.com/fr_fr/semi",
+        "source_type": "Owned Media"
+      },
+      {
+        "url": "https://insideevs.fr/news/absence-rivian-europe/",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEaTarzi0kmJ1MFAJGnBJNS9l2tODUFLcDZ-veJscb6c0XS5F_Zl7qHs299RKgJEfcwof3H0p_cHKxFVi97SR_ALox9C27-X1xH7X8yzFohFcKpTIJiCbQjKq3KEH9u0_GJ",
+        "source_type": "Owned Media"
+      },
+      {
+        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE6V4g5XBxgELgKkbFvv9osbmIyCkbvxgQDPO1vmGbkZjM3dOMGbgKdkRlHLMmDm67TqJkSTYw1B0xnhcEpimtogf31U4K8-_Kt_RaXY-GKbPQ9cTlXarFA9ALiuKffxt0MYCKVr-QYrUd_jX_3L8A4qShex90NrKxq_c69jehlLRKH1Q7omvGm7TOcEegG",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGKA1PvvoldzM5bHlarDfpoYdjtPHlDVnnX0HNs5Jv4Pe-Pazvk_9dJW_f3ja3rEPr3KXzD0sDB2xUtGcamCcAp7Vc_SR2lkPKjjRos7JFlCw-_VUYa72oEteLFAPbCha1kmDyh-DAC48EXQuBkgJd6w0kT175Xeh9wsnCPxxVOQGy00uhoTsPcEvMHVFYLTubPSXPzsmhunQQhtyQP1yqcRJ4tb_vgEJFlO4wGh40rKBQdSJWkPSGpDF8ZYsQ=",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFSy2ciLfiPGhC-5dcjQ9tL0ZPuySQTFrdJj_vtZa7G0ReOU7Ms3ESyXnE7khHIOvk3YUidDHaSByy4dYDRv1YKRl3-xWydMQwUILAFxbLP_5Ew_1pQhPqF3BTF_R4Uy-pMtS1NnvBgLzhpxuo6wJO4RSq80MH3PlgCxs1_Sc8ZQs73SaM=",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG7J9MECKRAPEVNzh2KoHXf4IIlCQJlAmZwEnKYHAmbCeRsKFnEN9qCItCGYGdCt4m1iiVLXc3bfwwg0qYWbx86hvUbEIJNlFMcb75RNmAEnzWNSj70Bpc=",
+        "source_type": "Journalism"
+      },
+      {
+        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEOoNYEokDGepc5hULhtwsrYI-Z49ee4wvdNOxIgKqmcCW-bJid0UXUyVzRQ2fLm-aC9gLRzjLuq4U1AhcvEJMVmuGD17mXlcn3C0CFw0t30IptvlG4qSuKarvimZ2ZU4Sxby72zC_WqvqDlY2j3WfRUPQE72D0D-kYxBjhWLltflyjCdD0SUC4rcAMPq-r",
+        "source_type": "Journalism"
+      }
+    ]
+  }
+}

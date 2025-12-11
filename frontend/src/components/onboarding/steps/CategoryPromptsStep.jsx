@@ -269,7 +269,11 @@ export default function CategoryPromptsStep({ entity, markets, categoryFamilies,
             <label className="block text-sm font-medium text-[#757575] mb-3">Category</label>
             <div className="flex flex-wrap gap-2">
               {categoryFamilies.map(category => {
-                const categoryName = category.translations[selectedMarket]?.name || category.canonical_name;
+                // For "All Languages" market, always use English/canonical name
+                const isAllLanguages = currentMarket?.language === 'All Languages';
+                const categoryName = isAllLanguages
+                  ? category.canonical_name
+                  : (category.translations[selectedMarket]?.name || category.canonical_name);
                 return (
                   <button
                     key={category.id}
@@ -297,7 +301,9 @@ export default function CategoryPromptsStep({ entity, markets, categoryFamilies,
         </span>
         <span className="text-[#757575]">→</span>
         <span className="font-medium text-[#212121]">
-          {currentCategory?.translations[selectedMarket]?.name || currentCategory?.canonical_name}
+          {currentMarket?.language === 'All Languages'
+            ? currentCategory?.canonical_name
+            : (currentCategory?.translations[selectedMarket]?.name || currentCategory?.canonical_name)}
         </span>
       </div>
 

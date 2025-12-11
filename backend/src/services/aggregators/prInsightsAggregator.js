@@ -997,6 +997,204 @@ function getTopCompetitor(mentions) {
 }
 
 /**
+ * Extract Owned Media Gap opportunities
+ * Analyzes visibility and competitive questions to identify where owned media is not being cited
+ * @param {Object} visibilityAnalysis - Visibility analysis with questions and sources
+ * @param {Object} competitiveAnalysis - Competitive analysis data
+ * @param {Array} allSources - All classified sources
+ * @param {Object} config - Configuration with entity name
+ * @returns {Object} Owned media gap analysis with action card
+ */
+function extractOwnedMediaOpportunities(visibilityAnalysis, competitiveAnalysis, allSources, config) {
+  const entityName = config.entity || 'Brand';
+
+  // Count owned media and competitor media citations
+  let ownedMediaCitations = 0;
+  let competitorMediaCitations = 0;
+  const competitorBreakdown = {};
+
+  (allSources || []).forEach(source => {
+    const sourceType = source.source_type || '';
+    if (sourceType === 'Owned Media') {
+      ownedMediaCitations++;
+    } else if (sourceType === 'Competitor Media') {
+      competitorMediaCitations++;
+      const competitorName = source.competitor_name || 'Unknown Competitor';
+      competitorBreakdown[competitorName] = (competitorBreakdown[competitorName] || 0) + 1;
+    }
+  });
+
+  // Analyze questions to find those without owned media citations
+  const visibilityQuestionsWithoutOwned = [];
+  const competitiveQuestionsWithoutOwned = [];
+
+  // Check visibility questions (ranked_first + not_ranked_first)
+  const allVisibilityQuestions = [
+    ...(visibilityAnalysis?.ranked_first_questions || []),
+    ...(visibilityAnalysis?.not_ranked_first_questions || [])
+  ];
+
+  allVisibilityQuestions.forEach(q => {
+    const questionSources = [];
+    // Collect sources from all LLM responses
+    Object.values(q.llm_responses || {}).forEach(resp => {
+      if (resp.sources) {
+        questionSources.push(...resp.sources);
+      }
+    });
+
+    // Check if any source is Owned Media
+    const hasOwnedMedia = questionSources.some(s => s.source_type === 'Owned Media');
+    if (!hasOwnedMedia && questionSources.length > 0) {
+      // Count competitor media in this question
+      const competitorCount = questionSources.filter(s => s.source_type === 'Competitor Media').length;
+      visibilityQuestionsWithoutOwned.push({
+        question: q.question,
+        total_sources: questionSources.length,
+        competitor_sources: competitorCount,
+        top_source_types: [...new Set(questionSources.map(s => s.source_type))].slice(0, 3)
+      });
+    }
+  });
+
+  // Check competitive questions from not_ranked_first (those marked as competitive)
+  const notRankedFirst = visibilityAnalysis?.not_ranked_first_questions || [];
+  notRankedFirst.forEach(q => {
+    const llmResponses = q.llm_responses || {};
+    const isCompetitive = Object.values(llmResponses).some(r => r.rank === null && r.chosenEntity);
+
+    if (isCompetitive) {
+      const questionSources = [];
+      Object.values(llmResponses).forEach(resp => {
+        if (resp.sources) {
+          questionSources.push(...resp.sources);
+        }
+      });
+
+      const hasOwnedMedia = questionSources.some(s => s.source_type === 'Owned Media');
+      if (!hasOwnedMedia && questionSources.length > 0) {
+        const competitorCount = questionSources.filter(s => s.source_type === 'Competitor Media').length;
+        competitiveQuestionsWithoutOwned.push({
+          question: q.question,
+          total_sources: questionSources.length,
+          competitor_sources: competitorCount,
+          competitor_chosen: llmResponses.gemini?.chosenEntity || llmResponses.openai?.chosenEntity
+        });
+      }
+    }
+  });
+
+  // Calculate totals
+  const totalVisibilityQuestions = allVisibilityQuestions.length;
+  const totalCompetitiveQuestions = notRankedFirst.filter(q => {
+    const llmResponses = q.llm_responses || {};
+    return Object.values(llmResponses).some(r => r.rank === null && r.chosenEntity);
+  }).length;
+
+  const totalQuestionsAnalyzed = totalVisibilityQuestions + totalCompetitiveQuestions;
+  const questionsWithoutOwned = visibilityQuestionsWithoutOwned.length + competitiveQuestionsWithoutOwned.length;
+  const coverageGapPercentage = totalQuestionsAnalyzed > 0
+    ? Math.round((questionsWithoutOwned / totalQuestionsAnalyzed) * 100)
+    : 0;
+
+  // Calculate citation ratio
+  const citationRatio = competitorMediaCitations > 0
+    ? Math.round((ownedMediaCitations / competitorMediaCitations) * 100) / 100
+    : ownedMediaCitations > 0 ? 999 : 0;
+
+  // Sort competitor breakdown
+  const competitorDominance = Object.entries(competitorBreakdown)
+    .map(([competitor, citations]) => ({ competitor, citations }))
+    .sort((a, b) => b.citations - a.citations)
+    .slice(0, 5);
+
+  // Determine if there's a significant gap (owned media cited in less than 20% of questions)
+  const hasSignificantGap = coverageGapPercentage >= 50 || (competitorMediaCitations > ownedMediaCitations * 3);
+
+  // Calculate impact and effort scores
+  const impactScore = hasSignificantGap
+    ? Math.min(0.5 + (coverageGapPercentage / 100) * 0.4 + (competitorMediaCitations > ownedMediaCitations ? 0.1 : 0), 1.0)
+    : 0.3;
+
+  // Effort is medium - requires content/SEO audit but not product changes
+  const effortScore = 0.50;
+
+  const priority = categorizePriority(impactScore, effortScore);
+
+  // Build the action card opportunity
+  const opportunity = hasSignificantGap ? {
+    id: 'OWNED_MEDIA_001',
+    title: `Your website is not being picked up by AI search engines`,
+    description: `LLMs are citing competitor sources ${competitorMediaCitations}x while your owned media appears only ${ownedMediaCitations}x. ${coverageGapPercentage}% of queries have no citations from your website.`,
+    opportunity_type: 'Owned Media Gap',
+    theme_category: 'AI Search Visibility',
+    current_state: {
+      owned_media_citations: ownedMediaCitations,
+      competitor_media_citations: competitorMediaCitations,
+      citation_ratio: citationRatio,
+      visibility_questions_without_owned: visibilityQuestionsWithoutOwned.length,
+      competitive_questions_without_owned: competitiveQuestionsWithoutOwned.length,
+      total_questions_analyzed: totalQuestionsAnalyzed,
+      coverage_gap_percentage: coverageGapPercentage
+    },
+    competitor_dominance: competitorDominance,
+    scores: {
+      impact_score: impactScore,
+      impact_label: getImpactLabel(impactScore),
+      effort_score: effortScore,
+      effort_label: getEffortLabel(effortScore)
+    },
+    priority: priority,
+    recommended_actions: [
+      'Run an LLM discoverability audit on your website to identify indexing issues',
+      'Ensure key product/service pages have structured data markup (JSON-LD)',
+      `Create authoritative content addressing the ${questionsWithoutOwned} questions where you're not cited`,
+      'Review competitor content strategy for topics where they dominate citations',
+      'Optimize content for AI retrieval: clear headings, factual statements, authoritative tone'
+    ],
+    evidence: [
+      {
+        type: 'visibility_gap',
+        text: `${visibilityQuestionsWithoutOwned.length} visibility questions have 0 owned media sources cited`,
+        questions_sample: visibilityQuestionsWithoutOwned.slice(0, 3).map(q => q.question)
+      },
+      {
+        type: 'competitive_gap',
+        text: `${competitiveQuestionsWithoutOwned.length} competitive questions have 0 owned media sources cited`,
+        questions_sample: competitiveQuestionsWithoutOwned.slice(0, 3).map(q => q.question)
+      }
+    ],
+    questions_without_owned_media: {
+      visibility: visibilityQuestionsWithoutOwned,
+      competitive: competitiveQuestionsWithoutOwned
+    },
+    metadata: {
+      analysis_scope: 'visibility_and_competitive',
+      entity: entityName
+    }
+  } : null;
+
+  return {
+    summary: {
+      owned_media_citations: ownedMediaCitations,
+      competitor_media_citations: competitorMediaCitations,
+      citation_ratio: citationRatio,
+      total_questions_analyzed: totalQuestionsAnalyzed,
+      questions_without_owned_media: questionsWithoutOwned,
+      coverage_gap_percentage: coverageGapPercentage,
+      has_significant_gap: hasSignificantGap
+    },
+    competitor_breakdown: competitorBreakdown,
+    competitor_dominance: competitorDominance,
+    questions_without_owned_media: {
+      visibility: visibilityQuestionsWithoutOwned,
+      competitive: competitiveQuestionsWithoutOwned
+    },
+    opportunity: opportunity
+  };
+}
+
+/**
  * Generate outreach recommendations based on priority targets
  */
 function generateOutreachRecommendations(criticalDomains, highPriorityDomains, config) {
@@ -1190,6 +1388,32 @@ export function aggregatePRInsights(aggregatedAnalysis, config, allSources = [])
   const prioritySourceTargets = analyzePrioritySourceTargets(allOpportunities, allSources, config, aggregatedAnalysis);
   console.log(`[PRInsightsAggregator] Identified ${prioritySourceTargets.summary.total_domains} unique domains, ${prioritySourceTargets.summary.critical_targets} critical targets`);
 
+  // Extract Owned Media Gap analysis
+  console.log('[PRInsightsAggregator] Analyzing owned media gaps...');
+  const ownedMediaAnalysis = extractOwnedMediaOpportunities(
+    aggregatedAnalysis.visibility,
+    aggregatedAnalysis.competitive_metrics || aggregatedAnalysis.competitive,
+    allSources,
+    config
+  );
+  console.log(`[PRInsightsAggregator] Owned media gap: ${ownedMediaAnalysis.summary.coverage_gap_percentage}% questions without owned media`);
+
+  // Add owned media opportunity to all opportunities if significant gap exists
+  if (ownedMediaAnalysis.opportunity) {
+    console.log('[PRInsightsAggregator] Adding Owned Media Gap opportunity');
+    allOpportunities.unshift(ownedMediaAnalysis.opportunity); // Add at the beginning for visibility
+
+    // Update priority summary for the new opportunity
+    const tier = ownedMediaAnalysis.opportunity.priority.tier.toLowerCase().replace(/\s+/g, '_');
+    if (prioritySummary[tier]) {
+      prioritySummary[tier].count++;
+    }
+
+    // Update theme distribution
+    const theme = ownedMediaAnalysis.opportunity.theme_category.toLowerCase().replace(/\s+/g, '_');
+    themeDistribution[theme] = (themeDistribution[theme] || 0) + 1;
+  }
+
   console.log(`[PRInsightsAggregator] Generated ${allOpportunities.length} total opportunities`);
   console.log(`[PRInsightsAggregator] Priority distribution: Critical=${prioritySummary.critical.count}, Strategic=${prioritySummary.strategic.count}, Quick Wins=${prioritySummary.quick_wins.count}, Low Priority=${prioritySummary.low_priority.count}`);
 
@@ -1202,6 +1426,7 @@ export function aggregatePRInsights(aggregatedAnalysis, config, allSources = [])
     theme_distribution: themeDistribution,
     metrics_overview: metricsOverview,
     priority_source_targets: prioritySourceTargets,
+    owned_media_analysis: ownedMediaAnalysis,
     opportunities: allOpportunities
   };
 }

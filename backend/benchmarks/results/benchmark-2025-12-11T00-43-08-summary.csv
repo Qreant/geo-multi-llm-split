@@ -1,0 +1,2 @@
+model_id,batch_size,test_runs,success_rate,avg_latency_ms,p50_latency_ms,p95_latency_ms,latency_per_source_ms,avg_input_tokens,avg_output_tokens,cost_per_500_sources,accuracy_golden,accuracy_consensus,primary_failure_reason
+deepseek-chat,50,1,50.0%,82024,103766,103766,1640,7624,3043,$0.0019,-,-,unknown

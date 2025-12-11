@@ -121,7 +121,9 @@ export default function CompetitorsStep({ entity, markets, categoryFamilies, com
                 <div className="flex items-center gap-3">
                   <span className="text-lg">📁</span>
                   <span className="font-medium text-[#212121]">
-                    {primaryTranslation?.name || category.canonical_name}
+                    {primaryMarket.language === 'All Languages'
+                      ? category.canonical_name
+                      : (primaryTranslation?.name || category.canonical_name)}
                   </span>
                 </div>
 
@@ -143,7 +145,10 @@ export default function CompetitorsStep({ entity, markets, categoryFamilies, com
                   {markets.map((market, marketIndex) => {
                     const marketCompetitors = getCompetitors(category.id, market.code);
                     const inputKey = `${category.id}-${market.code}`;
-                    const categoryName = category.translations[market.code]?.name || category.canonical_name;
+                    // For "All Languages" market, always use English/canonical name
+                    const categoryName = market.language === 'All Languages'
+                      ? category.canonical_name
+                      : (category.translations[market.code]?.name || category.canonical_name);
 
                     return (
                       <div

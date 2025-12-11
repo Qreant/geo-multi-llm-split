@@ -161,7 +161,9 @@ export default function ReviewStep({ config, onLaunch, onBack, onEditStep, error
                             <ChevronDown className="w-4 h-4 text-[#757575]" />
                           )}
                           <span className="font-medium text-[#212121]">
-                            {category.translations[primaryMarket.code]?.name || category.canonical_name}
+                            {primaryMarket.language === 'All Languages'
+                              ? category.canonical_name
+                              : (category.translations[primaryMarket.code]?.name || category.canonical_name)}
                           </span>
                         </div>
                       </td>
@@ -198,7 +200,9 @@ export default function ReviewStep({ config, onLaunch, onBack, onEditStep, error
                         </td>
                         {markets.map(market => {
                           const comps = competitors[category.id]?.[market.code] || [];
-                          const categoryName = category.translations[market.code]?.name || '—';
+                          const categoryName = market.language === 'All Languages'
+                            ? category.canonical_name
+                            : (category.translations[market.code]?.name || '—');
 
                           return (
                             <td

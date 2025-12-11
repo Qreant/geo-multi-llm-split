@@ -186,7 +186,9 @@ export default function CategoriesStep({ entity, markets, categoryFamilies, onCo
                   {/* Category Name */}
                   <div>
                     <span className="font-medium text-[#212121]">
-                      {primaryTranslation?.name || category.canonical_name}
+                      {primaryMarket.language === 'All Languages'
+                        ? category.canonical_name
+                        : (primaryTranslation?.name || category.canonical_name)}
                     </span>
                     {category.source === 'manual' && (
                       <span className="ml-2 px-2 py-0.5 text-xs bg-[#E3F2FD] text-[#2196F3] rounded-full">
