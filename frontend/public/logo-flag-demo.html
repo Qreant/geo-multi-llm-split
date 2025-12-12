@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logo + Flag Marker Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: white;
+            padding: 40px;
+        }
+
+        h2 {
+            color: #888;
+            margin-bottom: 30px;
+        }
+
+        .demo-container {
+            display: flex;
+            flex-direction: column;
+            gap: 60px;
+        }
+
+        .demo-section {
+            background: #16213e;
+            padding: 30px;
+            border-radius: 12px;
+        }
+
+        .demo-section h3 {
+            margin-bottom: 20px;
+            color: #aaa;
+        }
+
+        /* Current implementation - just flag */
+        .current-marker {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .flag-only {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid #333;
+        }
+
+        /* New implementation options */
+        .marker-options {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .marker-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .marker-option span {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* Option 1: Logo inside, flag as ring border */
+        .logo-flag-ring {
+            position: relative;
+            width: 44px;
+            height: 44px;
+        }
+
+        .logo-flag-ring .flag-ring {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .logo-flag-ring .logo-inner {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: white;
+            background-size: 70%;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 2px solid #1a1a2e;
+        }
+
+        /* Option 2: Logo with flag badge */
+        .logo-flag-badge {
+            position: relative;
+            width: 40px;
+            height: 40px;
+        }
+
+        .logo-flag-badge .logo-main {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            background-size: 65%;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 2px solid #333;
+        }
+
+        .logo-flag-badge .flag-badge {
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid #1a1a2e;
+        }
+
+        /* Option 3: Side by side concentric circles */
+        .logo-flag-concentric {
+            position: relative;
+            width: 48px;
+            height: 48px;
+        }
+
+        .logo-flag-concentric .outer-ring {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            padding: 3px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .logo-flag-concentric .middle-ring {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #1a1a2e;
+            padding: 3px;
+            box-sizing: border-box;
+        }
+
+        .logo-flag-concentric .logo-center {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: white;
+            background-size: 60%;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* Option 4: Split circle (logo + flag halves) */
+        .logo-flag-split {
+            position: relative;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid #333;
+        }
+
+        .logo-flag-split .left-half {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            background: white;
+            background-size: 130%;
+            background-position: left center;
+            background-repeat: no-repeat;
+        }
+
+        .logo-flag-split .right-half {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Simulated chart line ending */
+        .line-demo {
+            display: flex;
+            align-items: center;
+            margin-top: 30px;
+        }
+
+        .chart-line {
+            height: 3px;
+            width: 200px;
+            border-radius: 2px;
+        }
+
+        .line-us { background: linear-gradient(90deg, transparent, #3b82f6); }
+        .line-fr { background: linear-gradient(90deg, transparent, #ef4444); }
+        .line-de { background: linear-gradient(90deg, transparent, #22c55e); }
+
+        /* Flag images as CSS backgrounds */
+        .flag-us { background-image: url('https://flagcdn.com/w80/us.png'); }
+        .flag-fr { background-image: url('https://flagcdn.com/w80/fr.png'); }
+        .flag-de { background-image: url('https://flagcdn.com/w80/de.png'); }
+
+        /* Placeholder logos */
+        .logo-nike { background-image: url('https://logo.clearbit.com/nike.com'); }
+        .logo-adidas { background-image: url('https://logo.clearbit.com/adidas.com'); }
+        .logo-puma { background-image: url('https://logo.clearbit.com/puma.com'); }
+    </style>
+</head>
+<body>
+    <h2>Trendline End Marker Options</h2>
+
+    <div class="demo-container">
+        <!-- Current Implementation -->
+        <div class="demo-section">
+            <h3>Current: Flag Only</h3>
+            <div class="current-marker">
+                <div class="flag-only flag-us"></div>
+                <div class="flag-only flag-fr"></div>
+                <div class="flag-only flag-de"></div>
+            </div>
+        </div>
+
+        <!-- New Options -->
+        <div class="demo-section">
+            <h3>Option 1: Logo with Flag Ring Border</h3>
+            <p style="color: #666; margin-bottom: 20px;">Logo in center, flag wraps around as outer ring</p>
+            <div class="marker-options">
+                <div class="marker-option">
+                    <div class="logo-flag-ring">
+                        <div class="flag-ring flag-us"></div>
+                        <div class="logo-inner logo-nike"></div>
+                    </div>
+                    <span>Nike - US</span>
+                </div>
+                <div class="marker-option">
+                    <div class="logo-flag-ring">
+                        <div class="flag-ring flag-fr"></div>
+                        <div class="logo-inner logo-adidas"></div>
+                    </div>
+                    <span>Adidas - FR</span>
+                </div>
+                <div class="marker-option">
+                    <div class="logo-flag-ring">
+                        <div class="flag-ring flag-de"></div>
+                        <div class="logo-inner logo-puma"></div>
+                    </div>
+                    <span>Puma - DE</span>
+                </div>
+            </div>
+
+            <!-- With chart line -->
+            <div class="line-demo">
+                <div class="chart-line line-us"></div>
+                <div class="logo-flag-ring" style="margin-left: -5px;">
+                    <div class="flag-ring flag-us"></div>
+                    <div class="logo-inner logo-nike"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h3>Option 2: Logo with Flag Badge (Bottom-Right)</h3>
+            <p style="color: #666; margin-bottom: 20px;">Main logo circle with small flag badge overlay</p>
+            <div class="marker-options">
+                <div class="marker-option">
+                    <div class="logo-flag-badge">
+                        <div class="logo-main logo-nike"></div>
+                        <div class="flag-badge flag-us"></div>
+                    </div>
+                    <span>Nike - US</span>
+                </div>
+                <div class="marker-option">
+                    <div class="logo-flag-badge">
+                        <div class="logo-main logo-adidas"></div>
+                        <div class="flag-badge flag-fr"></div>
+                    </div>
+                    <span>Adidas - FR</span>
+                </div>
+                <div class="marker-option">
+                    <div class="logo-flag-badge">
+                        <div class="logo-main logo-puma"></div>
+                        <div class="flag-badge flag-de"></div>
+                    </div>
+                    <span>Puma - DE</span>
+                </div>
+            </div>
+
+            <!-- With chart line -->
+            <div class="line-demo">
+                <div class="chart-line line-fr"></div>
+                <div class="logo-flag-badge" style="margin-left: -5px;">
+                    <div class="logo-main logo-adidas"></div>
+                    <div class="flag-badge flag-fr"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h3>Option 3: Concentric Rings (Flag → Gap → Logo)</h3>
+            <p style="color: #666; margin-bottom: 20px;">Flag as outer ring, dark gap, logo in center</p>
+            <div class="marker-options">
+                <div class="marker-option">
+                    <div class="logo-flag-concentric">
+                        <div class="outer-ring flag-us">
+                            <div class="middle-ring">
+                                <div class="logo-center logo-nike"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <span>Nike - US</span>
+                </div>
+                <div class="marker-option">
+                    <div class="logo-flag-concentric">
+                        <div class="outer-ring flag-fr">
+                            <div class="middle-ring">
+                                <div class="logo-center logo-adidas"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <span>Adidas - FR</span>
+                </div>
+                <div class="marker-option">
+                    <div class="logo-flag-concentric">
+                        <div class="outer-ring flag-de">
+                            <div class="middle-ring">
+                                <div class="logo-center logo-puma"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <span>Puma - DE</span>
+                </div>
+            </div>
+
+            <!-- With chart line -->
+            <div class="line-demo">
+                <div class="chart-line line-de"></div>
+                <div class="logo-flag-concentric" style="margin-left: -5px;">
+                    <div class="outer-ring flag-de">
+                        <div class="middle-ring">
+                            <div class="logo-center logo-puma"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h3>Option 4: Split Circle (Half Logo / Half Flag)</h3>
+            <p style="color: #666; margin-bottom: 20px;">Left side shows logo, right side shows flag</p>
+            <div class="marker-options">
+                <div class="marker-option">
+                    <div class="logo-flag-split">
+                        <div class="left-half logo-nike"></div>
+                        <div class="right-half flag-us"></div>
+                    </div>
+                    <span>Nike - US</span>
+                </div>
+                <div class="marker-option">
+                    <div class="logo-flag-split">
+                        <div class="left-half logo-adidas"></div>
+                        <div class="right-half flag-fr"></div>
+                    </div>
+                    <span>Adidas - FR</span>
+                </div>
+                <div class="marker-option">
+                    <div class="logo-flag-split">
+                        <div class="left-half logo-puma"></div>
+                        <div class="right-half flag-de"></div>
+                    </div>
+                    <span>Puma - DE</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
