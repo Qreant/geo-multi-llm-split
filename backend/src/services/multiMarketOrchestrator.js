@@ -596,7 +596,7 @@ export async function runMultiMarketAnalysis(reportId, config, geminiApiKey, ope
 
     console.log(`✅ All ${Object.keys(allAggregated).length} markets aggregated in parallel`)
 
-    // PR Insights (use primary market for now)
+    // PR Insights - pass ALL market data for comprehensive source aggregation
     console.log('\n💡 ========== GENERATING PR INSIGHTS ==========');
     sendProgressUpdate(reportId, {
       type: 'status',
@@ -610,12 +610,11 @@ export async function runMultiMarketAnalysis(reportId, config, geminiApiKey, ope
 
     if (primaryAggregated) {
       try {
-        // Build aggregated analysis structure for PR insights
+        // Pass ALL aggregated data (all markets, all categories) for comprehensive PR insights
+        // The V2 aggregator will extract gaps from all markets and categories
         const aggregatedForPR = {
-          reputation: primaryAggregated.reputation,
-          visibility: Object.values(primaryAggregated.categories)[0]?.visibility,
-          competitive: Object.values(primaryAggregated.categories)[0]?.competitive,
-          competitive_metrics: Object.values(primaryAggregated.categories)[0]?.competitive
+          ...allAggregated,  // All market data
+          reputation: primaryAggregated.reputation  // Use primary market's reputation
         };
 
         const prInsights = aggregatePRInsights(aggregatedForPR, {
@@ -629,12 +628,15 @@ export async function runMultiMarketAnalysis(reportId, config, geminiApiKey, ope
           analysis_type: 'pr_insights',
           entity,
           total_opportunities: prInsights.opportunities?.length || 0,
-          priority_summary: prInsights.priority_summary
+          priority_summary: prInsights.priority_summary,
+          gap_summary: prInsights.gap_summary
         });
 
-        console.log(`✅ Generated ${prInsights.opportunities?.length || 0} opportunities`);
+        console.log(`✅ Generated ${prInsights.opportunities?.length || 0} source opportunities`);
+        console.log(`   Gap summary: ${prInsights.gap_summary?.total_visibility_gaps || 0} visibility gaps, ${prInsights.gap_summary?.total_competitive_losses || 0} competitive losses`);
       } catch (prError) {
         console.error('⚠️ PR Insights failed:', prError.message);
+        console.error(prError.stack);
       }
     }
 

@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Matrix Heatmap - LLM Disagreement Strategies</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #0a0a0f;
+      --bg-card: #12121a;
+      --bg-elevated: #1a1a24;
+      --border-subtle: rgba(255,255,255,0.06);
+      --border-accent: rgba(255,255,255,0.12);
+      --text-primary: #f4f4f6;
+      --text-secondary: #8b8b9e;
+      --text-muted: #5a5a6e;
+      --accent-emerald: #10b981;
+      --accent-emerald-soft: rgba(16, 185, 129, 0.15);
+      --accent-rose: #f43f5e;
+      --accent-rose-soft: rgba(244, 63, 94, 0.15);
+      --accent-amber: #f59e0b;
+      --accent-amber-soft: rgba(245, 158, 11, 0.15);
+      --accent-violet: #8b5cf6;
+      --accent-blue: #3b82f6;
+      --gemini-color: #4285f4;
+      --chatgpt-color: #10a37f;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      line-height: 1.6;
+      padding: 2rem;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    .page-header {
+      max-width: 1200px;
+      margin: 0 auto 3rem;
+      text-align: center;
+    }
+
+    .page-header h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, var(--accent-violet), var(--accent-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .page-header p {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .strategy-grid {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      gap: 2.5rem;
+    }
+
+    .strategy-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 24px;
+      overflow: hidden;
+    }
+
+    .strategy-header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .strategy-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--accent-violet), var(--accent-blue));
+      border-radius: 10px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.875rem;
+      margin-right: 1rem;
+    }
+
+    .strategy-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.375rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+    }
+
+    .strategy-subtitle {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+
+    .strategy-tags {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .tag {
+      padding: 0.375rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .tag.recommended {
+      background: var(--accent-emerald-soft);
+      color: var(--accent-emerald);
+    }
+
+    .tag.simple {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--accent-blue);
+    }
+
+    .tag.detailed {
+      background: rgba(139, 92, 246, 0.15);
+      color: var(--accent-violet);
+    }
+
+    .strategy-body {
+      padding: 2rem;
+    }
+
+    .strategy-explanation {
+      background: var(--bg-elevated);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .explanation-title {
+      font-weight: 600;
+      font-size: 0.8125rem;
+      color: var(--accent-violet);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .explanation-text {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    .explanation-text code {
+      background: var(--bg-card);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.8125rem;
+      color: var(--accent-amber);
+    }
+
+    /* Matrix Table Styles */
+    .matrix-container {
+      overflow-x: auto;
+    }
+
+    .matrix-table {
+      width: 100%;
+      background: var(--bg-elevated);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .matrix-table table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .matrix-table th {
+      padding: 1rem;
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .matrix-table th:first-child {
+      text-align: left;
+      padding-left: 1.5rem;
+      min-width: 280px;
+    }
+
+    .market-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.375rem;
+    }
+
+    .market-header img {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+    }
+
+    .matrix-table td {
+      padding: 0.875rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .matrix-table td:first-child {
+      text-align: left;
+      padding-left: 1.5rem;
+      font-size: 0.8125rem;
+    }
+
+    .matrix-table tr:hover td {
+      background: rgba(139, 92, 246, 0.03);
+    }
+
+    /* Cell Variants */
+    .matrix-cell {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.5rem 0.625rem;
+      border-radius: 10px;
+      min-width: 90px;
+      transition: transform 0.2s ease;
+      cursor: pointer;
+    }
+
+    .matrix-cell:hover {
+      transform: scale(1.05);
+    }
+
+    /* Strategy 1: Simple Won/Lost/Split */
+    .matrix-cell.won {
+      background: var(--accent-emerald-soft);
+    }
+
+    .matrix-cell.lost {
+      background: var(--accent-rose-soft);
+    }
+
+    .matrix-cell.split {
+      background: var(--accent-amber-soft);
+    }
+
+    .matrix-cell .winner {
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .matrix-cell.won .winner { color: var(--accent-emerald); }
+    .matrix-cell.lost .winner { color: var(--accent-rose); }
+    .matrix-cell.split .winner { color: var(--accent-amber); }
+
+    .matrix-cell .status {
+      font-size: 0.625rem;
+      color: var(--text-muted);
+    }
+
+    /* Strategy 2: Split LLM Rows */
+    .llm-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      margin-top: 0.25rem;
+    }
+
+    .llm-indicator.gemini {
+      background: rgba(66, 133, 244, 0.15);
+      color: var(--gemini-color);
+    }
+
+    .llm-indicator.chatgpt {
+      background: rgba(16, 163, 127, 0.15);
+      color: var(--chatgpt-color);
+    }
+
+    .llm-row-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+    }
+
+    .llm-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .llm-dot.gemini { background: var(--gemini-color); }
+    .llm-dot.chatgpt { background: var(--chatgpt-color); }
+
+    /* Strategy 3: Dual-bar inside cell */
+    .dual-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.625rem;
+      border-radius: 10px;
+      background: var(--bg-card);
+      min-width: 100px;
+    }
+
+    .dual-bars {
+      display: flex;
+      gap: 0.25rem;
+      width: 100%;
+    }
+
+    .llm-bar {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0.375rem;
+      border-radius: 6px;
+      font-size: 0.625rem;
+      font-weight: 600;
+    }
+
+    .llm-bar.gemini {
+      border: 1px solid rgba(66, 133, 244, 0.3);
+    }
+
+    .llm-bar.chatgpt {
+      border: 1px solid rgba(16, 163, 127, 0.3);
+    }
+
+    .llm-bar.won {
+      background: var(--accent-emerald-soft);
+      color: var(--accent-emerald);
+    }
+
+    .llm-bar.lost {
+      background: var(--accent-rose-soft);
+      color: var(--accent-rose);
+    }
+
+    .llm-bar .llm-label {
+      font-size: 0.5rem;
+      color: var(--text-muted);
+      margin-bottom: 0.125rem;
+    }
+
+    .dual-cell .winner-text {
+      font-size: 0.6875rem;
+      color: var(--text-secondary);
+    }
+
+    /* Strategy 4: Percentage bar */
+    .pct-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.625rem;
+      min-width: 110px;
+    }
+
+    .pct-bar-container {
+      width: 100%;
+      height: 8px;
+      background: var(--bg-card);
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+    }
+
+    .pct-bar-won {
+      background: var(--accent-emerald);
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+
+    .pct-bar-lost {
+      background: var(--accent-rose);
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+
+    .pct-label {
+      font-size: 0.6875rem;
+      color: var(--text-secondary);
+    }
+
+    .pct-label strong {
+      color: var(--text-primary);
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 4px;
+    }
+
+    .legend-dot.won { background: var(--accent-emerald); }
+    .legend-dot.lost { background: var(--accent-rose); }
+    .legend-dot.split { background: var(--accent-amber); }
+
+    /* Pros/Cons list */
+    .pros-cons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .pros, .cons {
+      padding: 1rem;
+      border-radius: 12px;
+      font-size: 0.8125rem;
+    }
+
+    .pros {
+      background: var(--accent-emerald-soft);
+    }
+
+    .cons {
+      background: var(--accent-rose-soft);
+    }
+
+    .pros h5, .cons h5 {
+      font-size: 0.6875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.625rem;
+    }
+
+    .pros h5 { color: var(--accent-emerald); }
+    .cons h5 { color: var(--accent-rose); }
+
+    .pros ul, .cons ul {
+      list-style: none;
+      color: var(--text-secondary);
+    }
+
+    .pros li, .cons li {
+      padding: 0.25rem 0;
+      padding-left: 1rem;
+      position: relative;
+    }
+
+    .pros li::before {
+      content: '+';
+      position: absolute;
+      left: 0;
+      color: var(--accent-emerald);
+      font-weight: 600;
+    }
+
+    .cons li::before {
+      content: '-';
+      position: absolute;
+      left: 0;
+      color: var(--accent-rose);
+      font-weight: 600;
+    }
+
+    /* Recommendation banner */
+    .recommendation {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.1));
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-top: 3rem;
+      text-align: center;
+    }
+
+    .recommendation h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .recommendation p {
+      color: var(--text-secondary);
+      max-width: 800px;
+      margin: 0 auto 1.5rem;
+    }
+
+    .recommendation-choice {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.5rem;
+      background: var(--accent-violet);
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      .pros-cons {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-header">
+    <h1>Handling LLM Disagreement in Matrix View</h1>
+    <p>When Gemini and ChatGPT disagree on who wins a competitive question, how should we display this in the heatmap?</p>
+  </div>
+
+  <div class="strategy-grid">
+    <!-- Strategy 1: Simple Aggregation with Split State -->
+    <div class="strategy-card">
+      <div class="strategy-header">
+        <div>
+          <h3 class="strategy-title">
+            <span class="strategy-number">1</span>
+            Simple Aggregation with "Split" State
+          </h3>
+          <p class="strategy-subtitle">Three-state system: Won (both agree), Lost (both agree), Split (disagree)</p>
+        </div>
+        <div class="strategy-tags">
+          <span class="tag recommended">Recommended</span>
+          <span class="tag simple">Simplest</span>
+        </div>
+      </div>
+      <div class="strategy-body">
+        <div class="strategy-explanation">
+          <div class="explanation-title">How it works</div>
+          <p class="explanation-text">
+            <strong>Won (Green):</strong> Both LLMs chose your brand as #1<br>
+            <strong>Lost (Red):</strong> Both LLMs chose a competitor as #1<br>
+            <strong>Split (Amber):</strong> LLMs disagree - one chose you, one chose competitor<br><br>
+            Cell shows the <code>winner</code> when both agree, or <code>"Split"</code> with both names when they disagree.
+          </p>
+        </div>
+
+        <div class="legend">
+          <div class="legend-item">
+            <div class="legend-dot won"></div>
+            <span>Won (Both LLMs agree)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot lost"></div>
+            <span>Lost (Both LLMs agree)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot split"></div>
+            <span>Split (LLMs disagree)</span>
+          </div>
+        </div>
+
+        <div class="matrix-container">
+          <div class="matrix-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Question</th>
+                  <th><div class="market-header"><img src="https://hatscripts.github.io/circle-flags/flags/us.svg" alt="US"><span>USA</span></div></th>
+                  <th><div class="market-header"><img src="https://hatscripts.github.io/circle-flags/flags/fr.svg" alt="FR"><span>France</span></div></th>
+                  <th><div class="market-header"><img src="https://hatscripts.github.io/circle-flags/flags/de.svg" alt="DE"><span>Germany</span></div></th>
+                  <th><div class="market-header"><img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" alt="UK"><span>UK</span></div></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Best for marathon training</td>
+                  <td><div class="matrix-cell won"><span class="winner">You</span><span class="status">Both agree</span></div></td>
+                  <td><div class="matrix-cell split"><span class="winner">Split</span><span class="status">G:You / C:Nike</span></div></td>
+                  <td><div class="matrix-cell won"><span class="winner">You</span><span class="status">Both agree</span></div></td>
+                  <td><div class="matrix-cell lost"><span class="winner">Nike</span><span class="status">Both agree</span></div></td>
+                </tr>
+                <tr>
+                  <td>Top performance sneakers</td>
+                  <td><div class="matrix-cell lost"><span class="winner">Adidas</span><span class="status">Both agree</span></div></td>
+                  <td><div class="matrix-cell won"><span class="winner">You</span><span class="status">Both agree</span></div></td>
+                  <td><div class="matrix-cell split"><span class="winner">Split</span><span class="status">G:Nike / C:You</span></div></td>
+                  <td><div class="matrix-cell won"><span class="winner">You</span><span class="status">Both agree</span></div></td>
+                </tr>
+                <tr>
+                  <td>Budget-friendly options</td>
+                  <td><div class="matrix-cell won"><span class="winner">You</span><span class="status">Both agree</span></div></td>
+                  <td><div class="matrix-cell won"><span class="winner">You</span><span class="status">Both agree</span></div></td>
+                  <td><div class="matrix-cell split"><span class="winner">Split</span><span class="status">G:You / C:Asics</span></div></td>
+                  <td><div class="matrix-cell lost"><span class="winner">Asics</span><span class="status">Both agree</span></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="pros-cons">
+          <div class="pros">
+            <h5>Pros</h5>
+            <ul>
+              <li>Clean, scannable at a glance</li>
+              <li>Three colors = three clear states</li>
+              <li>Amber highlights uncertainty</li>
+              <li>Easy to count wins/losses/splits</li>
+            </ul>
+          </div>
+          <div class="cons">
+            <h5>Cons</h5>
+            <ul>
+              <li>Loses detail on which LLM said what</li>
+              <li>Need hover/click to see full breakdown</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Strategy 2: Separate Rows per LLM -->
+    <div class="strategy-card">
+      <div class="strategy-header">
+        <div>
+          <h3 class="strategy-title">
+            <span class="strategy-number">2</span>
+            Separate Sub-Rows per LLM
+          </h3>
+          <p class="strategy-subtitle">Each question has two rows - one for Gemini, one for ChatGPT</p>
+        </div>
+        <div class="strategy-tags">
+          <span class="tag detailed">Most Detailed</span>
+        </div>
+      </div>
+      <div class="strategy-body">
+        <div class="strategy-explanation">
+          <div class="explanation-title">How it works</div>
+          <p class="explanation-text">
+            Each question expands into two sub-rows showing each LLM's individual verdict.<br>
+            This preserves full detail but doubles the vertical space needed.<br>
+            Best when you need to compare LLM-specific patterns (e.g., "ChatGPT prefers Nike more than Gemini does").
+          </p>
+        </div>
+
+        <div class="legend">
+          <div class="legend-item">
+            <div class="llm-dot gemini"></div>
+            <span>Gemini</span>
+          </div>
+          <div class="legend-item">
+            <div class="llm-dot chatgpt"></div>
+            <span>ChatGPT</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot won"></div>
+            <span>You Won</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot lost"></div>
+            <span>Competitor Won</span>
+          </div>
+        </div>
+
+        <div class="matrix-container">
+          <div class="matrix-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Question</th>
+                  <th><div class="market-header"><img src="https://hatscripts.github.io/circle-flags/flags/us.svg" alt="US"><span>USA</span></div></th>
+                  <th><div class="market-header"><img src="https://hatscripts.github.io/circle-flags/flags/fr.svg" alt="FR"><span>France</span></div></th>
+                  <th><div class="market-header"><img src="https://hatscripts.github.io/circle-flags/flags/de.svg" alt="DE"><span>Germany</span></div></th>
+                  <th><div class="market-header"><img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" alt="UK"><span>UK</span></div></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div>Best for marathon training</div>
+                    <div class="llm-row-indicator"><div class="llm-dot gemini"></div>Gemini</div>
+                  </td>
+                  <td><div class="matrix-cell won"><span class="winner">You</span></div></td>
+                  <td><div class="matrix-cell won"><span class="winner">You</span></div></td>
+                  <td><div class="matrix-cell won"><span class="winner">You</span></div></td>
+                  <td><div class="matrix-cell lost"><span class="winner">Nike</span></div></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="llm-row-indicator"><div class="llm-dot chatgpt"></div>ChatGPT</div>
+                  </td>
+                  <td><div class="matrix-cell won"><span class="winner">You</span></div></td>
+                  <td><div class="matrix-cell lost"><span class="winner">Nike</span></div></td>
+                  <td><div class="matrix-cell won"><span class="winner">You</span></div></td>
+                  <td><div class="matrix-cell lost"><span class="winner">Nike</span></div></td>
+                </tr>
+                <tr style="border-top: 2px solid var(--border-accent);">
+                  <td>
+                    <div>Top performance sneakers</div>
+                    <div class="llm-row-indicator"><div class="llm-dot gemini"></div>Gemini</div>
+                  </td>
+                  <td><div class="matrix-cell lost"><span class="winner">Adidas</span></div></td>
+                  <td><div class="matrix-cell won"><span class="winner">You</span></div></td>
+                  <td><div class="matrix-cell lost"><span class="winner">Nike</span></div></td>
+                  <td><div class="matrix-cell won"><span class="winner">You</span></div></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="llm-row-indicator"><div class="llm-dot chatgpt"></div>ChatGPT</div>
+                  </td>
+                  <td><div class="matrix-cell lost"><span class="winner">Adidas</span></div></td>
+                  <td><div class="matrix-cell won"><span class="winner">You</span></div></td>
+                  <td><div class="matrix-cell won"><span class="winner">You</span></div></td>
+                  <td><div class="matrix-cell won"><span class="winner">You</span></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="pros-cons">
+          <div class="pros">
+            <h5>Pros</h5>
+            <ul>
+              <li>Full detail visible without interaction</li>
+              <li>Easy to spot LLM-specific biases</li>
+              <li>No ambiguity - every cell is binary</li>
+            </ul>
+          </div>
+          <div class="cons">
+            <h5>Cons</h5>
+            <ul>
+              <li>Double the vertical space</li>
+              <li>Harder to scan overall performance</li>
+              <li>Visual noise - lots of cells</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Strategy 3: Dual Bar Inside Cell -->
+    <div class="strategy-card">
+      <div class="strategy-header">
+        <div>
+          <h3 class="strategy-title">
+            <span class="strategy-number">3</span>
+            Dual-Bar Cells (Side-by-Side)
+          </h3>
+          <p class="strategy-subtitle">Each cell shows both LLM verdicts as mini bars</p>
+        </div>
+        <div class="strategy-tags">
+          <span class="tag detailed">Compact Detail</span>
+        </div>
+      </div>
+      <div class="strategy-body">
+        <div class="strategy-explanation">
+          <div class="explanation-title">How it works</div>
+          <p class="explanation-text">
+            Each cell contains two mini-bars side by side: left = Gemini, right = ChatGPT.<br>
+            Color indicates won (green) or lost (red) for each LLM independently.<br>
+            Compact but information-dense - shows both verdicts in single cell space.
+          </p>
+        </div>
+
+        <div class="legend">
+          <div class="legend-item">
+            <div class="llm-dot gemini"></div>
+            <span>Gemini (left bar)</span>
+          </div>
+          <div class="legend-item">
+            <div class="llm-dot chatgpt"></div>
+            <span>ChatGPT (right bar)</span>
+          </div>
+        </div>
+
+        <div class="matrix-container">
+          <div class="matrix-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Question</th>
+                  <th><div class="market-header"><img src="https://hatscripts.github.io/circle-flags/flags/us.svg" alt="US"><span>USA</span></div></th>
+                  <th><div class="market-header"><img src="https://hatscripts.github.io/circle-flags/flags/fr.svg" alt="FR"><span>France</span></div></th>
+                  <th><div class="market-header"><img src="https://hatscripts.github.io/circle-flags/flags/de.svg" alt="DE"><span>Germany</span></div></th>
+                  <th><div class="market-header"><img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" alt="UK"><span>UK</span></div></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Best for marathon training</td>
+                  <td>
+                    <div class="dual-cell">
+                      <div class="dual-bars">
+                        <div class="llm-bar gemini won"><span class="llm-label">G</span>You</div>
+                        <div class="llm-bar chatgpt won"><span class="llm-label">C</span>You</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="dual-cell">
+                      <div class="dual-bars">
+                        <div class="llm-bar gemini won"><span class="llm-label">G</span>You</div>
+                        <div class="llm-bar chatgpt lost"><span class="llm-label">C</span>Nike</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="dual-cell">
+                      <div class="dual-bars">
+                        <div class="llm-bar gemini won"><span class="llm-label">G</span>You</div>
+                        <div class="llm-bar chatgpt won"><span class="llm-label">C</span>You</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="dual-cell">
+                      <div class="dual-bars">
+                        <div class="llm-bar gemini lost"><span class="llm-label">G</span>Nike</div>
+                        <div class="llm-bar chatgpt lost"><span class="llm-label">C</span>Nike</div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Top performance sneakers</td>
+                  <td>
+                    <div class="dual-cell">
+                      <div class="dual-bars">
+                        <div class="llm-bar gemini lost"><span class="llm-label">G</span>Adidas</div>
+                        <div class="llm-bar chatgpt lost"><span class="llm-label">C</span>Adidas</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="dual-cell">
+                      <div class="dual-bars">
+                        <div class="llm-bar gemini won"><span class="llm-label">G</span>You</div>
+                        <div class="llm-bar chatgpt won"><span class="llm-label">C</span>You</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="dual-cell">
+                      <div class="dual-bars">
+                        <div class="llm-bar gemini lost"><span class="llm-label">G</span>Nike</div>
+                        <div class="llm-bar chatgpt won"><span class="llm-label">C</span>You</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="dual-cell">
+                      <div class="dual-bars">
+                        <div class="llm-bar gemini won"><span class="llm-label">G</span>You</div>
+                        <div class="llm-bar chatgpt won"><span class="llm-label">C</span>You</div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="pros-cons">
+          <div class="pros">
+            <h5>Pros</h5>
+            <ul>
+              <li>Both LLM verdicts visible in one cell</li>
+              <li>Compact - no extra rows needed</li>
+              <li>Easy to spot disagreements visually</li>
+            </ul>
+          </div>
+          <div class="cons">
+            <h5>Cons</h5>
+            <ul>
+              <li>Cells are wider and more complex</li>
+              <li>Learning curve - users need to understand G/C</li>
+              <li>Harder to scan from distance</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Strategy 4: Win Percentage Bar -->
+    <div class="strategy-card">
+      <div class="strategy-header">
+        <div>
+          <h3 class="strategy-title">
+            <span class="strategy-number">4</span>
+            Win Rate Percentage Bar
+          </h3>
+          <p class="strategy-subtitle">Show confidence level: 100% = both agree, 50% = split</p>
+        </div>
+        <div class="strategy-tags">
+          <span class="tag simple">Quantitative</span>
+        </div>
+      </div>
+      <div class="strategy-body">
+        <div class="strategy-explanation">
+          <div class="explanation-title">How it works</div>
+          <p class="explanation-text">
+            Each cell shows a win percentage based on LLM agreement:<br>
+            <code>100% won</code> = Both LLMs chose you<br>
+            <code>50% won</code> = One LLM chose you, one chose competitor<br>
+            <code>0% won</code> = Both LLMs chose competitor<br><br>
+            Progress bar visualizes the confidence level at a glance.
+          </p>
+        </div>
+
+        <div class="matrix-container">
+          <div class="matrix-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Question</th>
+                  <th><div class="market-header"><img src="https://hatscripts.github.io/circle-flags/flags/us.svg" alt="US"><span>USA</span></div></th>
+                  <th><div class="market-header"><img src="https://hatscripts.github.io/circle-flags/flags/fr.svg" alt="FR"><span>France</span></div></th>
+                  <th><div class="market-header"><img src="https://hatscripts.github.io/circle-flags/flags/de.svg" alt="DE"><span>Germany</span></div></th>
+                  <th><div class="market-header"><img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" alt="UK"><span>UK</span></div></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Best for marathon training</td>
+                  <td>
+                    <div class="pct-cell">
+                      <div class="pct-bar-container">
+                        <div class="pct-bar-won" style="width: 100%"></div>
+                      </div>
+                      <span class="pct-label"><strong>100%</strong> won</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="pct-cell">
+                      <div class="pct-bar-container">
+                        <div class="pct-bar-won" style="width: 50%"></div>
+                        <div class="pct-bar-lost" style="width: 50%"></div>
+                      </div>
+                      <span class="pct-label"><strong>50%</strong> split</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="pct-cell">
+                      <div class="pct-bar-container">
+                        <div class="pct-bar-won" style="width: 100%"></div>
+                      </div>
+                      <span class="pct-label"><strong>100%</strong> won</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="pct-cell">
+                      <div class="pct-bar-container">
+                        <div class="pct-bar-lost" style="width: 100%"></div>
+                      </div>
+                      <span class="pct-label"><strong>0%</strong> lost</span>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Top performance sneakers</td>
+                  <td>
+                    <div class="pct-cell">
+                      <div class="pct-bar-container">
+                        <div class="pct-bar-lost" style="width: 100%"></div>
+                      </div>
+                      <span class="pct-label"><strong>0%</strong> lost</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="pct-cell">
+                      <div class="pct-bar-container">
+                        <div class="pct-bar-won" style="width: 100%"></div>
+                      </div>
+                      <span class="pct-label"><strong>100%</strong> won</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="pct-cell">
+                      <div class="pct-bar-container">
+                        <div class="pct-bar-won" style="width: 50%"></div>
+                        <div class="pct-bar-lost" style="width: 50%"></div>
+                      </div>
+                      <span class="pct-label"><strong>50%</strong> split</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="pct-cell">
+                      <div class="pct-bar-container">
+                        <div class="pct-bar-won" style="width: 100%"></div>
+                      </div>
+                      <span class="pct-label"><strong>100%</strong> won</span>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Budget-friendly options</td>
+                  <td>
+                    <div class="pct-cell">
+                      <div class="pct-bar-container">
+                        <div class="pct-bar-won" style="width: 100%"></div>
+                      </div>
+                      <span class="pct-label"><strong>100%</strong> won</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="pct-cell">
+                      <div class="pct-bar-container">
+                        <div class="pct-bar-won" style="width: 100%"></div>
+                      </div>
+                      <span class="pct-label"><strong>100%</strong> won</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="pct-cell">
+                      <div class="pct-bar-container">
+                        <div class="pct-bar-won" style="width: 50%"></div>
+                        <div class="pct-bar-lost" style="width: 50%"></div>
+                      </div>
+                      <span class="pct-label"><strong>50%</strong> split</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="pct-cell">
+                      <div class="pct-bar-container">
+                        <div class="pct-bar-lost" style="width: 100%"></div>
+                      </div>
+                      <span class="pct-label"><strong>0%</strong> lost</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="pros-cons">
+          <div class="pros">
+            <h5>Pros</h5>
+            <ul>
+              <li>Quantitative - easy to aggregate</li>
+              <li>Visual confidence indicator</li>
+              <li>Works well for summary statistics</li>
+            </ul>
+          </div>
+          <div class="cons">
+            <h5>Cons</h5>
+            <ul>
+              <li>Loses "who won" detail at 50%</li>
+              <li>Need hover to see competitor name</li>
+              <li>Less intuitive than colors</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recommendation -->
+  <div class="recommendation">
+    <h3>My Recommendation</h3>
+    <p>
+      <strong>Strategy 1 (Simple Aggregation with Split State)</strong> provides the best balance of clarity and information density.
+      Users can quickly scan for patterns, and the amber "Split" state clearly signals uncertainty without overwhelming detail.
+      For power users who want LLM-specific breakdown, add a <strong>hover tooltip or click-to-expand</strong> that shows Strategy 3's dual-bar detail.
+    </p>
+    <div class="recommendation-choice">
+      Strategy 1 + Hover Detail = Best of Both Worlds
+    </div>
+  </div>
+</body>
+</html>

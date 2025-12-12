@@ -6,6 +6,7 @@ import express from 'express';
 import { Report } from '../models/Report.js';
 import { resolveVertexRedirect } from '../services/llmService.js';
 import { getBrandLogos, batchFetchLogos } from '../services/logoService.js';
+import { classifySourceTypes, generateSourceAnalysis } from '../services/sourceClassifier.js';
 
 const router = express.Router();
 
@@ -273,9 +274,9 @@ router.post('/:id/resolve-sources', async (req, res) => {
       })
     );
 
-    // Update sources in database
+    // Update sources in database - update url, resolved_url, AND domain
     const db = (await import('../database/schema.js')).getDatabase();
-    const updateStmt = db.prepare('UPDATE sources SET url = ?, resolved_url = ? WHERE id = ?');
+    const updateStmt = db.prepare('UPDATE sources SET url = ?, resolved_url = ?, domain = ? WHERE id = ?');
 
     let updatedCount = 0;
     results.forEach(result => {
@@ -283,12 +284,18 @@ router.post('/:id/resolve-sources', async (req, res) => {
         // Extract new domain from resolved URL
         let newDomain = result.resolvedUrl;
         try {
-          newDomain = new URL(result.resolvedUrl).hostname.replace('www.', '');
-        } catch {}
+          const url = new URL(result.resolvedUrl);
+          newDomain = url.hostname.replace(/^www\./, '');
+        } catch {
+          // For unresolved:// URLs, extract the title part as domain hint
+          if (result.resolvedUrl.startsWith('unresolved://')) {
+            newDomain = result.resolvedUrl.replace('unresolved://', '').substring(0, 50);
+          }
+        }
 
-        updateStmt.run(result.resolvedUrl, result.resolvedUrl, result.id);
+        updateStmt.run(result.resolvedUrl, result.resolvedUrl, newDomain, result.id);
         updatedCount++;
-        console.log(`   ✅ ${result.originalUrl.substring(0, 50)}... -> ${result.resolvedUrl.substring(0, 50)}...`);
+        console.log(`   ✅ ${result.originalUrl.substring(0, 50)}... -> ${newDomain}`);
       } else {
         console.log(`   ⚠️  ${result.originalUrl.substring(0, 50)}... -> Could not resolve`);
       }
@@ -304,6 +311,99 @@ router.post('/:id/resolve-sources', async (req, res) => {
     });
   } catch (error) {
     console.error('Error resolving sources:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * POST /api/reports/:id/reclassify-sources
+ * Re-classify all sources for a report using AI
+ */
+router.post('/:id/reclassify-sources', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+
+    if (!geminiApiKey) {
+      return res.status(400).json({ error: 'Gemini API key not configured' });
+    }
+
+    const report = Report.findById(id);
+    if (!report) {
+      return res.status(404).json({ error: 'Report not found' });
+    }
+
+    const sources = Report.getSources(id);
+    if (sources.length === 0) {
+      return res.json({
+        success: true,
+        message: 'No sources to classify',
+        classified: 0
+      });
+    }
+
+    // Parse competitors from report
+    let competitors = [];
+    try {
+      competitors = JSON.parse(report.competitors || '[]');
+    } catch {}
+
+    console.log(`🔍 Re-classifying ${sources.length} sources for report ${id} (${report.entity})...`);
+
+    // Prepare sources for classification
+    const sourcesForClassification = sources.map(s => ({
+      url: s.url,
+      title: s.title,
+      domain: s.domain
+    }));
+
+    // Run classification with new parallel batch approach
+    const classifiedSources = await classifySourceTypes(
+      sourcesForClassification,
+      report.entity,
+      geminiApiKey,
+      competitors
+    );
+
+    // Update sources in database
+    const db = (await import('../database/schema.js')).getDatabase();
+    const updateStmt = db.prepare(`
+      UPDATE sources
+      SET source_type = ?,
+          classification_confidence = ?,
+          classification_reasoning = ?
+      WHERE id = ?
+    `);
+
+    let updatedCount = 0;
+    const updateTransaction = db.transaction(() => {
+      classifiedSources.forEach((classified, idx) => {
+        if (sources[idx]) {
+          updateStmt.run(
+            classified.source_type || 'Other',
+            classified.classification_confidence || 'low',
+            classified.classification_reasoning || '',
+            sources[idx].id
+          );
+          updatedCount++;
+        }
+      });
+    });
+
+    updateTransaction();
+
+    // Generate source analysis
+    const sourceAnalysis = generateSourceAnalysis(classifiedSources);
+
+    res.json({
+      success: true,
+      message: `Classified ${updatedCount} sources`,
+      classified: updatedCount,
+      total: sources.length,
+      distribution: sourceAnalysis.source_type_distribution
+    });
+  } catch (error) {
+    console.error('Error reclassifying sources:', error);
     res.status(500).json({ error: error.message });
   }
 });

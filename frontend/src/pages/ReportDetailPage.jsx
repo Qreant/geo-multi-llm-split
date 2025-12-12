@@ -790,6 +790,33 @@ export default function ReportDetailPage() {
     return report.competitors?.[category.id]?.[selectedMarket] || [];
   };
 
+  // Helper function to get per-market category data for visibility/competitive breakdown
+  const getPerMarketCategoryData = (categoryIndex, dataType) => {
+    if (!isMultiMarket || selectedMarket !== 'master') {
+      return null; // Only needed in master mode
+    }
+
+    const categoryFamilies = report.categoryFamilies || [];
+    const family = categoryFamilies[categoryIndex];
+    if (!family) return null;
+
+    const marketResults = report.marketResults || {};
+    const allMarkets = report.markets || [];
+
+    // Build per-market data array
+    const perMarketData = allMarkets.map(market => {
+      const catData = marketResults[market.code]?.categories?.[family.id];
+      return {
+        marketCode: market.code,
+        marketCountry: market.country,
+        marketLanguage: market.language,
+        data: catData?.[dataType] || null
+      };
+    }).filter(item => item.data !== null);
+
+    return perMarketData;
+  };
+
   // Get categoriesAssociated - prefer real category detection data from analysis
   const getCategoriesAssociated = () => {
     if (!isMultiMarket) {
@@ -899,6 +926,8 @@ export default function ReportDetailPage() {
             entity={report.entity}
             allSources={report.sources}
             selectedLLMs={selectedLLMs}
+            perMarketData={getPerMarketCategoryData(categoryIndex, 'visibility')}
+            markets={isMultiMarket && selectedMarket === 'master' ? report.markets : null}
           />
         );
       }
@@ -912,6 +941,8 @@ export default function ReportDetailPage() {
             competitors={getCurrentCompetitors(categoryIndex)}
             allSources={report.sources}
             selectedLLMs={selectedLLMs}
+            perMarketData={getPerMarketCategoryData(categoryIndex, 'competitive')}
+            markets={isMultiMarket && selectedMarket === 'master' ? report.markets : null}
           />
         );
       }

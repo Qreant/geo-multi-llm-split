@@ -398,7 +398,7 @@ async function classifyBatch(sourceBatch, brandName, apiKey, batchOffset, compet
 }
 
 /**
- * Classify sources using Gemini API with batching for large lists
+ * Classify sources using Gemini API with parallel batching for large lists
  * @param {Array} sources - Array of source objects {url, title, domain, cited_by}
  * @param {string} brandName - Entity being monitored
  * @param {string} apiKey - Gemini API key
@@ -427,37 +427,70 @@ export async function classifySourceTypes(sources, brandName, apiKey, competitor
       console.log(`   📊 Competitor detection enabled for: ${brandName} (Owned Media) vs ${competitors.join(', ')} (Competitor Media)`);
     }
 
-    // Batch sources for classification (500 per batch - gemini-flash-lite handles large batches well)
-    const BATCH_SIZE = 500;
+    // Batch sources for classification (100 per batch to avoid JSON truncation)
+    const BATCH_SIZE = 100;
+    // Maximum parallel batches to avoid rate limiting
+    const MAX_PARALLEL_BATCHES = 5;
+
+    const allBatches = [];
+    for (let i = 0; i < sources.length; i += BATCH_SIZE) {
+      allBatches.push({
+        batch: sources.slice(i, i + BATCH_SIZE),
+        offset: i,
+        batchNum: Math.floor(i / BATCH_SIZE) + 1
+      });
+    }
+
+    const totalBatches = allBatches.length;
+    console.log(`   📦 Processing ${totalBatches} batches (${BATCH_SIZE} sources each) in parallel waves...`);
+
     const classifiedSources = [];
 
-    for (let i = 0; i < sources.length; i += BATCH_SIZE) {
-      const batch = sources.slice(i, i + BATCH_SIZE);
-      const batchNum = Math.floor(i / BATCH_SIZE) + 1;
-      const totalBatches = Math.ceil(sources.length / BATCH_SIZE);
+    // Process batches in parallel waves
+    for (let waveStart = 0; waveStart < allBatches.length; waveStart += MAX_PARALLEL_BATCHES) {
+      const waveEnd = Math.min(waveStart + MAX_PARALLEL_BATCHES, allBatches.length);
+      const waveBatches = allBatches.slice(waveStart, waveEnd);
+      const waveNum = Math.floor(waveStart / MAX_PARALLEL_BATCHES) + 1;
+      const totalWaves = Math.ceil(allBatches.length / MAX_PARALLEL_BATCHES);
 
-      if (totalBatches > 1) {
-        console.log(`   📦 Processing batch ${batchNum}/${totalBatches} (${batch.length} sources)...`);
+      console.log(`   🌊 Wave ${waveNum}/${totalWaves}: Processing batches ${waveStart + 1}-${waveEnd} in parallel...`);
+
+      // Process all batches in this wave in parallel
+      const wavePromises = waveBatches.map(async ({ batch, offset, batchNum }) => {
+        try {
+          const classifiedBatch = await classifyBatchWithRetry(batch, brandName, apiKey, offset, competitors, batchNum, totalBatches);
+          return { success: true, results: classifiedBatch, batchNum };
+        } catch (batchError) {
+          console.error(`   ⚠️ Batch ${batchNum}/${totalBatches} failed after retries:`, batchError.message);
+          // Return fallback classification for failed batch
+          return {
+            success: false,
+            results: batch.map(source => ({
+              ...source,
+              source_type: 'Other',
+              competitor_name: null,
+              classification_confidence: 'low',
+              classification_reasoning: `Batch classification failed: ${batchError.message}`
+            })),
+            batchNum
+          };
+        }
+      });
+
+      const waveResults = await Promise.all(wavePromises);
+
+      // Collect results maintaining order
+      const successCount = waveResults.filter(r => r.success).length;
+      console.log(`   ✅ Wave ${waveNum} complete: ${successCount}/${waveBatches.length} batches succeeded`);
+
+      waveResults.forEach(result => {
+        classifiedSources.push(...result.results);
+      });
+
+      // Small delay between waves to avoid rate limiting
+      if (waveEnd < allBatches.length) {
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
-
-      try {
-        const classifiedBatch = await classifyBatch(batch, brandName, apiKey, i, competitors);
-        classifiedSources.push(...classifiedBatch);
-      } catch (batchError) {
-        console.error(`   ⚠️ Batch ${batchNum} failed:`, batchError.message);
-        // Add fallback classification for failed batch
-        batch.forEach(source => {
-          classifiedSources.push({
-            ...source,
-            source_type: 'Other',
-            competitor_name: null,
-            classification_confidence: 'low',
-            classification_reasoning: `Batch classification failed: ${batchError.message}`
-          });
-        });
-      }
-
-      // No delay needed between batches - Gemini handles rate limiting well
     }
 
     console.log(`✅ Classified ${classifiedSources.length} sources`);
@@ -482,6 +515,63 @@ export async function classifySourceTypes(sources, brandName, apiKey, competitor
       classification_reasoning: `Classification failed: ${error.message}`
     }));
   }
+}
+
+/**
+ * Classify a batch with retry logic - tries smaller sub-batches on failure
+ */
+async function classifyBatchWithRetry(batch, brandName, apiKey, offset, competitors, batchNum, totalBatches) {
+  const MAX_RETRIES = 2;
+  let lastError = null;
+
+  // Try full batch first
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      if (attempt > 0) {
+        console.log(`   🔄 Batch ${batchNum}/${totalBatches}: Retry ${attempt}/${MAX_RETRIES}...`);
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+      }
+      return await classifyBatch(batch, brandName, apiKey, offset, competitors);
+    } catch (error) {
+      lastError = error;
+      // Check if it's a JSON truncation error
+      if (error.message?.includes('JSON') || error.message?.includes('Unterminated') || error.message?.includes('Unexpected end')) {
+        console.log(`   ⚠️ Batch ${batchNum}: JSON parsing error, will try smaller sub-batches...`);
+        break; // Don't retry full batch, go to sub-batch logic
+      }
+    }
+  }
+
+  // If full batch fails, try splitting into smaller sub-batches
+  if (batch.length > 25) {
+    console.log(`   📦 Batch ${batchNum}: Splitting into sub-batches of 25...`);
+    const SUB_BATCH_SIZE = 25;
+    const results = [];
+
+    for (let i = 0; i < batch.length; i += SUB_BATCH_SIZE) {
+      const subBatch = batch.slice(i, i + SUB_BATCH_SIZE);
+      try {
+        const subResults = await classifyBatch(subBatch, brandName, apiKey, offset + i, competitors);
+        results.push(...subResults);
+      } catch (subError) {
+        console.error(`   ⚠️ Sub-batch ${Math.floor(i / SUB_BATCH_SIZE) + 1} failed:`, subError.message);
+        // Fallback for sub-batch
+        subBatch.forEach(source => {
+          results.push({
+            ...source,
+            source_type: 'Other',
+            competitor_name: null,
+            classification_confidence: 'low',
+            classification_reasoning: `Sub-batch classification failed: ${subError.message}`
+          });
+        });
+      }
+    }
+    return results;
+  }
+
+  // If we get here, throw the last error
+  throw lastError || new Error('Classification failed');
 }
 
 /**

@@ -339,18 +339,17 @@ async function resumeMultiMarketAnalysis(reportId, config, geminiApiKey) {
     allAggregated[marketCode] = marketAggregated;
   }
 
-  // PR Insights
+  // PR Insights - pass ALL market data for comprehensive source aggregation
   console.log('\n💡 ========== GENERATING PR INSIGHTS ==========');
   const primaryMarket = markets.find(m => m.isPrimary) || markets[0];
   const primaryAggregated = allAggregated[primaryMarket?.code];
 
   if (primaryAggregated) {
     try {
+      // Pass ALL aggregated data (all markets, all categories) for comprehensive PR insights
       const aggregatedForPR = {
-        reputation: primaryAggregated.reputation,
-        visibility: Object.values(primaryAggregated.categories)[0]?.visibility,
-        competitive: Object.values(primaryAggregated.categories)[0]?.competitive,
-        competitive_metrics: Object.values(primaryAggregated.categories)[0]?.competitive
+        ...allAggregated,  // All market data
+        reputation: primaryAggregated.reputation  // Use primary market's reputation
       };
 
       const prInsights = aggregatePRInsights(aggregatedForPR, {
@@ -364,12 +363,15 @@ async function resumeMultiMarketAnalysis(reportId, config, geminiApiKey) {
         analysis_type: 'pr_insights',
         entity,
         total_opportunities: prInsights.opportunities?.length || 0,
-        priority_summary: prInsights.priority_summary
+        priority_summary: prInsights.priority_summary,
+        gap_summary: prInsights.gap_summary
       });
 
-      console.log(`✅ Generated ${prInsights.opportunities?.length || 0} opportunities`);
+      console.log(`✅ Generated ${prInsights.opportunities?.length || 0} source opportunities`);
+      console.log(`   Gap summary: ${prInsights.gap_summary?.total_visibility_gaps || 0} visibility gaps, ${prInsights.gap_summary?.total_competitive_losses || 0} competitive losses`);
     } catch (prError) {
       console.error('⚠️ PR Insights failed:', prError.message);
+      console.error(prError.stack);
     }
   }
 }

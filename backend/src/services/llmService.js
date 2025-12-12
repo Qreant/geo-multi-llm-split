@@ -16,9 +16,9 @@ const CONFIG = {
   TEMPERATURE: parseFloat(process.env.TEMPERATURE) || 0.1,
   MAX_OUTPUT_TOKENS: parseInt(process.env.MAX_OUTPUT_TOKENS) || 56000,
   OPENAI_MAX_TOKENS: 16000,
-  RETRY_DELAY_MS: 50,
-  RATE_LIMIT_RETRY_DELAY_MS: 2000, // 2 seconds for rate limit errors
-  MAX_RETRIES: 3,
+  RETRY_DELAY_MS: 500, // Increased from 50ms for more reliable retries
+  RATE_LIMIT_RETRY_DELAY_MS: 5000, // 5 seconds for rate limit errors (increased from 2s)
+  MAX_RETRIES: 5, // Increased from 3 for better reliability
   API_TIMEOUT_MS: 300000 // 5 minutes - increased from 2 minutes for large aggregations
 };
 
@@ -834,9 +834,14 @@ export async function callGeminiOnly(prompt, geminiApiKey) {
 }
 
 /**
- * Call both LLMs in parallel
+ * Call both LLMs in parallel with extra retry for Gemini failures
+ * If Gemini fails but OpenAI succeeds, we retry Gemini up to 3 more times
+ * to maximize data completeness
  */
 export async function callBothLLMs(prompt, geminiApiKey, openaiApiKey, config = {}) {
+  const GEMINI_EXTRA_RETRIES = 3;
+  const GEMINI_RETRY_DELAY = 3000; // 3 seconds between extra retries
+
   const [geminiResult, openaiResult] = await Promise.all([
     callGeminiAPI(prompt, geminiApiKey).catch(err => ({
       error: true,
@@ -852,8 +857,38 @@ export async function callBothLLMs(prompt, geminiApiKey, openaiApiKey, config = 
     }))
   ]);
 
+  // If Gemini failed, retry it independently (don't block OpenAI result)
+  let finalGeminiResult = geminiResult;
+  if (geminiResult.error && geminiApiKey) {
+    console.log(`   [callBothLLMs] ⚠️ Gemini failed, attempting ${GEMINI_EXTRA_RETRIES} extra retries...`);
+
+    for (let i = 0; i < GEMINI_EXTRA_RETRIES; i++) {
+      await new Promise(resolve => setTimeout(resolve, GEMINI_RETRY_DELAY));
+      console.log(`   [callBothLLMs] 🔄 Gemini extra retry ${i + 1}/${GEMINI_EXTRA_RETRIES}...`);
+
+      try {
+        finalGeminiResult = await callGeminiAPI(prompt, geminiApiKey);
+        if (!finalGeminiResult.error) {
+          console.log(`   [callBothLLMs] ✅ Gemini succeeded on extra retry ${i + 1}`);
+          break;
+        }
+      } catch (err) {
+        finalGeminiResult = {
+          error: true,
+          message: err.message,
+          text: null,
+          groundedSources: []
+        };
+      }
+    }
+
+    if (finalGeminiResult.error) {
+      console.log(`   [callBothLLMs] ❌ Gemini failed after all extra retries`);
+    }
+  }
+
   return {
-    gemini: geminiResult,
+    gemini: finalGeminiResult,
     openai: openaiResult
   };
 }

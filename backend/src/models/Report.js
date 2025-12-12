@@ -123,6 +123,52 @@ export class Report {
     return stmt.run(reportId, analysisType, category, JSON.stringify(data)).changes > 0;
   }
 
+  /**
+   * Generate source analysis from the current sources table
+   * This ensures source_type_distribution reflects reclassified sources
+   */
+  static generateSourceAnalysisFromDB(reportId) {
+    const db = getDatabase();
+    const sources = this.getSources(reportId);
+
+    if (!sources || sources.length === 0) {
+      return null;
+    }
+
+    // Calculate source type distribution from current sources table
+    const sourceTypeDistribution = {};
+    const domainCounts = {};
+
+    sources.forEach(source => {
+      // Count by source type
+      const type = source.source_type || 'Other';
+      sourceTypeDistribution[type] = (sourceTypeDistribution[type] || 0) + 1;
+
+      // Count by domain
+      const domain = source.domain || 'unknown';
+      if (!domainCounts[domain]) {
+        domainCounts[domain] = {
+          domain,
+          count: 0,
+          source_type: source.source_type || 'Other'
+        };
+      }
+      domainCounts[domain].count += 1;
+    });
+
+    // Get top domains sorted by count
+    const topDomains = Object.values(domainCounts)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 20);
+
+    return {
+      total_sources: sources.length,
+      source_type_distribution: sourceTypeDistribution,
+      unique_domains: Object.keys(domainCounts).length,
+      top_domains: topDomains
+    };
+  }
+
   static getAnalysisResults(reportId) {
     const db = getDatabase();
 
@@ -140,6 +186,9 @@ export class Report {
 
     const results = stmt.all(reportId);
 
+    // Generate fresh source analysis from current sources table
+    const freshSourceAnalysis = this.generateSourceAnalysisFromDB(reportId);
+
     // Group results by category
     const grouped = {
       reputation: null,
@@ -151,6 +200,11 @@ export class Report {
 
     results.forEach(result => {
       const parsedData = JSON.parse(result.data);
+
+      // Replace embedded source_analysis with fresh data from sources table
+      if (freshSourceAnalysis && parsedData.source_analysis) {
+        parsedData.source_analysis = freshSourceAnalysis;
+      }
 
       if (result.analysis_type === 'reputation') {
         // Reputation is report-level, no category grouping
@@ -505,7 +559,46 @@ export class Report {
     `);
 
     const opportunities = stmt.all(reportId);
-    return opportunities.map(opp => this.parseOpportunity(opp));
+    const parsedOpps = opportunities.map(opp => this.parseOpportunity(opp));
+
+    // Enrich opportunity sources with latest data from sources table
+    return this.enrichOpportunitySources(reportId, parsedOpps);
+  }
+
+  /**
+   * Enrich opportunity sources with latest data from sources table
+   * This ensures source_type, domain, and URL are up-to-date after reclassification
+   */
+  static enrichOpportunitySources(reportId, opportunities) {
+    const db = getDatabase();
+
+    // Build lookup map from sources table
+    const sourcesStmt = db.prepare('SELECT url, domain, source_type, title FROM sources WHERE report_id = ?');
+    const allSources = sourcesStmt.all(reportId);
+    const urlToSource = new Map();
+    allSources.forEach(s => {
+      if (s.url) urlToSource.set(s.url, s);
+    });
+
+    // Enrich each opportunity's sources
+    return opportunities.map(opp => {
+      if (!opp.sources || opp.sources.length === 0) return opp;
+
+      const enrichedSources = opp.sources.map(embeddedSource => {
+        const lookup = urlToSource.get(embeddedSource.url);
+        if (lookup) {
+          return {
+            ...embeddedSource,
+            domain: lookup.domain || embeddedSource.domain || '',
+            source_type: lookup.source_type || embeddedSource.source_type || 'Other',
+            title: embeddedSource.title || lookup.title || ''
+          };
+        }
+        return embeddedSource;
+      });
+
+      return { ...opp, sources: enrichedSources };
+    });
   }
 
   /**
@@ -519,7 +612,12 @@ export class Report {
     `);
 
     const opportunity = stmt.get(reportId, opportunityId);
-    return opportunity ? this.parseOpportunity(opportunity) : null;
+    if (!opportunity) return null;
+
+    const parsed = this.parseOpportunity(opportunity);
+    // Enrich sources with latest data
+    const enriched = this.enrichOpportunitySources(reportId, [parsed]);
+    return enriched[0];
   }
 
   /**
@@ -971,6 +1069,9 @@ export class Report {
     const stmt = db.prepare(query);
     const results = stmt.all(...params);
 
+    // Generate fresh source analysis from current sources table
+    const freshSourceAnalysis = this.generateSourceAnalysisFromDB(reportId);
+
     // Group by market, then by category
     const grouped = {};
 
@@ -984,6 +1085,11 @@ export class Report {
       }
 
       const parsedData = JSON.parse(r.data);
+
+      // Replace embedded source_analysis with fresh data from sources table
+      if (freshSourceAnalysis && parsedData.source_analysis) {
+        parsedData.source_analysis = freshSourceAnalysis;
+      }
 
       if (r.analysis_type === 'reputation') {
         grouped[r.market_code].reputation = parsedData;

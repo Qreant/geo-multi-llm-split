@@ -1,0 +1,2380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GEO Analysis - UI Concepts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #0a0a0f;
+      --bg-card: #12121a;
+      --bg-elevated: #1a1a24;
+      --border-subtle: rgba(255,255,255,0.06);
+      --border-accent: rgba(255,255,255,0.12);
+      --text-primary: #f4f4f6;
+      --text-secondary: #8b8b9e;
+      --text-muted: #5a5a6e;
+      --accent-emerald: #10b981;
+      --accent-emerald-soft: rgba(16, 185, 129, 0.15);
+      --accent-rose: #f43f5e;
+      --accent-rose-soft: rgba(244, 63, 94, 0.15);
+      --accent-amber: #f59e0b;
+      --accent-violet: #8b5cf6;
+      --accent-blue: #3b82f6;
+      --gradient-shine: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    /* Hero Section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 4rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background:
+        radial-gradient(ellipse at 30% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 80%, rgba(16, 185, 129, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(59, 130, 246, 0.04) 0%, transparent 70%);
+      animation: gradientShift 20s ease-in-out infinite;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(2%, -2%) rotate(1deg); }
+      66% { transform: translate(-2%, 2%) rotate(-1deg); }
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-accent);
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+      position: relative;
+      z-index: 1;
+      animation: fadeInUp 0.8s ease-out;
+    }
+
+    .hero-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--accent-emerald);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+    }
+
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(3rem, 8vw, 6rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.5rem;
+      position: relative;
+      z-index: 1;
+      animation: fadeInUp 0.8s ease-out 0.1s backwards;
+    }
+
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--accent-violet) 0%, var(--accent-blue) 50%, var(--accent-emerald) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin-bottom: 3rem;
+      position: relative;
+      z-index: 1;
+      animation: fadeInUp 0.8s ease-out 0.2s backwards;
+    }
+
+    .hero-nav {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+      animation: fadeInUp 0.8s ease-out 0.3s backwards;
+    }
+
+    .hero-nav a {
+      padding: 0.875rem 1.5rem;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-accent);
+      border-radius: 12px;
+      color: var(--text-primary);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.875rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .hero-nav a:hover {
+      background: var(--bg-card);
+      border-color: var(--accent-violet);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(139, 92, 246, 0.2);
+    }
+
+    .hero-nav a.primary {
+      background: linear-gradient(135deg, var(--accent-violet), var(--accent-blue));
+      border: none;
+    }
+
+    .hero-nav a.primary:hover {
+      box-shadow: 0 8px 30px rgba(139, 92, 246, 0.4);
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Scroll indicator */
+    .scroll-indicator {
+      position: absolute;
+      bottom: 3rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      animation: fadeInUp 0.8s ease-out 0.5s backwards;
+    }
+
+    .scroll-indicator .arrow {
+      width: 24px;
+      height: 24px;
+      border: 1px solid var(--border-accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(5px); }
+    }
+
+    /* Section Styles */
+    .section {
+      padding: 6rem 2rem;
+      position: relative;
+    }
+
+    .section-header {
+      max-width: 1400px;
+      margin: 0 auto 4rem;
+    }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent-violet);
+      margin-bottom: 1rem;
+    }
+
+    .section-label::before {
+      content: '';
+      width: 40px;
+      height: 1px;
+      background: linear-gradient(90deg, var(--accent-violet), transparent);
+    }
+
+    .section h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+
+    .section-desc {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+      max-width: 700px;
+    }
+
+    /* Concept Cards Container */
+    .concepts-grid {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      gap: 3rem;
+    }
+
+    /* Individual Concept */
+    .concept {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 24px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .concept::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--gradient-shine);
+    }
+
+    .concept-header {
+      padding: 2rem 2rem 1.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .concept-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .concept-subtitle {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+
+    .concept-tags {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      padding: 0.375rem 0.75rem;
+      background: var(--bg-elevated);
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .tag.green { background: var(--accent-emerald-soft); color: var(--accent-emerald); }
+    .tag.rose { background: var(--accent-rose-soft); color: var(--accent-rose); }
+    .tag.violet { background: rgba(139, 92, 246, 0.15); color: var(--accent-violet); }
+
+    .concept-demo {
+      padding: 2rem;
+      background: var(--bg-elevated);
+      min-height: 500px;
+    }
+
+    /* ==================== VISIBILITY CONCEPTS ==================== */
+
+    /* Concept 1: Filterable Data Table with Side Panel */
+    .data-table-demo {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 1.5rem;
+      height: 450px;
+    }
+
+    .table-main {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-card);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .table-filters {
+      display: flex;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border-subtle);
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.875rem;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-size: 0.8125rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .filter-btn:hover {
+      border-color: var(--accent-violet);
+      color: var(--text-primary);
+    }
+
+    .filter-btn.active {
+      background: rgba(139, 92, 246, 0.15);
+      border-color: var(--accent-violet);
+      color: var(--accent-violet);
+    }
+
+    .filter-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 0.5rem 0.875rem;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 0.8125rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .search-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-violet);
+    }
+
+    .table-container {
+      flex: 1;
+      overflow: auto;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table th {
+      position: sticky;
+      top: 0;
+      background: var(--bg-card);
+      padding: 0.875rem 1rem;
+      text-align: left;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .data-table td {
+      padding: 0.875rem 1rem;
+      font-size: 0.8125rem;
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background 0.15s ease;
+    }
+
+    .data-table tr {
+      cursor: pointer;
+    }
+
+    .data-table tr:hover td {
+      background: rgba(139, 92, 246, 0.05);
+    }
+
+    .data-table tr.selected td {
+      background: rgba(139, 92, 246, 0.1);
+    }
+
+    .rank-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.75rem;
+    }
+
+    .rank-badge.won {
+      background: var(--accent-emerald-soft);
+      color: var(--accent-emerald);
+    }
+
+    .rank-badge.lost {
+      background: var(--accent-rose-soft);
+      color: var(--accent-rose);
+    }
+
+    .market-flag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .market-flag img {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .llm-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.6875rem;
+      font-weight: 500;
+    }
+
+    .llm-badge.gemini {
+      background: rgba(66, 133, 244, 0.15);
+      color: #4285f4;
+    }
+
+    .llm-badge.chatgpt {
+      background: rgba(16, 163, 127, 0.15);
+      color: #10a37f;
+    }
+
+    .action-btn {
+      padding: 0.375rem 0.75rem;
+      background: transparent;
+      border: 1px solid var(--border-accent);
+      border-radius: 6px;
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+      background: var(--accent-violet);
+      border-color: var(--accent-violet);
+      color: white;
+    }
+
+    /* Side Panel */
+    .side-panel {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .panel-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+
+    .panel-close {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-elevated);
+      border: none;
+      border-radius: 6px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .panel-close:hover {
+      background: var(--accent-rose-soft);
+      color: var(--accent-rose);
+    }
+
+    .panel-content {
+      flex: 1;
+      overflow: auto;
+    }
+
+    .panel-question {
+      font-size: 1rem;
+      font-weight: 500;
+      line-height: 1.5;
+      margin-bottom: 1.25rem;
+    }
+
+    .panel-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .panel-section {
+      margin-bottom: 1.25rem;
+    }
+
+    .panel-section-title {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .ranking-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .ranking-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 0.75rem;
+      background: var(--bg-elevated);
+      border-radius: 8px;
+      font-size: 0.8125rem;
+    }
+
+    .ranking-item.highlight {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .ranking-pos {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-card);
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .ranking-item.highlight .ranking-pos {
+      background: var(--accent-blue);
+      color: white;
+    }
+
+    .llm-response {
+      padding: 0.875rem;
+      background: var(--bg-elevated);
+      border-radius: 10px;
+      border-left: 3px solid var(--accent-violet);
+    }
+
+    .llm-response-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.625rem;
+    }
+
+    .llm-response-text {
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Concept 2: Kanban/Column View */
+    .kanban-demo {
+      height: 450px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .kanban-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .kanban-filters {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .kanban-board {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      overflow-x: auto;
+      padding-bottom: 1rem;
+    }
+
+    .kanban-column {
+      background: var(--bg-card);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      min-width: 260px;
+    }
+
+    .column-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .column-flag {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .column-info h4 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 0.9375rem;
+    }
+
+    .column-info span {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .column-cards {
+      flex: 1;
+      padding: 0.75rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.625rem;
+    }
+
+    .kanban-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .kanban-card:hover {
+      border-color: var(--accent-violet);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    .kanban-card.won {
+      border-left: 3px solid var(--accent-emerald);
+    }
+
+    .kanban-card.lost {
+      border-left: 3px solid var(--accent-rose);
+    }
+
+    .card-question {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      line-height: 1.4;
+      margin-bottom: 0.75rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-rank {
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .card-rank.won { color: var(--accent-emerald); }
+    .card-rank.lost { color: var(--accent-rose); }
+
+    .card-winner {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+    }
+
+    .winner-avatar {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      background: var(--bg-card);
+    }
+
+    .expand-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.5rem;
+      background: transparent;
+      border: none;
+      color: var(--accent-violet);
+      font-size: 0.6875rem;
+      cursor: pointer;
+    }
+
+    /* Concept 3: Accordion Groups */
+    .accordion-demo {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .accordion-filters {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .accordion-group {
+      background: var(--bg-card);
+      border-radius: 16px;
+      margin-bottom: 0.75rem;
+      overflow: hidden;
+    }
+
+    .accordion-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .accordion-header:hover {
+      background: var(--bg-elevated);
+    }
+
+    .accordion-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .accordion-chevron {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      transition: transform 0.3s ease;
+    }
+
+    .accordion-group.open .accordion-chevron {
+      transform: rotate(90deg);
+    }
+
+    .accordion-flag {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .accordion-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+    }
+
+    .accordion-count {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+    }
+
+    .accordion-badges {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .stat-badge {
+      padding: 0.375rem 0.75rem;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .stat-badge.won {
+      background: var(--accent-emerald-soft);
+      color: var(--accent-emerald);
+    }
+
+    .stat-badge.lost {
+      background: var(--accent-rose-soft);
+      color: var(--accent-rose);
+    }
+
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+    }
+
+    .accordion-group.open .accordion-content {
+      max-height: 400px;
+    }
+
+    .accordion-items {
+      padding: 0 1.25rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .accordion-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: var(--bg-elevated);
+      border-radius: 10px;
+      font-size: 0.8125rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .accordion-item:hover {
+      background: rgba(139, 92, 246, 0.1);
+    }
+
+    .item-icon {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      font-size: 0.75rem;
+    }
+
+    .item-icon.won {
+      background: var(--accent-emerald-soft);
+      color: var(--accent-emerald);
+    }
+
+    .item-icon.lost {
+      background: var(--accent-rose-soft);
+      color: var(--accent-rose);
+    }
+
+    .item-text {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .item-winner {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .show-more {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.625rem;
+      color: var(--accent-violet);
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    /* ==================== COMPETITIVE CONCEPTS ==================== */
+
+    /* Concept 4: Matrix Heatmap */
+    .matrix-demo {
+      overflow-x: auto;
+    }
+
+    .matrix-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .matrix-legend {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 4px;
+    }
+
+    .legend-dot.won { background: var(--accent-emerald); }
+    .legend-dot.lost { background: var(--accent-rose); }
+
+    .matrix-table {
+      width: 100%;
+      background: var(--bg-card);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .matrix-table table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .matrix-table th {
+      padding: 1rem;
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .matrix-table th:first-child {
+      text-align: left;
+      padding-left: 1.5rem;
+    }
+
+    .market-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.375rem;
+    }
+
+    .market-header img {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+    }
+
+    .matrix-table td {
+      padding: 1rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border-subtle);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .matrix-table td:first-child {
+      text-align: left;
+      padding-left: 1.5rem;
+      font-size: 0.8125rem;
+      max-width: 300px;
+    }
+
+    .matrix-table tr:hover td {
+      background: rgba(139, 92, 246, 0.05);
+    }
+
+    .matrix-cell {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      min-width: 80px;
+      transition: transform 0.2s ease;
+    }
+
+    .matrix-cell:hover {
+      transform: scale(1.05);
+    }
+
+    .matrix-cell.won {
+      background: var(--accent-emerald-soft);
+    }
+
+    .matrix-cell.lost {
+      background: var(--accent-rose-soft);
+    }
+
+    .matrix-cell .winner {
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .matrix-cell.won .winner { color: var(--accent-emerald); }
+    .matrix-cell.lost .winner { color: var(--accent-rose); }
+
+    .matrix-cell .status {
+      font-size: 0.625rem;
+      color: var(--text-muted);
+    }
+
+    /* Concept 5: Timeline Stream */
+    .timeline-demo {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .timeline-filters {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .timeline-section {
+      margin-bottom: 2rem;
+    }
+
+    .timeline-section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .section-icon {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+
+    .section-icon.won {
+      background: var(--accent-emerald-soft);
+      color: var(--accent-emerald);
+    }
+
+    .section-icon.lost {
+      background: var(--accent-rose-soft);
+      color: var(--accent-rose);
+    }
+
+    .section-label {
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 1.125rem;
+    }
+
+    .section-count {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+
+    .timeline-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .timeline-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 1.25rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .timeline-card:hover {
+      border-color: var(--accent-violet);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+
+    .timeline-card.won {
+      border-left: 4px solid var(--accent-emerald);
+    }
+
+    .timeline-card.lost {
+      border-left: 4px solid var(--accent-rose);
+    }
+
+    .timeline-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.875rem;
+    }
+
+    .timeline-question {
+      font-size: 0.9375rem;
+      font-weight: 500;
+      line-height: 1.4;
+      flex: 1;
+      padding-right: 1rem;
+    }
+
+    .market-flags {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .market-flags img {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid var(--bg-card);
+      margin-left: -8px;
+    }
+
+    .market-flags img:first-child {
+      margin-left: 0;
+    }
+
+    .timeline-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .meta-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .llm-agreement {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .competitor-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.375rem 0.75rem;
+      background: var(--bg-elevated);
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .competitor-tag.lost {
+      background: var(--accent-rose-soft);
+      color: var(--accent-rose);
+    }
+
+    .expand-details {
+      font-size: 0.75rem;
+      color: var(--accent-violet);
+      cursor: pointer;
+    }
+
+    /* Concept 6: Competitor-Centric View */
+    .competitor-demo {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .competitor-filters {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .competitor-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .competitor-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .competitor-card:hover {
+      border-color: var(--border-accent);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+    }
+
+    .competitor-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem;
+      background: var(--bg-elevated);
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .competitor-identity {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .competitor-logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: var(--bg-card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--text-muted);
+    }
+
+    .competitor-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1.25rem;
+    }
+
+    .competitor-stats {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1.5rem;
+    }
+
+    .stat-value.won { color: var(--accent-emerald); }
+    .stat-value.lost { color: var(--accent-rose); }
+
+    .stat-label {
+      font-size: 0.6875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    .competitor-body {
+      padding: 1.5rem;
+    }
+
+    .market-breakdown {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .market-group {
+      flex: 1;
+    }
+
+    .market-group-title {
+      font-size: 0.6875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .market-group-flags {
+      display: flex;
+      gap: 0.375rem;
+    }
+
+    .market-group-flags img {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+    }
+
+    .expand-questions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.875rem;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      color: var(--text-secondary);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .expand-questions:hover {
+      background: rgba(139, 92, 246, 0.1);
+      border-color: var(--accent-violet);
+      color: var(--accent-violet);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .data-table-demo {
+        grid-template-columns: 1fr;
+      }
+
+      .side-panel {
+        display: none;
+      }
+
+      .kanban-board {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .kanban-board {
+        grid-template-columns: 1fr;
+      }
+
+      .matrix-table {
+        font-size: 0.75rem;
+      }
+    }
+
+    /* Divider */
+    .section-divider {
+      max-width: 1400px;
+      margin: 0 auto;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-accent), transparent);
+    }
+  </style>
+</head>
+<body>
+  <!-- Hero Section -->
+  <section class="hero">
+    <span class="hero-badge">Design Concepts</span>
+    <h1>Reimagining<br><span>Data Exploration</span></h1>
+    <p>Six innovative UI approaches for displaying visibility questions and competitive analysis across multiple markets.</p>
+    <nav class="hero-nav">
+      <a href="#visibility" class="primary">Visibility Concepts</a>
+      <a href="#competitive">Competitive Concepts</a>
+    </nav>
+    <div class="scroll-indicator">
+      <span>Scroll to explore</span>
+      <div class="arrow">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14M19 12l-7 7-7-7"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- Visibility Section -->
+  <section id="visibility" class="section">
+    <div class="section-header">
+      <div class="section-label">Visibility Analysis</div>
+      <h2>Questions Where Brand Ranks</h2>
+      <p class="section-desc">Three approaches to display "Ranked #1" and "Not Ranked #1" questions with multi-market support.</p>
+    </div>
+
+    <div class="concepts-grid">
+      <!-- Concept 1: Data Table -->
+      <div class="concept">
+        <div class="concept-header">
+          <div>
+            <h3 class="concept-title">Filterable Data Table + Side Panel</h3>
+            <p class="concept-subtitle">Compact rows with contextual detail panel</p>
+          </div>
+          <div class="concept-tags">
+            <span class="tag violet">Best for Analysis</span>
+            <span class="tag">Export-friendly</span>
+          </div>
+        </div>
+        <div class="concept-demo">
+          <div class="data-table-demo">
+            <div class="table-main">
+              <div class="table-filters">
+                <button class="filter-btn active">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l2 2"/></svg>
+                  All Status
+                </button>
+                <button class="filter-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+                  Market
+                </button>
+                <button class="filter-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/></svg>
+                  LLM
+                </button>
+                <input type="text" class="search-input" placeholder="Search questions...">
+              </div>
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Question</th>
+                      <th>Rank</th>
+                      <th>Winner</th>
+                      <th>Market</th>
+                      <th>LLM</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="selected">
+                      <td>Best running shoes for marathon training</td>
+                      <td><span class="rank-badge lost">#3</span></td>
+                      <td>Nike</td>
+                      <td><span class="market-flag"><img src="https://hatscripts.github.io/circle-flags/flags/us.svg" alt="US">USA</span></td>
+                      <td><span class="llm-badge gemini">Gemini</span></td>
+                      <td><button class="action-btn">View</button></td>
+                    </tr>
+                    <tr>
+                      <td>Top performance sneakers for athletes</td>
+                      <td><span class="rank-badge lost">#2</span></td>
+                      <td>Adidas</td>
+                      <td><span class="market-flag"><img src="https://hatscripts.github.io/circle-flags/flags/fr.svg" alt="FR">France</span></td>
+                      <td><span class="llm-badge chatgpt">ChatGPT</span></td>
+                      <td><button class="action-btn">View</button></td>
+                    </tr>
+                    <tr>
+                      <td>Best budget-friendly running shoes</td>
+                      <td><span class="rank-badge won">#1</span></td>
+                      <td>You</td>
+                      <td><span class="market-flag"><img src="https://hatscripts.github.io/circle-flags/flags/de.svg" alt="DE">Germany</span></td>
+                      <td><span class="llm-badge gemini">Gemini</span></td>
+                      <td><button class="action-btn">View</button></td>
+                    </tr>
+                    <tr>
+                      <td>Premium athletic footwear recommendations</td>
+                      <td><span class="rank-badge lost">#4</span></td>
+                      <td>Asics</td>
+                      <td><span class="market-flag"><img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" alt="UK">UK</span></td>
+                      <td><span class="llm-badge chatgpt">ChatGPT</span></td>
+                      <td><button class="action-btn">View</button></td>
+                    </tr>
+                    <tr>
+                      <td>Recommended shoes for daily jogging</td>
+                      <td><span class="rank-badge won">#1</span></td>
+                      <td>You</td>
+                      <td><span class="market-flag"><img src="https://hatscripts.github.io/circle-flags/flags/us.svg" alt="US">USA</span></td>
+                      <td><span class="llm-badge gemini">Gemini</span></td>
+                      <td><button class="action-btn">View</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="side-panel">
+              <div class="panel-header">
+                <span class="panel-title">Question Details</span>
+                <button class="panel-close">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+              </div>
+              <div class="panel-content">
+                <p class="panel-question">Best running shoes for marathon training</p>
+                <div class="panel-meta">
+                  <span class="tag rose">Rank #3</span>
+                  <span class="tag">USA</span>
+                  <span class="tag">Gemini</span>
+                </div>
+                <div class="panel-section">
+                  <h5 class="panel-section-title">Full Ranking</h5>
+                  <div class="ranking-list">
+                    <div class="ranking-item">
+                      <span class="ranking-pos">1</span>
+                      <span>Nike</span>
+                    </div>
+                    <div class="ranking-item">
+                      <span class="ranking-pos">2</span>
+                      <span>Adidas</span>
+                    </div>
+                    <div class="ranking-item highlight">
+                      <span class="ranking-pos">3</span>
+                      <span>Your Brand</span>
+                    </div>
+                    <div class="ranking-item">
+                      <span class="ranking-pos">4</span>
+                      <span>Asics</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="panel-section">
+                  <h5 class="panel-section-title">LLM Response</h5>
+                  <div class="llm-response">
+                    <div class="llm-response-header">
+                      <span class="llm-badge gemini">Gemini</span>
+                    </div>
+                    <p class="llm-response-text">Nike's Vaporfly series leads due to its carbon-plate technology and proven marathon performance records...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Concept 2: Kanban -->
+      <div class="concept">
+        <div class="concept-header">
+          <div>
+            <h3 class="concept-title">Kanban Board by Market</h3>
+            <p class="concept-subtitle">Visual columns for cross-market comparison</p>
+          </div>
+          <div class="concept-tags">
+            <span class="tag green">Visual Comparison</span>
+            <span class="tag">Drag-friendly</span>
+          </div>
+        </div>
+        <div class="concept-demo">
+          <div class="kanban-demo">
+            <div class="kanban-header">
+              <div class="kanban-filters">
+                <button class="filter-btn active">All Questions</button>
+                <button class="filter-btn">Won Only</button>
+                <button class="filter-btn">Lost Only</button>
+              </div>
+            </div>
+            <div class="kanban-board">
+              <div class="kanban-column">
+                <div class="column-header">
+                  <img class="column-flag" src="https://hatscripts.github.io/circle-flags/flags/us.svg" alt="US">
+                  <div class="column-info">
+                    <h4>United States</h4>
+                    <span>12 questions</span>
+                  </div>
+                </div>
+                <div class="column-cards">
+                  <div class="kanban-card won">
+                    <p class="card-question">Best budget running shoes for beginners</p>
+                    <div class="card-meta">
+                      <span class="card-rank won">#1 You</span>
+                      <span class="llm-badge gemini">G</span>
+                    </div>
+                  </div>
+                  <div class="kanban-card lost">
+                    <p class="card-question">Top marathon training footwear</p>
+                    <div class="card-meta">
+                      <span class="card-rank lost">#3</span>
+                      <div class="card-winner">
+                        <div class="winner-avatar"></div>
+                        Nike won
+                      </div>
+                    </div>
+                  </div>
+                  <div class="kanban-card lost">
+                    <p class="card-question">Performance sneakers for track</p>
+                    <div class="card-meta">
+                      <span class="card-rank lost">#4</span>
+                      <div class="card-winner">
+                        <div class="winner-avatar"></div>
+                        Adidas
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="kanban-column">
+                <div class="column-header">
+                  <img class="column-flag" src="https://hatscripts.github.io/circle-flags/flags/fr.svg" alt="FR">
+                  <div class="column-info">
+                    <h4>France</h4>
+                    <span>10 questions</span>
+                  </div>
+                </div>
+                <div class="column-cards">
+                  <div class="kanban-card lost">
+                    <p class="card-question">Meilleures chaussures de course</p>
+                    <div class="card-meta">
+                      <span class="card-rank lost">#2</span>
+                      <div class="card-winner">
+                        <div class="winner-avatar"></div>
+                        Nike won
+                      </div>
+                    </div>
+                  </div>
+                  <div class="kanban-card won">
+                    <p class="card-question">Chaussures running pas cher</p>
+                    <div class="card-meta">
+                      <span class="card-rank won">#1 You</span>
+                      <span class="llm-badge chatgpt">C</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="kanban-column">
+                <div class="column-header">
+                  <img class="column-flag" src="https://hatscripts.github.io/circle-flags/flags/de.svg" alt="DE">
+                  <div class="column-info">
+                    <h4>Germany</h4>
+                    <span>8 questions</span>
+                  </div>
+                </div>
+                <div class="column-cards">
+                  <div class="kanban-card won">
+                    <p class="card-question">Beste Laufschuhe für Anfänger</p>
+                    <div class="card-meta">
+                      <span class="card-rank won">#1 You</span>
+                      <span class="llm-badge gemini">G</span>
+                    </div>
+                  </div>
+                  <div class="kanban-card won">
+                    <p class="card-question">Preiswerte Sportschuhe</p>
+                    <div class="card-meta">
+                      <span class="card-rank won">#1 You</span>
+                      <span class="llm-badge chatgpt">C</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="kanban-column">
+                <div class="column-header">
+                  <img class="column-flag" src="https://hatscripts.github.io/circle-flags/flags/gb.svg" alt="UK">
+                  <div class="column-info">
+                    <h4>United Kingdom</h4>
+                    <span>11 questions</span>
+                  </div>
+                </div>
+                <div class="column-cards">
+                  <div class="kanban-card lost">
+                    <p class="card-question">Best running shoes UK 2024</p>
+                    <div class="card-meta">
+                      <span class="card-rank lost">#3</span>
+                      <div class="card-winner">
+                        <div class="winner-avatar"></div>
+                        Asics won
+                      </div>
+                    </div>
+                  </div>
+                  <div class="kanban-card won">
+                    <p class="card-question">Affordable trainers for jogging</p>
+                    <div class="card-meta">
+                      <span class="card-rank won">#1 You</span>
+                      <span class="llm-badge gemini">G</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Concept 3: Accordion -->
+      <div class="concept">
+        <div class="concept-header">
+          <div>
+            <h3 class="concept-title">Accordion Groups with Badges</h3>
+            <p class="concept-subtitle">Progressive disclosure by market</p>
+          </div>
+          <div class="concept-tags">
+            <span class="tag violet">Space Efficient</span>
+            <span class="tag">Mobile-friendly</span>
+          </div>
+        </div>
+        <div class="concept-demo">
+          <div class="accordion-demo">
+            <div class="accordion-filters">
+              <button class="filter-btn active">Group by Market</button>
+              <button class="filter-btn">All Questions</button>
+              <button class="filter-btn">Won/Lost</button>
+            </div>
+
+            <div class="accordion-group open">
+              <div class="accordion-header">
+                <div class="accordion-left">
+                  <div class="accordion-chevron">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                  </div>
+                  <img class="accordion-flag" src="https://hatscripts.github.io/circle-flags/flags/us.svg" alt="US">
+                  <div>
+                    <h4 class="accordion-title">United States</h4>
+                    <span class="accordion-count">23 questions</span>
+                  </div>
+                </div>
+                <div class="accordion-badges">
+                  <span class="stat-badge won">Won: 8</span>
+                  <span class="stat-badge lost">Lost: 15</span>
+                </div>
+              </div>
+              <div class="accordion-content">
+                <div class="accordion-items">
+                  <div class="accordion-item">
+                    <span class="item-icon won">✓</span>
+                    <span class="item-text">Best running shoes for marathon training</span>
+                    <span class="item-winner">#1</span>
+                  </div>
+                  <div class="accordion-item">
+                    <span class="item-icon lost">✗</span>
+                    <span class="item-text">Top performance sneakers for athletes</span>
+                    <span class="item-winner">Nike #1</span>
+                  </div>
+                  <div class="accordion-item">
+                    <span class="item-icon won">✓</span>
+                    <span class="item-text">Budget-friendly athletic footwear</span>
+                    <span class="item-winner">#1</span>
+                  </div>
+                  <div class="show-more">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                    Show 20 more
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-group">
+              <div class="accordion-header">
+                <div class="accordion-left">
+                  <div class="accordion-chevron">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                  </div>
+                  <img class="accordion-flag" src="https://hatscripts.github.io/circle-flags/flags/fr.svg" alt="FR">
+                  <div>
+                    <h4 class="accordion-title">France</h4>
+                    <span class="accordion-count">18 questions</span>
+                  </div>
+                </div>
+                <div class="accordion-badges">
+                  <span class="stat-badge won">Won: 5</span>
+                  <span class="stat-badge lost">Lost: 13</span>
+                </div>
+              </div>
+              <div class="accordion-content"></div>
+            </div>
+
+            <div class="accordion-group">
+              <div class="accordion-header">
+                <div class="accordion-left">
+                  <div class="accordion-chevron">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                  </div>
+                  <img class="accordion-flag" src="https://hatscripts.github.io/circle-flags/flags/de.svg" alt="DE">
+                  <div>
+                    <h4 class="accordion-title">Germany</h4>
+                    <span class="accordion-count">15 questions</span>
+                  </div>
+                </div>
+                <div class="accordion-badges">
+                  <span class="stat-badge won">Won: 7</span>
+                  <span class="stat-badge lost">Lost: 8</span>
+                </div>
+              </div>
+              <div class="accordion-content"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- Competitive Section -->
+  <section id="competitive" class="section">
+    <div class="section-header">
+      <div class="section-label">Competitive Analysis</div>
+      <h2>Won & Lost Opportunities</h2>
+      <p class="section-desc">Three approaches to display competitive question outcomes with multi-market support.</p>
+    </div>
+
+    <div class="concepts-grid">
+      <!-- Concept 4: Matrix Heatmap -->
+      <div class="concept">
+        <div class="concept-header">
+          <div>
+            <h3 class="concept-title">Matrix Heatmap View</h3>
+            <p class="concept-subtitle">Cross-market performance at a glance</p>
+          </div>
+          <div class="concept-tags">
+            <span class="tag green">Pattern Recognition</span>
+            <span class="tag">Quick Scan</span>
+          </div>
+        </div>
+        <div class="concept-demo">
+          <div class="matrix-demo">
+            <div class="matrix-header">
+              <div class="kanban-filters">
+                <button class="filter-btn active">All Markets</button>
+                <button class="filter-btn">All LLMs</button>
+              </div>
+              <div class="matrix-legend">
+                <div class="legend-item">
+                  <div class="legend-dot won"></div>
+                  <span>You Won</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot lost"></div>
+                  <span>Competitor Won</span>
+                </div>
+              </div>
+            </div>
+            <div class="matrix-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Question</th>
+                    <th>
+                      <div class="market-header">
+                        <img src="https://hatscripts.github.io/circle-flags/flags/us.svg" alt="US">
+                        <span>USA</span>
+                      </div>
+                    </th>
+                    <th>
+                      <div class="market-header">
+                        <img src="https://hatscripts.github.io/circle-flags/flags/fr.svg" alt="FR">
+                        <span>France</span>
+                      </div>
+                    </th>
+                    <th>
+                      <div class="market-header">
+                        <img src="https://hatscripts.github.io/circle-flags/flags/de.svg" alt="DE">
+                        <span>Germany</span>
+                      </div>
+                    </th>
+                    <th>
+                      <div class="market-header">
+                        <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" alt="UK">
+                        <span>UK</span>
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Best for marathon training</td>
+                    <td>
+                      <div class="matrix-cell won">
+                        <span class="winner">You</span>
+                        <span class="status">✓ Won</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="matrix-cell lost">
+                        <span class="winner">Nike</span>
+                        <span class="status">Lost</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="matrix-cell won">
+                        <span class="winner">You</span>
+                        <span class="status">✓ Won</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="matrix-cell lost">
+                        <span class="winner">Adidas</span>
+                        <span class="status">Lost</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Top performance sneakers</td>
+                    <td>
+                      <div class="matrix-cell lost">
+                        <span class="winner">Adidas</span>
+                        <span class="status">Lost</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="matrix-cell won">
+                        <span class="winner">You</span>
+                        <span class="status">✓ Won</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="matrix-cell lost">
+                        <span class="winner">Nike</span>
+                        <span class="status">Lost</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="matrix-cell won">
+                        <span class="winner">You</span>
+                        <span class="status">✓ Won</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Budget-friendly options</td>
+                    <td>
+                      <div class="matrix-cell won">
+                        <span class="winner">You</span>
+                        <span class="status">✓ Won</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="matrix-cell won">
+                        <span class="winner">You</span>
+                        <span class="status">✓ Won</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="matrix-cell won">
+                        <span class="winner">You</span>
+                        <span class="status">✓ Won</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="matrix-cell won">
+                        <span class="winner">You</span>
+                        <span class="status">✓ Won</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Premium athletic footwear</td>
+                    <td>
+                      <div class="matrix-cell lost">
+                        <span class="winner">Nike</span>
+                        <span class="status">Lost</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="matrix-cell lost">
+                        <span class="winner">Nike</span>
+                        <span class="status">Lost</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="matrix-cell won">
+                        <span class="winner">You</span>
+                        <span class="status">✓ Won</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="matrix-cell lost">
+                        <span class="winner">Nike</span>
+                        <span class="status">Lost</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Concept 5: Timeline Stream -->
+      <div class="concept">
+        <div class="concept-header">
+          <div>
+            <h3 class="concept-title">Timeline Stream View</h3>
+            <p class="concept-subtitle">Won/Lost separation with competitor tags</p>
+          </div>
+          <div class="concept-tags">
+            <span class="tag violet">Clear Separation</span>
+            <span class="tag">Scannable</span>
+          </div>
+        </div>
+        <div class="concept-demo">
+          <div class="timeline-demo">
+            <div class="timeline-filters">
+              <button class="filter-btn active">All Markets</button>
+              <button class="filter-btn">All Competitors</button>
+              <button class="filter-btn">Both LLMs</button>
+            </div>
+
+            <div class="timeline-section">
+              <div class="timeline-section-header">
+                <div class="section-icon won">✓</div>
+                <span class="section-label">Won</span>
+                <span class="section-count">18 questions</span>
+              </div>
+              <div class="timeline-cards">
+                <div class="timeline-card won">
+                  <div class="timeline-card-header">
+                    <p class="timeline-question">Best running shoes for marathon training</p>
+                    <div class="market-flags">
+                      <img src="https://hatscripts.github.io/circle-flags/flags/us.svg" alt="US">
+                      <img src="https://hatscripts.github.io/circle-flags/flags/de.svg" alt="DE">
+                      <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" alt="UK">
+                    </div>
+                  </div>
+                  <div class="timeline-meta">
+                    <div class="meta-left">
+                      <div class="llm-agreement">
+                        <span class="llm-badge gemini">Gemini</span>
+                        <span class="llm-badge chatgpt">ChatGPT</span>
+                        Both agree
+                      </div>
+                      <span class="competitor-tag">Nike lost</span>
+                    </div>
+                    <span class="expand-details">+ 3 more markets</span>
+                  </div>
+                </div>
+                <div class="timeline-card won">
+                  <div class="timeline-card-header">
+                    <p class="timeline-question">Premium athletic wear recommendations</p>
+                    <div class="market-flags">
+                      <img src="https://hatscripts.github.io/circle-flags/flags/fr.svg" alt="FR">
+                    </div>
+                  </div>
+                  <div class="timeline-meta">
+                    <div class="meta-left">
+                      <div class="llm-agreement">
+                        <span class="llm-badge chatgpt">ChatGPT</span>
+                        only
+                      </div>
+                      <span class="competitor-tag">Adidas lost</span>
+                    </div>
+                    <span class="expand-details">Click to expand</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="timeline-section">
+              <div class="timeline-section-header">
+                <div class="section-icon lost">✗</div>
+                <span class="section-label">Lost</span>
+                <span class="section-count">24 questions</span>
+              </div>
+              <div class="timeline-cards">
+                <div class="timeline-card lost">
+                  <div class="timeline-card-header">
+                    <p class="timeline-question">Budget friendly athletic options for daily use</p>
+                    <div class="market-flags">
+                      <img src="https://hatscripts.github.io/circle-flags/flags/us.svg" alt="US">
+                      <img src="https://hatscripts.github.io/circle-flags/flags/fr.svg" alt="FR">
+                      <img src="https://hatscripts.github.io/circle-flags/flags/de.svg" alt="DE">
+                      <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" alt="UK">
+                    </div>
+                  </div>
+                  <div class="timeline-meta">
+                    <div class="meta-left">
+                      <div class="llm-agreement">
+                        <span class="llm-badge gemini">Gemini</span>
+                        <span class="llm-badge chatgpt">ChatGPT</span>
+                        Both agree
+                      </div>
+                      <span class="competitor-tag lost">Nike won</span>
+                    </div>
+                    <span class="expand-details">Reason: "Price advantage..."</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Concept 6: Competitor-Centric -->
+      <div class="concept">
+        <div class="concept-header">
+          <div>
+            <h3 class="concept-title">Competitor-Centric View</h3>
+            <p class="concept-subtitle">Head-to-head metrics with drill-down</p>
+          </div>
+          <div class="concept-tags">
+            <span class="tag green">Strategic</span>
+            <span class="tag">Actionable</span>
+          </div>
+        </div>
+        <div class="concept-demo">
+          <div class="competitor-demo">
+            <div class="competitor-filters">
+              <button class="filter-btn active">By Competitor</button>
+              <button class="filter-btn">All Markets</button>
+            </div>
+
+            <div class="competitor-cards">
+              <div class="competitor-card">
+                <div class="competitor-header">
+                  <div class="competitor-identity">
+                    <div class="competitor-logo">N</div>
+                    <span class="competitor-name">Nike</span>
+                  </div>
+                  <div class="competitor-stats">
+                    <div class="stat-item">
+                      <div class="stat-value lost">12</div>
+                      <div class="stat-label">Beat You</div>
+                    </div>
+                    <div class="stat-item">
+                      <div class="stat-value won">5</div>
+                      <div class="stat-label">You Beat</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="competitor-body">
+                  <div class="market-breakdown">
+                    <div class="market-group">
+                      <div class="market-group-title">Strong Markets</div>
+                      <div class="market-group-flags">
+                        <img src="https://hatscripts.github.io/circle-flags/flags/us.svg" alt="US" title="USA">
+                        <img src="https://hatscripts.github.io/circle-flags/flags/fr.svg" alt="FR" title="France">
+                      </div>
+                    </div>
+                    <div class="market-group">
+                      <div class="market-group-title">Weak Markets</div>
+                      <div class="market-group-flags">
+                        <img src="https://hatscripts.github.io/circle-flags/flags/de.svg" alt="DE" title="Germany">
+                      </div>
+                    </div>
+                  </div>
+                  <button class="expand-questions">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                    View all 17 questions
+                  </button>
+                </div>
+              </div>
+
+              <div class="competitor-card">
+                <div class="competitor-header">
+                  <div class="competitor-identity">
+                    <div class="competitor-logo">A</div>
+                    <span class="competitor-name">Adidas</span>
+                  </div>
+                  <div class="competitor-stats">
+                    <div class="stat-item">
+                      <div class="stat-value lost">8</div>
+                      <div class="stat-label">Beat You</div>
+                    </div>
+                    <div class="stat-item">
+                      <div class="stat-value won">7</div>
+                      <div class="stat-label">You Beat</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="competitor-body">
+                  <div class="market-breakdown">
+                    <div class="market-group">
+                      <div class="market-group-title">Strong Markets</div>
+                      <div class="market-group-flags">
+                        <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" alt="UK" title="UK">
+                      </div>
+                    </div>
+                    <div class="market-group">
+                      <div class="market-group-title">Weak Markets</div>
+                      <div class="market-group-flags">
+                        <img src="https://hatscripts.github.io/circle-flags/flags/us.svg" alt="US" title="USA">
+                        <img src="https://hatscripts.github.io/circle-flags/flags/fr.svg" alt="FR" title="France">
+                      </div>
+                    </div>
+                  </div>
+                  <button class="expand-questions">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                    View all 15 questions
+                  </button>
+                </div>
+              </div>
+
+              <div class="competitor-card">
+                <div class="competitor-header">
+                  <div class="competitor-identity">
+                    <div class="competitor-logo">As</div>
+                    <span class="competitor-name">Asics</span>
+                  </div>
+                  <div class="competitor-stats">
+                    <div class="stat-item">
+                      <div class="stat-value lost">4</div>
+                      <div class="stat-label">Beat You</div>
+                    </div>
+                    <div class="stat-item">
+                      <div class="stat-value won">9</div>
+                      <div class="stat-label">You Beat</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="competitor-body">
+                  <div class="market-breakdown">
+                    <div class="market-group">
+                      <div class="market-group-title">Strong Markets</div>
+                      <div class="market-group-flags">
+                        <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" alt="UK" title="UK">
+                      </div>
+                    </div>
+                    <div class="market-group">
+                      <div class="market-group-title">Weak Markets</div>
+                      <div class="market-group-flags">
+                        <img src="https://hatscripts.github.io/circle-flags/flags/us.svg" alt="US" title="USA">
+                        <img src="https://hatscripts.github.io/circle-flags/flags/de.svg" alt="DE" title="Germany">
+                        <img src="https://hatscripts.github.io/circle-flags/flags/fr.svg" alt="FR" title="France">
+                      </div>
+                    </div>
+                  </div>
+                  <button class="expand-questions">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                    View all 13 questions
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Accordion toggle functionality
+    document.querySelectorAll('.accordion-header').forEach(header => {
+      header.addEventListener('click', () => {
+        const group = header.parentElement;
+        group.classList.toggle('open');
+      });
+    });
+
+    // Table row selection
+    document.querySelectorAll('.data-table tr').forEach(row => {
+      row.addEventListener('click', () => {
+        document.querySelectorAll('.data-table tr').forEach(r => r.classList.remove('selected'));
+        row.classList.add('selected');
+      });
+    });
+
+    // Smooth scroll for navigation
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
+    // Filter button toggle (demo only)
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const siblings = e.target.parentElement.querySelectorAll('.filter-btn');
+        siblings.forEach(s => s.classList.remove('active'));
+        e.target.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

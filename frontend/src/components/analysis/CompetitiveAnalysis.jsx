@@ -1,8 +1,36 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
-import { Trophy, AlertCircle, Check, X } from 'lucide-react';
+import { Check, X, Globe } from 'lucide-react';
 import SourceAnalysis from './SourceAnalysis';
+import CompetitiveMatrixHeatmap from './CompetitiveMatrixHeatmap';
+
+// Map country suffix to ISO codes for flag display
+const COUNTRY_SUFFIX_TO_ISO = {
+  'US': 'us', 'CA': 'ca', 'MX': 'mx', 'GB': 'gb', 'UK': 'gb', 'IE': 'ie', 'FR': 'fr',
+  'DE': 'de', 'ES': 'es', 'IT': 'it', 'PT': 'pt', 'NL': 'nl', 'BE': 'be', 'AT': 'at',
+  'CH': 'ch', 'LU': 'lu', 'SE': 'se', 'NO': 'no', 'DK': 'dk', 'FI': 'fi', 'IS': 'is',
+  'PL': 'pl', 'CZ': 'cz', 'SK': 'sk', 'HU': 'hu', 'RO': 'ro', 'BG': 'bg', 'UA': 'ua',
+  'RU': 'ru', 'GR': 'gr', 'HR': 'hr', 'SI': 'si', 'RS': 'rs', 'JP': 'jp', 'KR': 'kr',
+  'CN': 'cn', 'TW': 'tw', 'HK': 'hk', 'SG': 'sg', 'AU': 'au', 'NZ': 'nz', 'TH': 'th',
+  'VN': 'vn', 'ID': 'id', 'MY': 'my', 'PH': 'ph', 'IN': 'in', 'BD': 'bd', 'PK': 'pk',
+  'SA': 'sa', 'AE': 'ae', 'EG': 'eg', 'IL': 'il', 'TR': 'tr', 'IR': 'ir', 'QA': 'qa',
+  'BR': 'br', 'AR': 'ar', 'CL': 'cl', 'CO': 'co', 'PE': 'pe', 'ZA': 'za',
+  'UN': 'us', 'GE': 'de', 'SP': 'es', 'SW': 'ch', 'NE': 'nl', 'PO': 'pt',
+  'JA': 'jp', 'KO': 'kr', 'SO': 'kr', 'TA': 'tw', 'HO': 'hk', 'TU': 'tr', 'ME': 'mx'
+};
+
+function getCountryCode(marketCode) {
+  if (!marketCode) return null;
+  const parts = marketCode.split('-');
+  const countrySuffix = parts.length > 1 ? parts[1].toUpperCase() : parts[0].toUpperCase();
+  return COUNTRY_SUFFIX_TO_ISO[countrySuffix] || (countrySuffix.length === 2 ? countrySuffix.toLowerCase() : null);
+}
+
+function getFlagUrl(marketCode) {
+  const countryCode = getCountryCode(marketCode);
+  return countryCode ? `https://hatscripts.github.io/circle-flags/flags/${countryCode}.svg` : null;
+}
 
 /**
  * Generate Brandfetch logo URL from brand name
@@ -23,26 +51,19 @@ function generateBrandLogoUrl(brandName) {
 }
 
 /**
- * Generate Brandfetch logo URL for LLM providers
- */
-function getLLMLogoUrl(llm) {
-  const clientId = import.meta.env.VITE_LOGO_API_KEY;
-  if (!clientId) return null;
-
-  const domain = llm === 'gemini' ? 'google.com' : 'openai.com';
-  return `https://cdn.brandfetch.io/${domain}?c=${clientId}`;
-}
-
-/**
  * CompetitiveAnalysis Component
  * Displays competitive positioning analysis with:
  * 1. Share of Voice by LLM (donut chart)
  * 2. Pros and Cons by Brand (table)
- * 3. Questions Where Brand is Chosen
- * 4. Questions Where Brand is Not Chosen
- * 5. Source Analysis (via SourceAnalysis component)
+ * 3. Competitive Questions Matrix (via CompetitiveMatrixHeatmap)
+ * 4. Source Analysis (via SourceAnalysis component)
  */
-export default function CompetitiveAnalysis({ data, category, entity, competitors, allSources = [], selectedLLMs = ['gemini', 'openai'] }) {
+export default function CompetitiveAnalysis({ data, category, entity, competitors, allSources = [], selectedLLMs = ['gemini', 'openai'], perMarketData = null, markets = null }) {
+  const [marketView, setMarketView] = useState('all'); // 'all' or 'by-market'
+
+  // Check if we have multi-market data
+  const hasMultiMarket = perMarketData && perMarketData.length > 1 && markets && markets.length > 1;
+
   if (!data) {
     return (
       <div className="card-base p-8 text-center">
@@ -103,59 +124,6 @@ export default function CompetitiveAnalysis({ data, category, entity, competitor
       selectedLLMs.includes(perf.llm)
     );
   }, [competitiveLlmPerformance, selectedLLMs]);
-
-  // Calculate SOV per entity from question data based on selected LLMs
-  const filteredSovData = useMemo(() => {
-    const allQuestions = [...rankedFirst, ...notRankedFirst];
-    // Use lowercase key for aggregation, but track the display name (most common casing)
-    const entityCounts = new Map(); // lowercase -> { count, displayNames: Map<original, count> }
-    let totalChoices = 0;
-
-    const addBrand = (brandName) => {
-      if (!brandName) return;
-      const key = brandName.toLowerCase().trim();
-      if (!entityCounts.has(key)) {
-        entityCounts.set(key, { count: 0, displayNames: new Map() });
-      }
-      const entry = entityCounts.get(key);
-      entry.count++;
-      entry.displayNames.set(brandName, (entry.displayNames.get(brandName) || 0) + 1);
-      totalChoices++;
-    };
-
-    allQuestions.forEach(item => {
-      // Get top brand from each selected LLM
-      if (showGemini && item.llm_responses?.gemini) {
-        addBrand(item.llm_responses.gemini.top_brand);
-      }
-      if (showOpenai && item.llm_responses?.openai) {
-        addBrand(item.llm_responses.openai.top_brand);
-      }
-    });
-
-    // Convert to array and calculate percentages, using the most common display name
-    const sovArray = Array.from(entityCounts.entries())
-      .map(([key, { count, displayNames }]) => {
-        // Find the most frequently used display name
-        let bestName = key;
-        let maxCount = 0;
-        displayNames.forEach((cnt, name) => {
-          if (cnt > maxCount) {
-            maxCount = cnt;
-            bestName = name;
-          }
-        });
-        return {
-          name: bestName,
-          count,
-          sov: totalChoices > 0 ? count / totalChoices : 0
-        };
-      })
-      .sort((a, b) => b.sov - a.sov)
-      .slice(0, 8);
-
-    return { entities: sovArray, totalChoices };
-  }, [rankedFirst, notRankedFirst, showGemini, showOpenai]);
 
   // 1. Share of Voice by LLM (Pie Chart) - use filtered data when only one LLM selected
   const sovPieData = useMemo(() => {
@@ -240,6 +208,58 @@ export default function CompetitiveAnalysis({ data, category, entity, competitor
 
     return result;
   }, [entitiesRanking, rankedFirst, notRankedFirst, showGemini, showOpenai, bothSelected]);
+
+  // Build per-market SOV data for multi-market view
+  const perMarketSovData = useMemo(() => {
+    if (!hasMultiMarket) return [];
+
+    return perMarketData.map(marketItem => {
+      const marketCode = marketItem.marketCode;
+      const marketCountry = marketItem.marketCountry;
+      const marketData = marketItem.data;
+      const marketRankings = marketData?.entities_ranking || [];
+
+      // Calculate total SOV for normalization
+      const totalSov = marketRankings.reduce((sum, comp) => sum + (comp.sov || 0), 0);
+      const normalizeFactor = totalSov > 0 ? 1 / totalSov : 1;
+
+      // Show top 5 brands for smaller donut charts
+      const MAX_BRANDS = 5;
+      const result = [];
+
+      marketRankings.slice(0, MAX_BRANDS).forEach((comp, index) => {
+        result.push({
+          name: comp.name,
+          y: (comp.sov || 0) * normalizeFactor * 100,
+          color: CHART_COLORS[index % CHART_COLORS.length]
+        });
+      });
+
+      // Group remaining as "Others"
+      if (marketRankings.length > MAX_BRANDS) {
+        const othersSov = marketRankings.slice(MAX_BRANDS).reduce((sum, comp) => sum + (comp.sov || 0), 0);
+        if (othersSov > 0) {
+          result.push({
+            name: 'Others',
+            y: othersSov * normalizeFactor * 100,
+            color: '#9E9E9E'
+          });
+        }
+      }
+
+      // Find entity's SOV in this market
+      const entitySov = marketRankings.find(r => r.name?.toLowerCase() === entity.toLowerCase());
+      const entitySovPercent = entitySov ? ((entitySov.sov || 0) * normalizeFactor * 100).toFixed(0) : '0';
+
+      return {
+        marketCode,
+        marketCountry,
+        flagUrl: getFlagUrl(marketCode),
+        data: result,
+        entitySov: entitySovPercent
+      };
+    });
+  }, [hasMultiMarket, perMarketData, entity]);
 
   // Donut chart configuration
   const sovDonutOptions = {
@@ -326,95 +346,224 @@ export default function CompetitiveAnalysis({ data, category, entity, competitor
 
       {/* Share of Voice & LLM Performance - Combined Card */}
       <div className="bg-white border border-[#E0E0E0] rounded-lg p-6">
-        <div className="mb-4">
-          <h3 className="text-lg font-medium text-[#212121] mb-1">Share of Voice</h3>
-          <p className="text-sm text-[#757575]">Brand selection distribution across AI engines</p>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-medium text-[#212121] mb-1">Share of Voice</h3>
+            <p className="text-sm text-[#757575]">Brand selection distribution across AI engines</p>
+          </div>
+          {/* Market View Toggle */}
+          {hasMultiMarket && (
+            <div className="flex items-center gap-1 bg-[#F5F5F5] rounded-lg p-1">
+              <button
+                onClick={() => setMarketView('all')}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  marketView === 'all'
+                    ? 'bg-white text-[#212121] shadow-sm'
+                    : 'text-[#757575] hover:text-[#212121]'
+                }`}
+              >
+                All Markets
+              </button>
+              <button
+                onClick={() => setMarketView('by-market')}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center gap-1.5 ${
+                  marketView === 'by-market'
+                    ? 'bg-white text-[#212121] shadow-sm'
+                    : 'text-[#757575] hover:text-[#212121]'
+                }`}
+              >
+                <Globe className="w-4 h-4" />
+                By Market
+              </button>
+            </div>
+          )}
         </div>
 
-        <div className="flex gap-6">
-          {/* Left: Donut Chart with Custom Legend */}
-          <div className="flex-1 min-w-0">
-            {sovPieData.length > 0 ? (
-              <>
-                <HighchartsReact highcharts={Highcharts} options={sovDonutOptions} />
-                {/* Custom Legend with Brand Logos */}
-                <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-2">
-                  {sovPieData.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-1.5">
-                      <div
-                        className="w-3 h-3 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: item.color }}
-                      />
-                      <img
-                        src={generateBrandLogoUrl(item.name)}
-                        alt=""
-                        className="w-4 h-4 rounded object-contain"
-                        onError={(e) => { e.target.style.display = 'none'; }}
-                      />
-                      <span className="text-xs font-medium text-[#212121]">{item.name}</span>
-                      <span className="text-xs text-[#757575]">{item.y.toFixed(0)}%</span>
-                    </div>
-                  ))}
+        {/* All Markets View */}
+        {marketView === 'all' && (
+          <div className="flex gap-6">
+            {/* Left: Donut Chart with Custom Legend */}
+            <div className="flex-1 min-w-0">
+              {sovPieData.length > 0 ? (
+                <>
+                  <HighchartsReact highcharts={Highcharts} options={sovDonutOptions} />
+                  {/* Custom Legend with Brand Logos */}
+                  <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-2">
+                    {sovPieData.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-1.5">
+                        <div
+                          className="w-3 h-3 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: item.color }}
+                        />
+                        <img
+                          src={generateBrandLogoUrl(item.name)}
+                          alt=""
+                          className="w-4 h-4 rounded object-contain"
+                          onError={(e) => { e.target.style.display = 'none'; }}
+                        />
+                        <span className="text-xs font-medium text-[#212121]">{item.name}</span>
+                        <span className="text-xs text-[#757575]">{item.y.toFixed(0)}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="h-64 flex items-center justify-center text-[#757575]">
+                  No data available
                 </div>
-              </>
-            ) : (
-              <div className="h-64 flex items-center justify-center text-[#757575]">
-                No data available
+              )}
+            </div>
+
+            {/* Right: LLM Performance Metrics */}
+            {filteredLlmPerformance.length > 0 && (
+              <div className="w-64 flex-shrink-0 flex flex-col gap-3 justify-center">
+                <h4 className="text-xs font-medium text-[#9E9E9E] uppercase tracking-wide mb-1">
+                  {entity} Choice Rate
+                </h4>
+                {filteredLlmPerformance.map((perf) => (
+                  <div
+                    key={perf.llm}
+                    className={`p-3 rounded-lg ${
+                      perf.llm === 'gemini'
+                        ? 'bg-[#F8FAFF] border border-[#E8F0FE]'
+                        : 'bg-[#F6FBF9] border border-[#E6F4F1]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={perf.llm === 'gemini'
+                            ? `https://cdn.brandfetch.io/google.com?c=${import.meta.env.VITE_LOGO_API_KEY}`
+                            : `https://cdn.brandfetch.io/openai.com?c=${import.meta.env.VITE_LOGO_API_KEY}`
+                          }
+                          alt={perf.llm === 'gemini' ? 'Gemini' : 'ChatGPT'}
+                          className="w-5 h-5 rounded object-contain"
+                          onError={(e) => { e.target.style.display = 'none'; }}
+                        />
+                        <span className="text-sm font-medium text-[#212121]">
+                          {perf.llm === 'gemini' ? 'Gemini' : 'ChatGPT'}
+                        </span>
+                      </div>
+                      <span className={`text-xl font-bold ${
+                        perf.llm === 'gemini' ? 'text-[#4285F4]' : 'text-[#10A37F]'
+                      }`}>
+                        {((perf.brandChoicePercent || 0) * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-[#757575]">
+                        Won {perf.targetChosen || 0} of {perf.totalQuestions || 0}
+                      </span>
+                      {perf.topChoice && perf.topChoice.toLowerCase() !== entity.toLowerCase() && (
+                        <span className="text-[#E65100] font-medium">
+                          Top: {perf.topChoice}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
+        )}
 
-          {/* Right: LLM Performance Metrics */}
-          {filteredLlmPerformance.length > 0 && (
-            <div className="w-64 flex-shrink-0 flex flex-col gap-3 justify-center">
-              <h4 className="text-xs font-medium text-[#9E9E9E] uppercase tracking-wide mb-1">
-                {entity} Choice Rate
-              </h4>
-              {filteredLlmPerformance.map((perf) => (
-                <div
-                  key={perf.llm}
-                  className={`p-3 rounded-lg ${
-                    perf.llm === 'gemini'
-                      ? 'bg-[#F8FAFF] border border-[#E8F0FE]'
-                      : 'bg-[#F6FBF9] border border-[#E6F4F1]'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <img
-                        src={perf.llm === 'gemini'
-                          ? `https://cdn.brandfetch.io/google.com?c=${import.meta.env.VITE_LOGO_API_KEY}`
-                          : `https://cdn.brandfetch.io/openai.com?c=${import.meta.env.VITE_LOGO_API_KEY}`
-                        }
-                        alt={perf.llm === 'gemini' ? 'Gemini' : 'ChatGPT'}
-                        className="w-5 h-5 rounded object-contain"
-                        onError={(e) => { e.target.style.display = 'none'; }}
-                      />
-                      <span className="text-sm font-medium text-[#212121]">
-                        {perf.llm === 'gemini' ? 'Gemini' : 'ChatGPT'}
-                      </span>
+        {/* By Market View - Side by Side Donut Charts with Flags */}
+        {marketView === 'by-market' && hasMultiMarket && (
+          <div>
+            {/* Grid of market donuts - centered and evenly distributed */}
+            <div className="flex flex-wrap justify-evenly gap-y-8 py-4">
+              {perMarketSovData.map((market) => (
+                <div key={market.marketCode} className="flex flex-col items-center">
+                  {/* Market donut with flag in center */}
+                  <div className="relative">
+                    <HighchartsReact
+                      highcharts={Highcharts}
+                      options={{
+                        chart: {
+                          type: 'pie',
+                          height: 160,
+                          width: 160,
+                          backgroundColor: 'transparent',
+                          margin: [0, 0, 0, 0]
+                        },
+                        title: { text: '' },
+                        credits: { enabled: false },
+                        plotOptions: {
+                          pie: {
+                            innerSize: '65%',
+                            dataLabels: { enabled: false },
+                            showInLegend: false,
+                            borderWidth: 2,
+                            borderColor: '#ffffff',
+                            states: { hover: { brightness: 0.1 } }
+                          }
+                        },
+                        tooltip: {
+                          pointFormat: '<b>{point.name}</b>: {point.percentage:.0f}%',
+                          style: { fontSize: '11px' }
+                        },
+                        series: [{
+                          name: 'SOV',
+                          colorByPoint: true,
+                          data: market.data
+                        }]
+                      }}
+                    />
+                    {/* Flag in center of donut */}
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      {market.flagUrl ? (
+                        <img
+                          src={market.flagUrl}
+                          alt={market.marketCountry || market.marketCode}
+                          className="w-12 h-12 rounded-full shadow-sm"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div
+                        className={`w-12 h-12 rounded-full bg-[#F5F5F5] items-center justify-center text-sm font-medium text-[#757575] ${market.flagUrl ? 'hidden' : 'flex'}`}
+                      >
+                        {market.marketCode?.split('-')[1] || market.marketCode}
+                      </div>
                     </div>
-                    <span className={`text-xl font-bold ${
-                      perf.llm === 'gemini' ? 'text-[#4285F4]' : 'text-[#10A37F]'
-                    }`}>
-                      {((perf.brandChoicePercent || 0) * 100).toFixed(0)}%
-                    </span>
                   </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-[#757575]">
-                      Won {perf.targetChosen || 0} of {perf.totalQuestions || 0}
-                    </span>
-                    {perf.topChoice && perf.topChoice.toLowerCase() !== entity.toLowerCase() && (
-                      <span className="text-[#E65100] font-medium">
-                        Top: {perf.topChoice}
-                      </span>
-                    )}
+                  {/* Market label and entity SOV */}
+                  <div className="mt-2 text-center">
+                    <p className="text-sm font-medium text-[#212121]">
+                      {market.marketCountry || market.marketCode}
+                    </p>
+                    <p className="text-xs text-[#757575]">
+                      {entity}: <span className="font-medium text-[#4285F4]">{market.entitySov}%</span>
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
-          )}
-        </div>
+
+            {/* Shared Legend */}
+            <div className="mt-6 pt-4 border-t border-[#E0E0E0]">
+              <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
+                {sovPieData.slice(0, 7).map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-1.5">
+                    <div
+                      className="w-3 h-3 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <img
+                      src={generateBrandLogoUrl(item.name)}
+                      alt=""
+                      className="w-4 h-4 rounded object-contain"
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                    <span className="text-xs font-medium text-[#212121]">{item.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Row 2: Pros and Cons by Brand Table */}
@@ -474,6 +623,16 @@ export default function CompetitiveAnalysis({ data, category, entity, competitor
         </div>
       )}
 
+      {/* Competitive Questions Matrix */}
+      <CompetitiveMatrixHeatmap
+        rankedFirst={rankedFirst}
+        notRankedFirst={notRankedFirst}
+        entity={entity}
+        selectedLLMs={selectedLLMs}
+        perMarketData={perMarketData}
+        markets={markets}
+      />
+
       {/* Source Analysis with AI Citation Sources */}
       {((sourceAnalysis && Object.keys(sourceAnalysis).length > 0) || data.full_sources_list || allSources.length > 0) && (
         <SourceAnalysis
@@ -481,396 +640,6 @@ export default function CompetitiveAnalysis({ data, category, entity, competitor
           sources={data.full_sources_list || allSources}
         />
       )}
-
-      {/* Row 4: Questions Where Brand is Chosen */}
-      {(() => {
-        // Combine all questions and categorize by LLM agreement
-        const allQuestions = [...rankedFirst, ...notRankedFirst];
-        const chosenEntries = [];
-        const filterPlaceholder = (text) => text && text !== 'Brand not mentioned in this response' && text !== 'Not selected as top choice' ? text : null;
-
-        allQuestions.forEach((item, qIndex) => {
-          // Only include LLM data if that LLM is selected in the filter
-          const geminiData = showGemini ? item.llm_responses?.gemini : null;
-          const openaiData = showOpenai ? item.llm_responses?.openai : null;
-
-          // Skip questions with no data from selected LLMs
-          if (!geminiData && !openaiData) return;
-
-          const geminiChoseTarget = geminiData && geminiData.rank === 1;
-          const openaiChoseTarget = openaiData && openaiData.rank === 1;
-
-          // Both selected LLMs chose target - one card with both responses
-          if (geminiChoseTarget && openaiChoseTarget) {
-            const geminiComment = filterPlaceholder(geminiData?.target_comment) || filterPlaceholder(geminiData?.rawResponse) || filterPlaceholder(geminiData?.top_brand_comment);
-            const openaiComment = filterPlaceholder(openaiData?.target_comment) || filterPlaceholder(openaiData?.rawResponse) || filterPlaceholder(openaiData?.top_brand_comment);
-            if (geminiComment || openaiComment) {
-              chosenEntries.push({
-                key: `both-${qIndex}`,
-                question: item.question,
-                bothAgree: true,
-                gemini: geminiComment ? { comment: geminiComment, sources: geminiData?.sources || [] } : null,
-                openai: openaiComment ? { comment: openaiComment, sources: openaiData?.sources || [] } : null
-              });
-            }
-          }
-          // Only Gemini chose target
-          else if (geminiChoseTarget && !openaiChoseTarget) {
-            const geminiComment = filterPlaceholder(geminiData?.target_comment) || filterPlaceholder(geminiData?.rawResponse) || filterPlaceholder(geminiData?.top_brand_comment);
-            if (geminiComment) {
-              chosenEntries.push({
-                key: `gemini-${qIndex}`,
-                question: item.question,
-                bothAgree: false,
-                llm: 'gemini',
-                comment: geminiComment,
-                sources: geminiData?.sources || []
-              });
-            }
-          }
-          // Only OpenAI chose target
-          else if (!geminiChoseTarget && openaiChoseTarget) {
-            const openaiComment = filterPlaceholder(openaiData?.target_comment) || filterPlaceholder(openaiData?.rawResponse) || filterPlaceholder(openaiData?.top_brand_comment);
-            if (openaiComment) {
-              chosenEntries.push({
-                key: `openai-${qIndex}`,
-                question: item.question,
-                bothAgree: false,
-                llm: 'openai',
-                comment: openaiComment,
-                sources: openaiData?.sources || []
-              });
-            }
-          }
-        });
-
-        return (
-          <div className="bg-white border border-[#E0E0E0] rounded-lg p-6">
-            <div className="mb-6">
-              <h3 className="text-lg font-medium text-[#212121] mb-1">Questions Where {entity} is Chosen</h3>
-              <p className="text-sm text-[#757575]">Scenarios where {entity} was selected as the top choice by LLMs ({chosenEntries.length} questions)</p>
-            </div>
-
-            {chosenEntries.length > 0 ? (
-              <div className="space-y-4">
-                {chosenEntries.map((entry) => (
-                  <div key={entry.key} className="bg-green-50 border border-green-200 rounded-xl p-5">
-                    <div className="flex items-start gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-                        <Trophy className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="text-base font-medium text-[#212121]">{entry.question}</h4>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm font-medium text-green-600">
-                        <span>Chosen:</span>
-                        <img
-                          src={generateBrandLogoUrl(entity)}
-                          alt=""
-                          className="w-5 h-5 rounded object-contain"
-                          onError={(e) => { e.target.style.display = 'none'; }}
-                        />
-                        <span>{entity}</span>
-                      </div>
-                    </div>
-
-                    {/* Both LLMs agree - show both responses */}
-                    {entry.bothAgree ? (
-                      <div className="space-y-3">
-                        {entry.gemini && (
-                          <div className="bg-white border-l-4 border-green-500 p-4 rounded-lg">
-                            <div className="flex items-center gap-2 mb-2">
-                              <img
-                                src={getLLMLogoUrl('gemini')}
-                                alt="Gemini"
-                                className="w-5 h-5 rounded object-contain"
-                                onError={(e) => { e.target.style.display = 'none'; }}
-                              />
-                              <span className="text-sm font-medium text-[#212121]">Gemini</span>
-                              <span className="text-xs text-[#757575]">— Why {entity} was chosen:</span>
-                            </div>
-                            <p className="text-sm text-[#212121]">{entry.gemini.comment}</p>
-                            {entry.gemini.sources.length > 0 && (
-                              <div className="mt-3">
-                                <p className="text-xs text-[#757575] mb-1">Associated Sources:</p>
-                                {entry.gemini.sources.slice(0, 2).map((source, idx) => (
-                                  <a key={idx} href={source.url} target="_blank" rel="noopener noreferrer" className="block text-xs text-[#2196F3] hover:underline">
-                                    → {source.title || source.url}
-                                  </a>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        {entry.openai && (
-                          <div className="bg-white border-l-4 border-green-500 p-4 rounded-lg">
-                            <div className="flex items-center gap-2 mb-2">
-                              <img
-                                src={getLLMLogoUrl('openai')}
-                                alt="ChatGPT"
-                                className="w-5 h-5 rounded object-contain"
-                                onError={(e) => { e.target.style.display = 'none'; }}
-                              />
-                              <span className="text-sm font-medium text-[#212121]">ChatGPT</span>
-                              <span className="text-xs text-[#757575]">— Why {entity} was chosen:</span>
-                            </div>
-                            <p className="text-sm text-[#212121]">{entry.openai.comment}</p>
-                            {entry.openai.sources.length > 0 && (
-                              <div className="mt-3">
-                                <p className="text-xs text-[#757575] mb-1">Associated Sources:</p>
-                                {entry.openai.sources.slice(0, 2).map((source, idx) => (
-                                  <a key={idx} href={source.url} target="_blank" rel="noopener noreferrer" className="block text-xs text-[#2196F3] hover:underline">
-                                    → {source.title || source.url}
-                                  </a>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      /* Single LLM chose target (disagreement) - show only that LLM's response */
-                      <div className="bg-white border-l-4 border-green-500 p-4 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <img
-                            src={getLLMLogoUrl(entry.llm)}
-                            alt={entry.llm === 'gemini' ? 'Gemini' : 'ChatGPT'}
-                            className="w-5 h-5 rounded object-contain"
-                            onError={(e) => { e.target.style.display = 'none'; }}
-                          />
-                          <span className="text-sm font-medium text-[#212121]">{entry.llm === 'gemini' ? 'Gemini' : 'ChatGPT'}</span>
-                          <span className="text-xs text-[#757575]">— Why {entity} was chosen:</span>
-                        </div>
-                        <p className="text-sm text-[#212121]">{entry.comment}</p>
-                        {entry.sources.length > 0 && (
-                          <div className="mt-3">
-                            <p className="text-xs text-[#757575] mb-1">Associated Sources:</p>
-                            {entry.sources.slice(0, 2).map((source, idx) => (
-                              <a key={idx} href={source.url} target="_blank" rel="noopener noreferrer" className="block text-xs text-[#2196F3] hover:underline">
-                                → {source.title || source.url}
-                              </a>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-[#757575]">
-                No data available for questions where {entity} was chosen.
-              </div>
-            )}
-          </div>
-        );
-      })()}
-
-      {/* Row 5: Questions Where Brand is Not Chosen */}
-      {(() => {
-        // Combine all questions and categorize by LLM agreement
-        const allQuestions = [...rankedFirst, ...notRankedFirst];
-        const notChosenEntries = [];
-        const filterPlaceholder = (text) => text && text !== 'Brand not mentioned in this response' && text !== 'Not selected as top choice' ? text : null;
-
-        allQuestions.forEach((item, qIndex) => {
-          // Only include LLM data if that LLM is selected in the filter
-          const geminiData = showGemini ? item.llm_responses?.gemini : null;
-          const openaiData = showOpenai ? item.llm_responses?.openai : null;
-
-          // Skip questions with no data from selected LLMs
-          if (!geminiData && !openaiData) return;
-
-          const geminiChoseTarget = geminiData && geminiData.rank === 1;
-          const openaiChoseTarget = openaiData && openaiData.rank === 1;
-          const geminiChoseCompetitor = geminiData && geminiData.rank !== 1;
-          const openaiChoseCompetitor = openaiData && openaiData.rank !== 1;
-
-          // Both selected LLMs chose competitor - one card with both responses
-          if (geminiChoseCompetitor && openaiChoseCompetitor) {
-            const geminiComment = filterPlaceholder(geminiData?.top_brand_comment) || filterPlaceholder(geminiData?.rawResponse) || filterPlaceholder(geminiData?.target_comment);
-            const openaiComment = filterPlaceholder(openaiData?.top_brand_comment) || filterPlaceholder(openaiData?.rawResponse) || filterPlaceholder(openaiData?.target_comment);
-            if (geminiComment || openaiComment) {
-              notChosenEntries.push({
-                key: `both-${qIndex}`,
-                question: item.question,
-                bothAgree: true,
-                gemini: geminiComment ? {
-                  comment: geminiComment,
-                  chosenBrand: geminiData?.top_brand || 'Competitor',
-                  sources: geminiData?.sources || []
-                } : null,
-                openai: openaiComment ? {
-                  comment: openaiComment,
-                  chosenBrand: openaiData?.top_brand || 'Competitor',
-                  sources: openaiData?.sources || []
-                } : null
-              });
-            }
-          }
-          // Only Gemini chose competitor
-          else if (geminiChoseCompetitor && !openaiChoseCompetitor) {
-            const geminiComment = filterPlaceholder(geminiData?.top_brand_comment) || filterPlaceholder(geminiData?.rawResponse) || filterPlaceholder(geminiData?.target_comment);
-            if (geminiComment) {
-              notChosenEntries.push({
-                key: `gemini-${qIndex}`,
-                question: item.question,
-                bothAgree: false,
-                llm: 'gemini',
-                chosenBrand: geminiData?.top_brand || 'Competitor',
-                comment: geminiComment,
-                sources: geminiData?.sources || []
-              });
-            }
-          }
-          // Only OpenAI chose competitor
-          else if (openaiChoseCompetitor && !geminiChoseCompetitor) {
-            const openaiComment = filterPlaceholder(openaiData?.top_brand_comment) || filterPlaceholder(openaiData?.rawResponse) || filterPlaceholder(openaiData?.target_comment);
-            if (openaiComment) {
-              notChosenEntries.push({
-                key: `openai-${qIndex}`,
-                question: item.question,
-                bothAgree: false,
-                llm: 'openai',
-                chosenBrand: openaiData?.top_brand || 'Competitor',
-                comment: openaiComment,
-                sources: openaiData?.sources || []
-              });
-            }
-          }
-        });
-
-        return (
-          <div className="bg-white border border-[#E0E0E0] rounded-lg p-6">
-            <div className="mb-6">
-              <h3 className="text-lg font-medium text-[#212121] mb-1">Questions Where {entity} is Not Chosen</h3>
-              <p className="text-sm text-[#757575]">
-                Opportunities where competitors were selected by LLMs ({notChosenEntries.length} questions)
-              </p>
-            </div>
-
-            {notChosenEntries.length > 0 ? (
-              <div className="space-y-4">
-                {notChosenEntries.map((entry) => (
-                  <div key={entry.key} className="bg-white border border-[#E0E0E0] rounded-lg p-5">
-                    <div className="flex items-start justify-between mb-4">
-                      <h4 className="text-base font-medium text-[#212121] flex-1 pr-4">{entry.question}</h4>
-                      {entry.bothAgree ? (
-                        <div className="flex-shrink-0 flex items-center gap-2 px-3 py-1 bg-[#F5F5F5] rounded text-sm font-medium text-[#212121]">
-                          <span>Chosen:</span>
-                          <img
-                            src={generateBrandLogoUrl(entry.gemini?.chosenBrand || entry.openai?.chosenBrand)}
-                            alt=""
-                            className="w-5 h-5 rounded object-contain"
-                            onError={(e) => { e.target.style.display = 'none'; }}
-                          />
-                          <span>{entry.gemini?.chosenBrand || entry.openai?.chosenBrand}</span>
-                        </div>
-                      ) : (
-                        <div className="flex-shrink-0 flex items-center gap-2 px-3 py-1 bg-[#F5F5F5] rounded text-sm font-medium text-[#212121]">
-                          <span>Chosen:</span>
-                          <img
-                            src={generateBrandLogoUrl(entry.chosenBrand)}
-                            alt=""
-                            className="w-5 h-5 rounded object-contain"
-                            onError={(e) => { e.target.style.display = 'none'; }}
-                          />
-                          <span>{entry.chosenBrand}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Both LLMs agree - show both responses */}
-                    {entry.bothAgree ? (
-                      <div className="space-y-3">
-                        {entry.gemini && (
-                          <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
-                            <div className="flex items-center gap-2 mb-2">
-                              <img
-                                src={getLLMLogoUrl('gemini')}
-                                alt="Gemini"
-                                className="w-5 h-5 rounded object-contain"
-                                onError={(e) => { e.target.style.display = 'none'; }}
-                              />
-                              <span className="text-sm font-medium text-[#212121]">Gemini</span>
-                              <span className="text-xs text-[#757575]">— Why {entry.gemini.chosenBrand} was chosen:</span>
-                            </div>
-                            <p className="text-sm text-[#212121]">{entry.gemini.comment}</p>
-                            {entry.gemini.sources.length > 0 && (
-                              <div className="mt-3">
-                                <p className="text-xs text-[#757575] mb-1">Associated Sources:</p>
-                                {entry.gemini.sources.slice(0, 2).map((source, idx) => (
-                                  <a key={idx} href={source.url} target="_blank" rel="noopener noreferrer" className="block text-xs text-[#2196F3] hover:underline">
-                                    → {source.title || source.url}
-                                  </a>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        {entry.openai && (
-                          <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
-                            <div className="flex items-center gap-2 mb-2">
-                              <img
-                                src={getLLMLogoUrl('openai')}
-                                alt="ChatGPT"
-                                className="w-5 h-5 rounded object-contain"
-                                onError={(e) => { e.target.style.display = 'none'; }}
-                              />
-                              <span className="text-sm font-medium text-[#212121]">ChatGPT</span>
-                              <span className="text-xs text-[#757575]">— Why {entry.openai.chosenBrand} was chosen:</span>
-                            </div>
-                            <p className="text-sm text-[#212121]">{entry.openai.comment}</p>
-                            {entry.openai.sources.length > 0 && (
-                              <div className="mt-3">
-                                <p className="text-xs text-[#757575] mb-1">Associated Sources:</p>
-                                {entry.openai.sources.slice(0, 2).map((source, idx) => (
-                                  <a key={idx} href={source.url} target="_blank" rel="noopener noreferrer" className="block text-xs text-[#2196F3] hover:underline">
-                                    → {source.title || source.url}
-                                  </a>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      /* Single LLM chose competitor (disagreement) - show only that LLM's response */
-                      <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <img
-                            src={getLLMLogoUrl(entry.llm)}
-                            alt={entry.llm === 'gemini' ? 'Gemini' : 'ChatGPT'}
-                            className="w-5 h-5 rounded object-contain"
-                            onError={(e) => { e.target.style.display = 'none'; }}
-                          />
-                          <span className="text-sm font-medium text-[#212121]">{entry.llm === 'gemini' ? 'Gemini' : 'ChatGPT'}</span>
-                          <span className="text-xs text-[#757575]">— Why {entry.chosenBrand} was chosen:</span>
-                        </div>
-                        <p className="text-sm text-[#212121]">{entry.comment}</p>
-                        {entry.sources.length > 0 && (
-                          <div className="mt-3">
-                            <p className="text-xs text-[#757575] mb-1">Associated Sources:</p>
-                            {entry.sources.slice(0, 2).map((source, idx) => (
-                              <a key={idx} href={source.url} target="_blank" rel="noopener noreferrer" className="block text-xs text-[#2196F3] hover:underline">
-                                → {source.title || source.url}
-                              </a>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-[#757575]">
-                No missed opportunities recorded.
-              </div>
-            )}
-          </div>
-        );
-      })()}
     </div>
   );
 }
