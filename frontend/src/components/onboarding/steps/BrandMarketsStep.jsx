@@ -2,34 +2,34 @@ import React, { useState } from 'react';
 import { Plus, X, Star, Globe, ArrowRight, HelpCircle } from 'lucide-react';
 
 const COUNTRIES = [
-  { value: 'United States', label: 'United States', flag: '🇺🇸' },
-  { value: 'United Kingdom', label: 'United Kingdom', flag: '🇬🇧' },
-  { value: 'Canada', label: 'Canada', flag: '🇨🇦' },
-  { value: 'Australia', label: 'Australia', flag: '🇦🇺' },
-  { value: 'France', label: 'France', flag: '🇫🇷' },
-  { value: 'Germany', label: 'Germany', flag: '🇩🇪' },
-  { value: 'Spain', label: 'Spain', flag: '🇪🇸' },
-  { value: 'Italy', label: 'Italy', flag: '🇮🇹' },
-  { value: 'Netherlands', label: 'Netherlands', flag: '🇳🇱' },
-  { value: 'Belgium', label: 'Belgium', flag: '🇧🇪' },
-  { value: 'Switzerland', label: 'Switzerland', flag: '🇨🇭' },
-  { value: 'Austria', label: 'Austria', flag: '🇦🇹' },
-  { value: 'Sweden', label: 'Sweden', flag: '🇸🇪' },
-  { value: 'Norway', label: 'Norway', flag: '🇳🇴' },
-  { value: 'Denmark', label: 'Denmark', flag: '🇩🇰' },
-  { value: 'Finland', label: 'Finland', flag: '🇫🇮' },
-  { value: 'Poland', label: 'Poland', flag: '🇵🇱' },
-  { value: 'Portugal', label: 'Portugal', flag: '🇵🇹' },
-  { value: 'Japan', label: 'Japan', flag: '🇯🇵' },
-  { value: 'South Korea', label: 'South Korea', flag: '🇰🇷' },
-  { value: 'China', label: 'China', flag: '🇨🇳' },
-  { value: 'India', label: 'India', flag: '🇮🇳' },
-  { value: 'Singapore', label: 'Singapore', flag: '🇸🇬' },
-  { value: 'Brazil', label: 'Brazil', flag: '🇧🇷' },
-  { value: 'Mexico', label: 'Mexico', flag: '🇲🇽' },
-  { value: 'South Africa', label: 'South Africa', flag: '🇿🇦' },
-  { value: 'UAE', label: 'UAE', flag: '🇦🇪' },
-  { value: 'Saudi Arabia', label: 'Saudi Arabia', flag: '🇸🇦' },
+  { value: 'United States', label: 'United States', flag: '🇺🇸', code: 'US' },
+  { value: 'United Kingdom', label: 'United Kingdom', flag: '🇬🇧', code: 'GB' },
+  { value: 'Canada', label: 'Canada', flag: '🇨🇦', code: 'CA' },
+  { value: 'Australia', label: 'Australia', flag: '🇦🇺', code: 'AU' },
+  { value: 'France', label: 'France', flag: '🇫🇷', code: 'FR' },
+  { value: 'Germany', label: 'Germany', flag: '🇩🇪', code: 'DE' },
+  { value: 'Spain', label: 'Spain', flag: '🇪🇸', code: 'ES' },
+  { value: 'Italy', label: 'Italy', flag: '🇮🇹', code: 'IT' },
+  { value: 'Netherlands', label: 'Netherlands', flag: '🇳🇱', code: 'NL' },
+  { value: 'Belgium', label: 'Belgium', flag: '🇧🇪', code: 'BE' },
+  { value: 'Switzerland', label: 'Switzerland', flag: '🇨🇭', code: 'CH' },
+  { value: 'Austria', label: 'Austria', flag: '🇦🇹', code: 'AT' },
+  { value: 'Sweden', label: 'Sweden', flag: '🇸🇪', code: 'SE' },
+  { value: 'Norway', label: 'Norway', flag: '🇳🇴', code: 'NO' },
+  { value: 'Denmark', label: 'Denmark', flag: '🇩🇰', code: 'DK' },
+  { value: 'Finland', label: 'Finland', flag: '🇫🇮', code: 'FI' },
+  { value: 'Poland', label: 'Poland', flag: '🇵🇱', code: 'PL' },
+  { value: 'Portugal', label: 'Portugal', flag: '🇵🇹', code: 'PT' },
+  { value: 'Japan', label: 'Japan', flag: '🇯🇵', code: 'JP' },
+  { value: 'South Korea', label: 'South Korea', flag: '🇰🇷', code: 'KR' },
+  { value: 'China', label: 'China', flag: '🇨🇳', code: 'CN' },
+  { value: 'India', label: 'India', flag: '🇮🇳', code: 'IN' },
+  { value: 'Singapore', label: 'Singapore', flag: '🇸🇬', code: 'SG' },
+  { value: 'Brazil', label: 'Brazil', flag: '🇧🇷', code: 'BR' },
+  { value: 'Mexico', label: 'Mexico', flag: '🇲🇽', code: 'MX' },
+  { value: 'South Africa', label: 'South Africa', flag: '🇿🇦', code: 'ZA' },
+  { value: 'UAE', label: 'UAE', flag: '🇦🇪', code: 'AE' },
+  { value: 'Saudi Arabia', label: 'Saudi Arabia', flag: '🇸🇦', code: 'SA' },
 ];
 
 const LANGUAGES = [
@@ -54,7 +54,9 @@ const LANGUAGES = [
 
 function generateMarketCode(country, language) {
   const langCode = language.toLowerCase().slice(0, 2);
-  const countryCode = country.replace(/\s+/g, '').slice(0, 2).toUpperCase();
+  // Use ISO country code from COUNTRIES array if available, otherwise generate from name
+  const countryData = COUNTRIES.find(c => c.value === country);
+  const countryCode = countryData?.code || country.replace(/\s+/g, '').slice(0, 2).toUpperCase();
   return `${langCode}-${countryCode}`;
 }
 
