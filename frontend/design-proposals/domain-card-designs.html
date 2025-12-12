@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Domain Card — Design Proposals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --slate-950: #0a0f1a;
+      --slate-900: #0f172a;
+      --slate-800: #1e293b;
+      --slate-700: #334155;
+      --slate-600: #475569;
+      --slate-500: #64748b;
+      --slate-400: #94a3b8;
+      --slate-300: #cbd5e1;
+      --slate-200: #e2e8f0;
+      --slate-100: #f1f5f9;
+      --slate-50: #f8fafc;
+
+      --critical: #dc2626;
+      --critical-soft: #fef2f2;
+      --high: #ea580c;
+      --high-soft: #fff7ed;
+      --medium: #ca8a04;
+      --medium-soft: #fefce8;
+
+      --gemini-primary: #4285f4;
+      --openai-primary: #10a37f;
+
+      --visibility-color: #8b5cf6;
+      --competitive-color: #f59e0b;
+      --reputation-color: #ef4444;
+      --journalism-color: #3b82f6;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Outfit', system-ui, sans-serif;
+      background: linear-gradient(135deg, var(--slate-100) 0%, var(--slate-200) 100%);
+      min-height: 100vh;
+      color: var(--slate-800);
+      line-height: 1.6;
+    }
+
+    .page-header {
+      background: var(--slate-950);
+      color: white;
+      padding: 3rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 50%, rgba(245, 158, 11, 0.15) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .page-header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.5rem;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+      position: relative;
+    }
+
+    .page-header p {
+      font-size: 1rem;
+      color: var(--slate-400);
+      position: relative;
+    }
+
+    .proposals-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+    }
+
+    .proposal-section {
+      margin-bottom: 4rem;
+    }
+
+    .proposal-header {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--slate-300);
+    }
+
+    .proposal-number {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--slate-500);
+      background: var(--slate-200);
+      padding: 0.25rem 0.75rem;
+      border-radius: 2rem;
+    }
+
+    .proposal-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.75rem;
+      color: var(--slate-900);
+    }
+
+    .proposal-desc {
+      font-size: 0.95rem;
+      color: var(--slate-600);
+      margin-left: auto;
+      max-width: 400px;
+      text-align: right;
+    }
+
+    /* ============================================
+       DESIGN A: Collapsed Domain Row
+       ============================================ */
+    .card-list-a {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      background: var(--slate-200);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .domain-row-a {
+      background: white;
+      padding: 1rem 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr 140px 100px 200px 40px;
+      align-items: center;
+      gap: 1rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .domain-row-a:hover {
+      background: var(--slate-50);
+    }
+
+    .domain-row-a.expanded {
+      background: var(--slate-50);
+      border-bottom: 1px solid var(--slate-200);
+    }
+
+    .domain-info-a {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .domain-favicon-a {
+      width: 32px;
+      height: 32px;
+      background: var(--slate-100);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--slate-500);
+      border: 1px solid var(--slate-200);
+    }
+
+    .domain-favicon-a.journalism {
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      color: var(--journalism-color);
+      border-color: #bfdbfe;
+    }
+
+    .domain-name-a {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--slate-900);
+    }
+
+    .domain-type-a {
+      font-size: 0.7rem;
+      color: var(--slate-500);
+    }
+
+    .priority-score-a {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .score-bar-a {
+      flex: 1;
+      height: 6px;
+      background: var(--slate-200);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .score-fill-a {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    .score-fill-a.high { background: var(--critical); }
+    .score-fill-a.medium { background: var(--medium); }
+    .score-fill-a.low { background: var(--slate-400); }
+
+    .score-num-a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--slate-700);
+      min-width: 28px;
+    }
+
+    .stat-cell-a {
+      text-align: center;
+    }
+
+    .stat-value-a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--slate-800);
+    }
+
+    .stat-label-a {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--slate-500);
+    }
+
+    .impact-badges-a {
+      display: flex;
+      gap: 0.35rem;
+    }
+
+    .impact-badge-a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .impact-badge-a.visibility {
+      background: #f3e8ff;
+      color: #7c3aed;
+    }
+
+    .impact-badge-a.competitive {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    .impact-badge-a.reputation {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+
+    .expand-btn-a {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--slate-100);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .expand-btn-a:hover {
+      background: var(--slate-200);
+    }
+
+    .expand-btn-a svg {
+      width: 16px;
+      height: 16px;
+      color: var(--slate-500);
+      transition: transform 0.2s;
+    }
+
+    .domain-row-a.expanded .expand-btn-a svg {
+      transform: rotate(180deg);
+    }
+
+    /* Expanded Detail Panel */
+    .domain-detail-a {
+      background: var(--slate-50);
+      padding: 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      border-bottom: 2px solid var(--slate-200);
+    }
+
+    .detail-section-a {
+      background: white;
+      border-radius: 8px;
+      padding: 1rem;
+      border: 1px solid var(--slate-200);
+    }
+
+    .detail-header-a {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--slate-100);
+    }
+
+    .detail-icon-a {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .detail-icon-a.visibility {
+      background: #f3e8ff;
+      color: #7c3aed;
+    }
+
+    .detail-icon-a.competitive {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    .detail-icon-a.llm {
+      background: #ecfdf5;
+      color: #059669;
+    }
+
+    .detail-icon-a.competitive {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    .detail-icon-a.reputation {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+
+    .detail-icon-a svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .detail-title-a {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--slate-600);
+    }
+
+    .detail-count-a {
+      margin-left: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.15rem 0.4rem;
+      background: var(--slate-100);
+      border-radius: 4px;
+      color: var(--slate-600);
+    }
+
+    /* Gap List */
+    .gap-list-a {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    .gap-item-a {
+      padding: 0.6rem 0.75rem;
+      background: var(--slate-50);
+      border-radius: 6px;
+      border-left: 3px solid;
+      font-size: 0.8rem;
+      color: var(--slate-700);
+    }
+
+    .gap-item-a.visibility {
+      border-color: var(--visibility-color);
+    }
+
+    .gap-item-a.competitive {
+      border-color: var(--competitive-color);
+    }
+
+    .gap-meta-a {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 0.35rem;
+      font-size: 0.7rem;
+      color: var(--slate-500);
+    }
+
+    .gap-meta-a span {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    /* LLM Breakdown */
+    .llm-list-a {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .llm-item-a {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      background: var(--slate-50);
+      border-radius: 6px;
+    }
+
+    .llm-logo-a {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: white;
+    }
+
+    .llm-logo-a.gemini {
+      background: linear-gradient(135deg, #4285f4, #ea4335);
+    }
+
+    .llm-logo-a.openai {
+      background: var(--openai-primary);
+    }
+
+    .llm-info-a {
+      flex: 1;
+    }
+
+    .llm-name-a {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--slate-800);
+    }
+
+    .llm-citations-a {
+      font-size: 0.7rem;
+      color: var(--slate-500);
+    }
+
+    .llm-bar-a {
+      width: 60px;
+      height: 4px;
+      background: var(--slate-200);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .llm-fill-a {
+      height: 100%;
+      border-radius: 2px;
+    }
+
+    .llm-fill-a.gemini { background: var(--gemini-primary); }
+    .llm-fill-a.openai { background: var(--openai-primary); }
+
+    /* Markets Grid */
+    .markets-grid-a {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .market-tag-a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.35rem 0.6rem;
+      background: var(--slate-50);
+      border-radius: 4px;
+      font-size: 0.75rem;
+      color: var(--slate-700);
+    }
+
+    .market-tag-a .flag {
+      font-size: 0.9rem;
+    }
+
+    /* URL Samples */
+    .url-samples-a {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .url-sample-a {
+      font-size: 0.7rem;
+      color: var(--slate-500);
+      padding: 0.4rem 0.6rem;
+      background: var(--slate-50);
+      border-radius: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .url-sample-a:hover {
+      color: var(--slate-700);
+      background: var(--slate-100);
+    }
+
+    .url-sample-a svg {
+      width: 10px;
+      height: 10px;
+      flex-shrink: 0;
+    }
+
+    /* ============================================
+       DESIGN B: Card Grid with Flip Detail
+       ============================================ */
+    .card-grid-b {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1rem;
+    }
+
+    .domain-card-b {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--slate-200);
+      transition: all 0.2s;
+    }
+
+    .domain-card-b:hover {
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      transform: translateY(-2px);
+    }
+
+    .card-b-header {
+      padding: 1.25rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      border-bottom: 1px solid var(--slate-100);
+    }
+
+    .domain-icon-b {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--slate-100), var(--slate-50));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--slate-200);
+      flex-shrink: 0;
+    }
+
+    .domain-icon-b span {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--slate-600);
+    }
+
+    .domain-icon-b.high-authority {
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      border-color: #93c5fd;
+    }
+
+    .domain-icon-b.high-authority span {
+      color: var(--journalism-color);
+    }
+
+    .card-b-title-block {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .card-b-domain {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--slate-900);
+      margin-bottom: 0.25rem;
+    }
+
+    .card-b-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.75rem;
+      color: var(--slate-500);
+    }
+
+    .meta-dot-b {
+      width: 4px;
+      height: 4px;
+      background: var(--slate-300);
+      border-radius: 50%;
+    }
+
+    .card-b-score {
+      text-align: right;
+    }
+
+    .score-circle-b {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-left: auto;
+    }
+
+    .score-circle-b.high {
+      background: var(--critical-soft);
+      color: var(--critical);
+      border: 2px solid #fecaca;
+    }
+
+    .score-circle-b.medium {
+      background: var(--medium-soft);
+      color: var(--medium);
+      border: 2px solid #fef08a;
+    }
+
+    .score-circle-b.low {
+      background: var(--slate-100);
+      color: var(--slate-600);
+      border: 2px solid var(--slate-200);
+    }
+
+    /* Stats Row */
+    .card-b-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--slate-200);
+    }
+
+    .stat-b {
+      background: white;
+      padding: 0.75rem;
+      text-align: center;
+    }
+
+    .stat-b-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--slate-800);
+    }
+
+    .stat-b-value.visibility { color: var(--visibility-color); }
+    .stat-b-value.competitive { color: var(--competitive-color); }
+
+    .stat-b-label {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--slate-500);
+      margin-top: 0.15rem;
+    }
+
+    /* Impact Section */
+    .card-b-impact {
+      padding: 1rem 1.25rem;
+      background: var(--slate-50);
+    }
+
+    .impact-header-b {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--slate-500);
+      margin-bottom: 0.75rem;
+    }
+
+    .impact-items-b {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .impact-item-b {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--slate-700);
+      line-height: 1.4;
+    }
+
+    .impact-bullet-b {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      margin-top: 0.4rem;
+      flex-shrink: 0;
+    }
+
+    .impact-bullet-b.visibility { background: var(--visibility-color); }
+    .impact-bullet-b.competitive { background: var(--competitive-color); }
+
+    /* LLM & Market Footer */
+    .card-b-footer {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid var(--slate-200);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .llm-dots-b {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .llm-dot-b {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.75rem;
+      color: var(--slate-600);
+    }
+
+    .llm-indicator-b {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .llm-indicator-b.gemini { background: var(--gemini-primary); }
+    .llm-indicator-b.openai { background: var(--openai-primary); }
+    .llm-indicator-b.inactive {
+      background: var(--slate-300);
+      opacity: 0.5;
+    }
+
+    .market-flags-b {
+      display: flex;
+      gap: 0.25rem;
+      font-size: 1rem;
+    }
+
+    /* ============================================
+       DESIGN C: Dashboard Dark Mode
+       ============================================ */
+    .dashboard-c {
+      background: var(--slate-900);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .dashboard-header-c {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .dashboard-title-c {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--slate-400);
+    }
+
+    .dashboard-legend-c {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .legend-item-c {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.7rem;
+      color: var(--slate-500);
+    }
+
+    .legend-dot-c {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .legend-dot-c.visibility { background: var(--visibility-color); }
+    .legend-dot-c.competitive { background: var(--competitive-color); }
+
+    .domain-row-c {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 120px;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .domain-row-c:hover {
+      background: rgba(255,255,255,0.02);
+    }
+
+    .domain-row-c:last-child {
+      border-bottom: none;
+    }
+
+    .domain-cell-c {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .domain-avatar-c {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--slate-400);
+    }
+
+    .domain-avatar-c.authority {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.1));
+      color: #60a5fa;
+    }
+
+    .domain-text-c {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .domain-name-c {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: white;
+    }
+
+    .domain-type-c {
+      font-size: 0.7rem;
+      color: var(--slate-500);
+    }
+
+    .metric-cell-c {
+      text-align: center;
+    }
+
+    .metric-value-c {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .metric-value-c.visibility { color: var(--visibility-color); }
+    .metric-value-c.competitive { color: var(--competitive-color); }
+    .metric-value-c.neutral { color: var(--slate-400); }
+
+    .metric-label-c {
+      font-size: 0.6rem;
+      color: var(--slate-600);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .llm-cell-c {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    .llm-badge-c {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      font-weight: 700;
+    }
+
+    .llm-badge-c.gemini.active {
+      background: var(--gemini-primary);
+      color: white;
+    }
+
+    .llm-badge-c.openai.active {
+      background: var(--openai-primary);
+      color: white;
+    }
+
+    .llm-badge-c.inactive {
+      background: rgba(255,255,255,0.05);
+      color: var(--slate-600);
+    }
+
+    .score-bar-c {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .bar-track-c {
+      flex: 1;
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .bar-fill-c {
+      height: 100%;
+      border-radius: 2px;
+      background: linear-gradient(90deg, var(--visibility-color), var(--competitive-color));
+    }
+
+    .bar-value-c {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--slate-300);
+      min-width: 28px;
+      text-align: right;
+    }
+
+    /* Expanded Row */
+    .domain-expanded-c {
+      background: rgba(255,255,255,0.02);
+      padding: 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .expanded-grid-c {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .expanded-section-c {
+      background: rgba(255,255,255,0.03);
+      border-radius: 8px;
+      padding: 1rem;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .section-header-c {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .section-icon-c {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .section-icon-c.visibility {
+      background: rgba(139, 92, 246, 0.2);
+      color: var(--visibility-color);
+    }
+
+    .section-icon-c.competitive {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--competitive-color);
+    }
+
+    .section-icon-c.urls {
+      background: rgba(59, 130, 246, 0.2);
+      color: #60a5fa;
+    }
+
+    .section-icon-c svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .section-title-c {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--slate-500);
+    }
+
+    .gap-list-c {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .gap-item-c {
+      font-size: 0.75rem;
+      color: var(--slate-400);
+      padding: 0.5rem 0.6rem;
+      background: rgba(255,255,255,0.02);
+      border-radius: 4px;
+      border-left: 2px solid;
+    }
+
+    .gap-item-c.visibility { border-color: var(--visibility-color); }
+    .gap-item-c.competitive { border-color: var(--competitive-color); }
+
+    .url-list-c {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .url-item-c {
+      font-size: 0.7rem;
+      color: var(--slate-500);
+      padding: 0.4rem 0.5rem;
+      background: rgba(255,255,255,0.02);
+      border-radius: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .url-item-c:hover {
+      color: var(--slate-300);
+      background: rgba(255,255,255,0.05);
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1>Domain-Centric PR Insights Cards</h1>
+    <p>Expandable domain rows showing visibility gaps, competitive losses, LLMs & questions</p>
+  </header>
+
+  <main class="proposals-container">
+
+    <!-- Design A: Collapsed Row with Expansion -->
+    <section class="proposal-section">
+      <div class="proposal-header">
+        <span class="proposal-number">01</span>
+        <h2 class="proposal-title">Table Row with Expansion</h2>
+        <p class="proposal-desc">Compact table format. Expand any row to see visibility gaps, competitive losses, reputation issues & LLM citations.</p>
+      </div>
+
+      <div class="card-list-a">
+        <!-- Row 1: Collapsed -->
+        <div class="domain-row-a">
+          <div class="domain-info-a">
+            <div class="domain-favicon-a journalism">RE</div>
+            <div>
+              <div class="domain-name-a">repubblica.it</div>
+              <div class="domain-type-a">Journalism • High Authority</div>
+            </div>
+          </div>
+          <div class="priority-score-a">
+            <div class="score-bar-a">
+              <div class="score-fill-a medium" style="width: 44%"></div>
+            </div>
+            <span class="score-num-a">44</span>
+          </div>
+          <div class="stat-cell-a">
+            <div class="stat-value-a">93</div>
+            <div class="stat-label-a">Citations</div>
+          </div>
+          <div class="impact-badges-a">
+            <span class="impact-badge-a visibility">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              10
+            </span>
+            <span class="impact-badge-a competitive">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+              3
+            </span>
+            <span class="impact-badge-a reputation">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              2
+            </span>
+          </div>
+          <button class="expand-btn-a">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Row 2: Expanded -->
+        <div class="domain-row-a expanded">
+          <div class="domain-info-a">
+            <div class="domain-favicon-a journalism">LM</div>
+            <div>
+              <div class="domain-name-a">lemonde.fr</div>
+              <div class="domain-type-a">Journalism • High Authority</div>
+            </div>
+          </div>
+          <div class="priority-score-a">
+            <div class="score-bar-a">
+              <div class="score-fill-a medium" style="width: 43%"></div>
+            </div>
+            <span class="score-num-a">43</span>
+          </div>
+          <div class="stat-cell-a">
+            <div class="stat-value-a">81</div>
+            <div class="stat-label-a">Citations</div>
+          </div>
+          <div class="impact-badges-a">
+            <span class="impact-badge-a visibility">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              10
+            </span>
+            <span class="impact-badge-a competitive">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+              2
+            </span>
+            <span class="impact-badge-a reputation">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              4
+            </span>
+          </div>
+          <button class="expand-btn-a">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Expanded Detail Panel (2x2 Grid) -->
+        <div class="domain-detail-a">
+          <!-- Row 1: Visibility Gaps + Competitive Losses -->
+          <div class="detail-section-a">
+            <div class="detail-header-a">
+              <div class="detail-icon-a visibility">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </div>
+              <span class="detail-title-a">Visibility Gaps</span>
+              <span class="detail-count-a">10</span>
+            </div>
+            <div class="gap-list-a">
+              <div class="gap-item-a visibility">
+                Best electric cars for beginners in France
+                <div class="gap-meta-a">
+                  <span>🇫🇷 fr-FR</span>
+                  <span>Rank #3</span>
+                </div>
+              </div>
+              <div class="gap-item-a visibility">
+                Tesla battery storage solutions review
+                <div class="gap-meta-a">
+                  <span>🇫🇷 fr-FR</span>
+                  <span>Rank #4</span>
+                </div>
+              </div>
+              <div class="gap-item-a visibility">
+                Electric vehicle charging infrastructure
+                <div class="gap-meta-a">
+                  <span>🇫🇷 fr-FR</span>
+                  <span>Rank #2</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-section-a">
+            <div class="detail-header-a">
+              <div class="detail-icon-a competitive">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+              </div>
+              <span class="detail-title-a">Competitive Losses</span>
+              <span class="detail-count-a">2</span>
+            </div>
+            <div class="gap-list-a">
+              <div class="gap-item-a competitive">
+                Most reliable EV brands for families
+                <div class="gap-meta-a">
+                  <span>🇫🇷 fr-FR</span>
+                  <span>Winner: BYD</span>
+                </div>
+              </div>
+              <div class="gap-item-a competitive">
+                Best value electric SUV 2024
+                <div class="gap-meta-a">
+                  <span>🇮🇹 it-IT</span>
+                  <span>Winner: Volkswagen</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row 2: Reputation Issues + LLM & Markets -->
+          <div class="detail-section-a">
+            <div class="detail-header-a">
+              <div class="detail-icon-a reputation">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <span class="detail-title-a">Reputation Issues</span>
+              <span class="detail-count-a">4</span>
+            </div>
+            <div class="gap-list-a">
+              <div class="gap-item-a" style="border-color: var(--reputation-color);">
+                Quality control issues with Model 3
+                <div class="gap-meta-a">
+                  <span>🇫🇷 fr-FR</span>
+                  <span>Sentiment: -0.6</span>
+                </div>
+              </div>
+              <div class="gap-item-a" style="border-color: var(--reputation-color);">
+                Customer service response times criticized
+                <div class="gap-meta-a">
+                  <span>🇫🇷 fr-FR</span>
+                  <span>Sentiment: -0.4</span>
+                </div>
+              </div>
+              <div class="gap-item-a" style="border-color: var(--reputation-color);">
+                Autopilot safety concerns raised
+                <div class="gap-meta-a">
+                  <span>🇮🇹 it-IT</span>
+                  <span>Sentiment: -0.7</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-section-a">
+            <div class="detail-header-a">
+              <div class="detail-icon-a llm">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              </div>
+              <span class="detail-title-a">LLM Citations & Markets</span>
+            </div>
+            <div class="llm-list-a">
+              <div class="llm-item-a">
+                <div class="llm-logo-a gemini">G</div>
+                <div class="llm-info-a">
+                  <div class="llm-name-a">Gemini</div>
+                  <div class="llm-citations-a">45 citations</div>
+                </div>
+                <div class="llm-bar-a">
+                  <div class="llm-fill-a gemini" style="width: 80%"></div>
+                </div>
+              </div>
+              <div class="llm-item-a">
+                <div class="llm-logo-a openai">O</div>
+                <div class="llm-info-a">
+                  <div class="llm-name-a">OpenAI</div>
+                  <div class="llm-citations-a">36 citations</div>
+                </div>
+                <div class="llm-bar-a">
+                  <div class="llm-fill-a openai" style="width: 65%"></div>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--slate-100);">
+              <div class="detail-header-a" style="border: none; padding: 0; margin-bottom: 0.5rem;">
+                <span class="detail-title-a">Markets Affected</span>
+              </div>
+              <div class="markets-grid-a">
+                <span class="market-tag-a"><span class="flag">🇫🇷</span> France</span>
+                <span class="market-tag-a"><span class="flag">🇮🇹</span> Italy</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 3: Collapsed -->
+        <div class="domain-row-a">
+          <div class="domain-info-a">
+            <div class="domain-favicon-a journalism">CN</div>
+            <div>
+              <div class="domain-name-a">cnet.com</div>
+              <div class="domain-type-a">Journalism • High Authority</div>
+            </div>
+          </div>
+          <div class="priority-score-a">
+            <div class="score-bar-a">
+              <div class="score-fill-a medium" style="width: 42%"></div>
+            </div>
+            <span class="score-num-a">42</span>
+          </div>
+          <div class="stat-cell-a">
+            <div class="stat-value-a">69</div>
+            <div class="stat-label-a">Citations</div>
+          </div>
+          <div class="impact-badges-a">
+            <span class="impact-badge-a visibility">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              10
+            </span>
+            <span class="impact-badge-a competitive">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+              0
+            </span>
+          </div>
+          <button class="expand-btn-a">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Design B: Card Grid -->
+    <section class="proposal-section">
+      <div class="proposal-header">
+        <span class="proposal-number">02</span>
+        <h2 class="proposal-title">Card Grid</h2>
+        <p class="proposal-desc">Visual cards showing impact at a glance. Better for scanning many domains quickly.</p>
+      </div>
+
+      <div class="card-grid-b">
+        <!-- Card 1 -->
+        <div class="domain-card-b">
+          <div class="card-b-header">
+            <div class="domain-icon-b high-authority">
+              <span>RE</span>
+            </div>
+            <div class="card-b-title-block">
+              <div class="card-b-domain">repubblica.it</div>
+              <div class="card-b-meta">
+                <span>Journalism</span>
+                <span class="meta-dot-b"></span>
+                <span>High Authority</span>
+              </div>
+            </div>
+            <div class="card-b-score">
+              <div class="score-circle-b medium">44</div>
+            </div>
+          </div>
+
+          <div class="card-b-stats">
+            <div class="stat-b">
+              <div class="stat-b-value">93</div>
+              <div class="stat-b-label">Citations</div>
+            </div>
+            <div class="stat-b">
+              <div class="stat-b-value visibility">10</div>
+              <div class="stat-b-label">Visibility Gaps</div>
+            </div>
+            <div class="stat-b">
+              <div class="stat-b-value competitive">0</div>
+              <div class="stat-b-label">Competitive</div>
+            </div>
+          </div>
+
+          <div class="card-b-impact">
+            <div class="impact-header-b">Top Visibility Gaps</div>
+            <div class="impact-items-b">
+              <div class="impact-item-b">
+                <span class="impact-bullet-b visibility"></span>
+                Best electric cars for beginners in Italy
+              </div>
+              <div class="impact-item-b">
+                <span class="impact-bullet-b visibility"></span>
+                Tesla battery storage solutions review
+              </div>
+            </div>
+          </div>
+
+          <div class="card-b-footer">
+            <div class="llm-dots-b">
+              <span class="llm-dot-b">
+                <span class="llm-indicator-b gemini"></span>
+                Gemini
+              </span>
+              <span class="llm-dot-b">
+                <span class="llm-indicator-b openai"></span>
+                OpenAI
+              </span>
+            </div>
+            <div class="market-flags-b">
+              🇮🇹 🇫🇷
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="domain-card-b">
+          <div class="card-b-header">
+            <div class="domain-icon-b high-authority">
+              <span>LM</span>
+            </div>
+            <div class="card-b-title-block">
+              <div class="card-b-domain">lemonde.fr</div>
+              <div class="card-b-meta">
+                <span>Journalism</span>
+                <span class="meta-dot-b"></span>
+                <span>High Authority</span>
+              </div>
+            </div>
+            <div class="card-b-score">
+              <div class="score-circle-b medium">43</div>
+            </div>
+          </div>
+
+          <div class="card-b-stats">
+            <div class="stat-b">
+              <div class="stat-b-value">81</div>
+              <div class="stat-b-label">Citations</div>
+            </div>
+            <div class="stat-b">
+              <div class="stat-b-value visibility">10</div>
+              <div class="stat-b-label">Visibility Gaps</div>
+            </div>
+            <div class="stat-b">
+              <div class="stat-b-value competitive">0</div>
+              <div class="stat-b-label">Competitive</div>
+            </div>
+          </div>
+
+          <div class="card-b-impact">
+            <div class="impact-header-b">Top Visibility Gaps</div>
+            <div class="impact-items-b">
+              <div class="impact-item-b">
+                <span class="impact-bullet-b visibility"></span>
+                EV charging infrastructure in France
+              </div>
+              <div class="impact-item-b">
+                <span class="impact-bullet-b visibility"></span>
+                Autonomous driving technology leaders
+              </div>
+            </div>
+          </div>
+
+          <div class="card-b-footer">
+            <div class="llm-dots-b">
+              <span class="llm-dot-b">
+                <span class="llm-indicator-b gemini"></span>
+                Gemini
+              </span>
+              <span class="llm-dot-b">
+                <span class="llm-indicator-b openai"></span>
+                OpenAI
+              </span>
+            </div>
+            <div class="market-flags-b">
+              🇫🇷
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="domain-card-b">
+          <div class="card-b-header">
+            <div class="domain-icon-b high-authority">
+              <span>CN</span>
+            </div>
+            <div class="card-b-title-block">
+              <div class="card-b-domain">cnet.com</div>
+              <div class="card-b-meta">
+                <span>Journalism</span>
+                <span class="meta-dot-b"></span>
+                <span>High Authority</span>
+              </div>
+            </div>
+            <div class="card-b-score">
+              <div class="score-circle-b medium">42</div>
+            </div>
+          </div>
+
+          <div class="card-b-stats">
+            <div class="stat-b">
+              <div class="stat-b-value">69</div>
+              <div class="stat-b-label">Citations</div>
+            </div>
+            <div class="stat-b">
+              <div class="stat-b-value visibility">10</div>
+              <div class="stat-b-label">Visibility Gaps</div>
+            </div>
+            <div class="stat-b">
+              <div class="stat-b-value competitive">0</div>
+              <div class="stat-b-label">Competitive</div>
+            </div>
+          </div>
+
+          <div class="card-b-impact">
+            <div class="impact-header-b">Top Visibility Gaps</div>
+            <div class="impact-items-b">
+              <div class="impact-item-b">
+                <span class="impact-bullet-b visibility"></span>
+                Best home battery storage systems
+              </div>
+              <div class="impact-item-b">
+                <span class="impact-bullet-b visibility"></span>
+                Electric truck comparison 2025
+              </div>
+            </div>
+          </div>
+
+          <div class="card-b-footer">
+            <div class="llm-dots-b">
+              <span class="llm-dot-b">
+                <span class="llm-indicator-b gemini"></span>
+                Gemini
+              </span>
+              <span class="llm-dot-b">
+                <span class="llm-indicator-b openai"></span>
+                OpenAI
+              </span>
+            </div>
+            <div class="market-flags-b">
+              🇺🇸
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Design C: Dashboard Dark Mode -->
+    <section class="proposal-section">
+      <div class="proposal-header">
+        <span class="proposal-number">03</span>
+        <h2 class="proposal-title">Dashboard Table (Dark)</h2>
+        <p class="proposal-desc">Terminal-inspired dense data view. Power user aesthetic with expandable details.</p>
+      </div>
+
+      <div class="dashboard-c">
+        <div class="dashboard-header-c">
+          <span class="dashboard-title-c">Priority Source Targets</span>
+          <div class="dashboard-legend-c">
+            <span class="legend-item-c">
+              <span class="legend-dot-c visibility"></span>
+              Visibility Gaps
+            </span>
+            <span class="legend-item-c">
+              <span class="legend-dot-c competitive"></span>
+              Competitive Losses
+            </span>
+          </div>
+        </div>
+
+        <!-- Row 1 -->
+        <div class="domain-row-c">
+          <div class="domain-cell-c">
+            <div class="domain-avatar-c authority">RE</div>
+            <div class="domain-text-c">
+              <span class="domain-name-c">repubblica.it</span>
+              <span class="domain-type-c">Journalism</span>
+            </div>
+          </div>
+          <div class="metric-cell-c">
+            <div class="metric-value-c visibility">10</div>
+            <div class="metric-label-c">Vis. Gaps</div>
+          </div>
+          <div class="metric-cell-c">
+            <div class="metric-value-c competitive">0</div>
+            <div class="metric-label-c">Comp. Loss</div>
+          </div>
+          <div class="llm-cell-c">
+            <div class="llm-badge-c gemini active">G</div>
+            <div class="llm-badge-c openai active">O</div>
+          </div>
+          <div class="score-bar-c">
+            <div class="bar-track-c">
+              <div class="bar-fill-c" style="width: 44%"></div>
+            </div>
+            <span class="bar-value-c">44</span>
+          </div>
+        </div>
+
+        <!-- Row 2: Expanded -->
+        <div class="domain-row-c" style="background: rgba(255,255,255,0.02);">
+          <div class="domain-cell-c">
+            <div class="domain-avatar-c authority">LM</div>
+            <div class="domain-text-c">
+              <span class="domain-name-c">lemonde.fr</span>
+              <span class="domain-type-c">Journalism</span>
+            </div>
+          </div>
+          <div class="metric-cell-c">
+            <div class="metric-value-c visibility">10</div>
+            <div class="metric-label-c">Vis. Gaps</div>
+          </div>
+          <div class="metric-cell-c">
+            <div class="metric-value-c competitive">0</div>
+            <div class="metric-label-c">Comp. Loss</div>
+          </div>
+          <div class="llm-cell-c">
+            <div class="llm-badge-c gemini active">G</div>
+            <div class="llm-badge-c openai active">O</div>
+          </div>
+          <div class="score-bar-c">
+            <div class="bar-track-c">
+              <div class="bar-fill-c" style="width: 43%"></div>
+            </div>
+            <span class="bar-value-c">43</span>
+          </div>
+        </div>
+
+        <!-- Expanded Detail -->
+        <div class="domain-expanded-c">
+          <div class="expanded-grid-c">
+            <div class="expanded-section-c">
+              <div class="section-header-c">
+                <div class="section-icon-c visibility">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </div>
+                <span class="section-title-c">Visibility Gaps (10)</span>
+              </div>
+              <div class="gap-list-c">
+                <div class="gap-item-c visibility">Best electric cars for beginners in France 🇫🇷</div>
+                <div class="gap-item-c visibility">Tesla battery storage solutions review 🇫🇷</div>
+                <div class="gap-item-c visibility">EV charging infrastructure in France 🇫🇷</div>
+              </div>
+            </div>
+
+            <div class="expanded-section-c">
+              <div class="section-header-c">
+                <div class="section-icon-c competitive">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                </div>
+                <span class="section-title-c">Competitive Losses (0)</span>
+              </div>
+              <div style="color: var(--slate-600); font-size: 0.75rem; padding: 0.5rem;">
+                No competitive losses detected for this domain.
+              </div>
+            </div>
+
+            <div class="expanded-section-c">
+              <div class="section-header-c">
+                <div class="section-icon-c urls">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                </div>
+                <span class="section-title-c">URLs (81)</span>
+              </div>
+              <div class="url-list-c">
+                <div class="url-item-c">/economie/article/2024/12/15/voitures-electriques...</div>
+                <div class="url-item-c">/economie/article/2023/12/10/les-batteries-francaises...</div>
+                <div class="url-item-c">/automobile/article/2023/11/15/conduite-autonome...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 3 -->
+        <div class="domain-row-c">
+          <div class="domain-cell-c">
+            <div class="domain-avatar-c authority">CN</div>
+            <div class="domain-text-c">
+              <span class="domain-name-c">cnet.com</span>
+              <span class="domain-type-c">Journalism</span>
+            </div>
+          </div>
+          <div class="metric-cell-c">
+            <div class="metric-value-c visibility">10</div>
+            <div class="metric-label-c">Vis. Gaps</div>
+          </div>
+          <div class="metric-cell-c">
+            <div class="metric-value-c competitive">0</div>
+            <div class="metric-label-c">Comp. Loss</div>
+          </div>
+          <div class="llm-cell-c">
+            <div class="llm-badge-c gemini active">G</div>
+            <div class="llm-badge-c openai active">O</div>
+          </div>
+          <div class="score-bar-c">
+            <div class="bar-track-c">
+              <div class="bar-fill-c" style="width: 42%"></div>
+            </div>
+            <span class="bar-value-c">42</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</body>
+</html>

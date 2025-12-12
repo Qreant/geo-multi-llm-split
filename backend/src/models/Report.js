@@ -668,11 +668,11 @@ export class Report {
   static getPRInsights(reportId) {
     const opportunities = this.getOpportunities(reportId);
 
-    // Calculate summary
+    // Calculate summary - V3 uses High Priority/Medium Priority instead of Strategic/Quick Wins
     const prioritySummary = {
       critical: opportunities.filter(o => o.priority.tier === 'Critical').length,
-      strategic: opportunities.filter(o => o.priority.tier === 'Strategic').length,
-      quick_wins: opportunities.filter(o => o.priority.tier === 'Quick Wins').length,
+      high_priority: opportunities.filter(o => o.priority.tier === 'High Priority' || o.priority.tier === 'Strategic').length,
+      medium_priority: opportunities.filter(o => o.priority.tier === 'Medium Priority' || o.priority.tier === 'Quick Wins').length,
       low_priority: opportunities.filter(o => o.priority.tier === 'Low Priority').length
     };
 

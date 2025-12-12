@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PR Insights Card — Design Proposals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Sophisticated neutral palette */
+      --slate-950: #0a0f1a;
+      --slate-900: #0f172a;
+      --slate-800: #1e293b;
+      --slate-700: #334155;
+      --slate-600: #475569;
+      --slate-500: #64748b;
+      --slate-400: #94a3b8;
+      --slate-300: #cbd5e1;
+      --slate-200: #e2e8f0;
+      --slate-100: #f1f5f9;
+      --slate-50: #f8fafc;
+
+      /* Accent colors */
+      --critical: #dc2626;
+      --critical-soft: #fef2f2;
+      --critical-border: #fecaca;
+      --high: #ea580c;
+      --high-soft: #fff7ed;
+      --high-border: #fed7aa;
+      --medium: #ca8a04;
+      --medium-soft: #fefce8;
+      --medium-border: #fef08a;
+      --low: #64748b;
+      --low-soft: #f8fafc;
+      --low-border: #e2e8f0;
+
+      /* LLM brand colors */
+      --gemini-primary: #4285f4;
+      --gemini-secondary: #ea4335;
+      --openai-primary: #10a37f;
+      --openai-secondary: #1a1a1a;
+
+      /* Market colors */
+      --market-fr: #0055a4;
+      --market-it: #008c45;
+      --market-us: #b22234;
+      --market-uk: #00247d;
+      --market-de: #ffcc00;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Outfit', system-ui, sans-serif;
+      background: linear-gradient(135deg, var(--slate-100) 0%, var(--slate-200) 100%);
+      min-height: 100vh;
+      color: var(--slate-800);
+      line-height: 1.6;
+    }
+
+    .page-header {
+      background: var(--slate-950);
+      color: white;
+      padding: 3rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background:
+        radial-gradient(circle at 20% 50%, rgba(66, 133, 244, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 50%, rgba(16, 163, 127, 0.15) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .page-header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.5rem;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+      position: relative;
+    }
+
+    .page-header p {
+      font-size: 1rem;
+      color: var(--slate-400);
+      position: relative;
+    }
+
+    .proposals-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+    }
+
+    .proposal-section {
+      margin-bottom: 4rem;
+    }
+
+    .proposal-header {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--slate-300);
+    }
+
+    .proposal-number {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--slate-500);
+      background: var(--slate-200);
+      padding: 0.25rem 0.75rem;
+      border-radius: 2rem;
+    }
+
+    .proposal-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.75rem;
+      color: var(--slate-900);
+    }
+
+    .proposal-desc {
+      font-size: 0.95rem;
+      color: var(--slate-600);
+      margin-left: auto;
+      max-width: 400px;
+      text-align: right;
+    }
+
+    /* ============================================
+       DESIGN A: Editorial Split Panel
+       ============================================ */
+    .card-design-a {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow:
+        0 1px 3px rgba(0,0,0,0.04),
+        0 4px 12px rgba(0,0,0,0.06);
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      border: 1px solid var(--slate-200);
+    }
+
+    .card-a-main {
+      padding: 1.75rem;
+      border-right: 1px solid var(--slate-200);
+    }
+
+    .card-a-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .priority-indicator-a {
+      width: 4px;
+      height: 100%;
+      min-height: 60px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .priority-indicator-a.critical { background: var(--critical); }
+    .priority-indicator-a.high { background: var(--high); }
+    .priority-indicator-a.medium { background: var(--medium); }
+
+    .card-a-title-block {
+      flex: 1;
+    }
+
+    .card-a-tier {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.35rem;
+    }
+
+    .card-a-tier.critical { color: var(--critical); }
+    .card-a-tier.high { color: var(--high); }
+    .card-a-tier.medium { color: var(--medium); }
+
+    .card-a-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.35rem;
+      color: var(--slate-900);
+      line-height: 1.3;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-a-desc {
+      font-size: 0.9rem;
+      color: var(--slate-600);
+      line-height: 1.5;
+    }
+
+    .card-a-metrics {
+      display: flex;
+      gap: 2rem;
+      padding: 1rem 0;
+      border-top: 1px solid var(--slate-100);
+      border-bottom: 1px solid var(--slate-100);
+      margin: 1rem 0;
+    }
+
+    .metric-item-a {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .metric-label-a {
+      font-size: 0.7rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--slate-500);
+    }
+
+    .metric-value-a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--slate-900);
+    }
+
+    .metric-value-a.positive { color: #16a34a; }
+    .metric-value-a.negative { color: var(--critical); }
+
+    /* Evidence quotes */
+    .evidence-section-a {
+      margin-top: 1rem;
+    }
+
+    .evidence-label-a {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--slate-500);
+      margin-bottom: 0.75rem;
+    }
+
+    .evidence-quotes-a {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .quote-chip-a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      padding: 0.35rem 0.75rem;
+      background: var(--slate-100);
+      border-radius: 4px;
+      color: var(--slate-700);
+      border-left: 2px solid var(--slate-400);
+    }
+
+    /* Side panel */
+    .card-a-sidebar {
+      background: var(--slate-50);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .sidebar-section-a {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .sidebar-label-a {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--slate-500);
+    }
+
+    /* LLM Breakdown */
+    .llm-breakdown-a {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .llm-item-a {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      background: white;
+      border-radius: 6px;
+      border: 1px solid var(--slate-200);
+    }
+
+    .llm-logo-a {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: white;
+    }
+
+    .llm-logo-a.gemini {
+      background: linear-gradient(135deg, #4285f4, #ea4335);
+    }
+
+    .llm-logo-a.openai {
+      background: var(--openai-primary);
+    }
+
+    .llm-info-a {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .llm-name-a {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--slate-800);
+    }
+
+    .llm-stat-a {
+      font-size: 0.7rem;
+      color: var(--slate-500);
+    }
+
+    .llm-badge-a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 3px;
+    }
+
+    .llm-badge-a.detected {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .llm-badge-a.not-detected {
+      background: var(--slate-100);
+      color: var(--slate-500);
+    }
+
+    /* Markets */
+    .markets-grid-a {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .market-tag-a {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.6rem;
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--slate-700);
+    }
+
+    .market-flag-a {
+      font-size: 0.9rem;
+    }
+
+    /* Questions triggered */
+    .questions-list-a {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      max-height: 140px;
+      overflow-y: auto;
+    }
+
+    .question-item-a {
+      font-size: 0.75rem;
+      color: var(--slate-600);
+      padding: 0.5rem 0.6rem;
+      background: white;
+      border-radius: 4px;
+      border: 1px solid var(--slate-200);
+      line-height: 1.4;
+      position: relative;
+      padding-left: 1.5rem;
+    }
+
+    .question-item-a::before {
+      content: '?';
+      position: absolute;
+      left: 0.5rem;
+      top: 0.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 0.65rem;
+      color: var(--slate-400);
+    }
+
+    /* ============================================
+       DESIGN B: Compact Data Card with Expansion
+       ============================================ */
+    .card-design-b {
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border: 1px solid var(--slate-200);
+    }
+
+    .card-b-header {
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .card-b-header:hover {
+      background: var(--slate-50);
+    }
+
+    .priority-badge-b {
+      padding: 0.35rem 0.75rem;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+    }
+
+    .priority-badge-b.critical {
+      background: var(--critical-soft);
+      color: var(--critical);
+      border: 1px solid var(--critical-border);
+    }
+
+    .priority-badge-b.high {
+      background: var(--high-soft);
+      color: var(--high);
+      border: 1px solid var(--high-border);
+    }
+
+    .card-b-content {
+      flex: 1;
+    }
+
+    .card-b-title {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--slate-900);
+      margin-bottom: 0.35rem;
+    }
+
+    .card-b-meta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 0.8rem;
+      color: var(--slate-500);
+    }
+
+    .meta-item-b {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .meta-icon-b {
+      width: 14px;
+      height: 14px;
+      opacity: 0.7;
+    }
+
+    .card-b-scores {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .score-ring-b {
+      width: 48px;
+      height: 48px;
+      position: relative;
+    }
+
+    .score-ring-b svg {
+      transform: rotate(-90deg);
+    }
+
+    .score-ring-b circle {
+      fill: none;
+      stroke-width: 4;
+    }
+
+    .score-ring-b .bg {
+      stroke: var(--slate-200);
+    }
+
+    .score-ring-b .progress {
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.5s ease;
+    }
+
+    .score-ring-b .progress.impact {
+      stroke: #16a34a;
+    }
+
+    .score-ring-b .progress.effort {
+      stroke: var(--high);
+    }
+
+    .score-value-b {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--slate-800);
+    }
+
+    .score-label-b {
+      font-size: 0.6rem;
+      color: var(--slate-500);
+      text-align: center;
+      margin-top: 0.25rem;
+    }
+
+    .expand-icon-b {
+      width: 20px;
+      height: 20px;
+      color: var(--slate-400);
+      transition: transform 0.2s;
+    }
+
+    .card-b-header.expanded .expand-icon-b {
+      transform: rotate(180deg);
+    }
+
+    /* Expanded section */
+    .card-b-expanded {
+      border-top: 1px solid var(--slate-200);
+      background: var(--slate-50);
+      padding: 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .expanded-section-b {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .expanded-label-b {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--slate-500);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .expanded-label-b::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--slate-300);
+    }
+
+    /* LLM comparison chart */
+    .llm-comparison-b {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .llm-bar-b {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .bar-track-b {
+      width: 100%;
+      height: 8px;
+      background: var(--slate-200);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .bar-fill-b {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    .bar-fill-b.gemini {
+      background: linear-gradient(90deg, #4285f4, #ea4335);
+    }
+
+    .bar-fill-b.openai {
+      background: var(--openai-primary);
+    }
+
+    .llm-label-b {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--slate-700);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .llm-dot-b {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .llm-dot-b.gemini { background: var(--gemini-primary); }
+    .llm-dot-b.openai { background: var(--openai-primary); }
+
+    /* Markets pills */
+    .markets-pills-b {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .market-pill-b {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.3rem 0.6rem;
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-radius: 100px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--slate-700);
+    }
+
+    .market-pill-b .flag {
+      font-size: 0.85rem;
+    }
+
+    /* Questions accordion */
+    .questions-accordion-b {
+      background: white;
+      border-radius: 6px;
+      border: 1px solid var(--slate-200);
+      overflow: hidden;
+    }
+
+    .question-row-b {
+      padding: 0.6rem 0.75rem;
+      font-size: 0.75rem;
+      color: var(--slate-700);
+      border-bottom: 1px solid var(--slate-100);
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .question-row-b:last-child {
+      border-bottom: none;
+    }
+
+    .q-icon-b {
+      width: 16px;
+      height: 16px;
+      background: var(--slate-100);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.55rem;
+      font-weight: 700;
+      color: var(--slate-500);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ============================================
+       DESIGN C: Dashboard Analytics Style
+       ============================================ */
+    .card-design-c {
+      background: var(--slate-900);
+      border-radius: 12px;
+      overflow: hidden;
+      color: white;
+      position: relative;
+    }
+
+    .card-c-noise {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+    }
+
+    .card-c-header {
+      padding: 1.5rem;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      position: relative;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .card-c-priority {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .priority-dot-c {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      animation: pulse-c 2s ease-in-out infinite;
+    }
+
+    .priority-dot-c.critical {
+      background: var(--critical);
+      box-shadow: 0 0 12px var(--critical);
+    }
+
+    @keyframes pulse-c {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .priority-text-c {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--critical);
+    }
+
+    .card-c-scores-row {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .score-block-c {
+      text-align: right;
+    }
+
+    .score-num-c {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.75rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .score-num-c.green { color: #4ade80; }
+    .score-num-c.orange { color: #fb923c; }
+
+    .score-txt-c {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--slate-500);
+      margin-top: 0.25rem;
+    }
+
+    .card-c-body {
+      padding: 1.5rem;
+      position: relative;
+    }
+
+    .card-c-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.5rem;
+      font-weight: 400;
+      line-height: 1.3;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-c-desc {
+      font-size: 0.9rem;
+      color: var(--slate-400);
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Data grid */
+    .data-grid-c {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .data-cell-c {
+      background: var(--slate-800);
+      padding: 1rem;
+    }
+
+    .data-cell-c:first-child {
+      border-radius: 8px 0 0 8px;
+    }
+
+    .data-cell-c:last-child {
+      border-radius: 0 8px 8px 0;
+    }
+
+    .cell-label-c {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--slate-500);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .cell-label-c svg {
+      width: 12px;
+      height: 12px;
+      opacity: 0.7;
+    }
+
+    /* LLM visualization */
+    .llm-viz-c {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .llm-row-c {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .llm-icon-c {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      font-weight: 700;
+    }
+
+    .llm-icon-c.gemini {
+      background: linear-gradient(135deg, #4285f4, #ea4335);
+    }
+
+    .llm-icon-c.openai {
+      background: var(--openai-primary);
+    }
+
+    .llm-bar-c {
+      flex: 1;
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .llm-fill-c {
+      height: 100%;
+      border-radius: 3px;
+    }
+
+    .llm-fill-c.gemini {
+      background: var(--gemini-primary);
+    }
+
+    .llm-fill-c.openai {
+      background: var(--openai-primary);
+    }
+
+    .llm-pct-c {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--slate-400);
+      width: 40px;
+      text-align: right;
+    }
+
+    /* Markets */
+    .markets-c {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .market-chip-c {
+      padding: 0.35rem 0.6rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 4px;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .market-chip-c .flag {
+      font-size: 0.85rem;
+    }
+
+    /* Questions */
+    .questions-c {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .question-c {
+      font-size: 0.75rem;
+      color: var(--slate-400);
+      padding: 0.5rem 0.6rem;
+      background: rgba(255,255,255,0.03);
+      border-radius: 4px;
+      border-left: 2px solid var(--slate-600);
+    }
+
+    /* Evidence section */
+    .evidence-c {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .evidence-label-c {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--slate-500);
+      margin-bottom: 0.75rem;
+    }
+
+    .evidence-chips-c {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .evidence-chip-c {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      padding: 0.4rem 0.75rem;
+      background: rgba(255,255,255,0.05);
+      border-radius: 4px;
+      color: var(--slate-300);
+      border-left: 2px solid var(--slate-500);
+    }
+
+    /* ============================================
+       DESIGN D: Notion-style Clean Card
+       ============================================ */
+    .card-design-d {
+      background: white;
+      border-radius: 8px;
+      border: 1px solid var(--slate-200);
+      overflow: hidden;
+    }
+
+    .card-d-main {
+      padding: 1.5rem;
+    }
+
+    .card-d-row-1 {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .type-icon-d {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .type-icon-d.reputation {
+      background: #fef3c7;
+    }
+
+    .type-icon-d svg {
+      width: 20px;
+      height: 20px;
+      color: #d97706;
+    }
+
+    .card-d-meta {
+      flex: 1;
+    }
+
+    .card-d-title {
+      font-weight: 600;
+      font-size: 1.05rem;
+      color: var(--slate-900);
+      margin-bottom: 0.35rem;
+    }
+
+    .card-d-tags {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .tag-d {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .tag-d.priority {
+      background: var(--critical-soft);
+      color: var(--critical);
+    }
+
+    .tag-d.type {
+      background: var(--slate-100);
+      color: var(--slate-600);
+    }
+
+    .card-d-scores {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .score-mini-d {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.6rem;
+      background: var(--slate-50);
+      border-radius: 4px;
+      font-size: 0.75rem;
+    }
+
+    .score-mini-d .label {
+      color: var(--slate-500);
+    }
+
+    .score-mini-d .value {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      color: var(--slate-800);
+    }
+
+    .card-d-desc {
+      font-size: 0.9rem;
+      color: var(--slate-600);
+      line-height: 1.6;
+      margin-bottom: 1.25rem;
+    }
+
+    /* Properties table */
+    .properties-table-d {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 0;
+      border-top: 1px solid var(--slate-100);
+    }
+
+    .prop-row-d {
+      display: contents;
+    }
+
+    .prop-label-d {
+      padding: 0.75rem 0;
+      font-size: 0.8rem;
+      color: var(--slate-500);
+      border-bottom: 1px solid var(--slate-100);
+    }
+
+    .prop-value-d {
+      padding: 0.75rem 0;
+      font-size: 0.85rem;
+      color: var(--slate-800);
+      border-bottom: 1px solid var(--slate-100);
+    }
+
+    .llm-inline-d {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .llm-inline-item-d {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .llm-inline-dot-d {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .llm-inline-dot-d.gemini { background: var(--gemini-primary); }
+    .llm-inline-dot-d.openai { background: var(--openai-primary); }
+
+    .llm-inline-text-d {
+      font-size: 0.8rem;
+    }
+
+    .llm-inline-text-d.active { color: var(--slate-800); }
+    .llm-inline-text-d.inactive { color: var(--slate-400); text-decoration: line-through; }
+
+    .markets-inline-d {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .market-inline-d {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.8rem;
+    }
+
+    .questions-inline-d {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .question-inline-d {
+      font-size: 0.8rem;
+      color: var(--slate-600);
+    }
+
+    .question-inline-d::before {
+      content: '→';
+      margin-right: 0.35rem;
+      color: var(--slate-400);
+    }
+
+    /* Sources footer */
+    .card-d-footer {
+      background: var(--slate-50);
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--slate-200);
+    }
+
+    .sources-row-d {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .source-link-d {
+      font-size: 0.75rem;
+      padding: 0.3rem 0.6rem;
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-radius: 4px;
+      color: var(--slate-600);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      transition: all 0.15s;
+    }
+
+    .source-link-d:hover {
+      border-color: var(--slate-400);
+      color: var(--slate-900);
+    }
+
+    .source-link-d svg {
+      width: 12px;
+      height: 12px;
+      opacity: 0.5;
+    }
+
+    /* Utility */
+    .section-spacer {
+      height: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1>PR Insights Card — Design Proposals</h1>
+    <p>Enhanced opportunity cards with visibility context, LLM breakdown, markets & triggering questions</p>
+  </header>
+
+  <main class="proposals-container">
+
+    <!-- Design A: Editorial Split Panel -->
+    <section class="proposal-section">
+      <div class="proposal-header">
+        <span class="proposal-number">01</span>
+        <h2 class="proposal-title">Editorial Split Panel</h2>
+        <p class="proposal-desc">Magazine-style layout with dedicated sidebar for contextual data. Ideal for deep analysis.</p>
+      </div>
+
+      <div class="card-design-a">
+        <div class="card-a-main">
+          <div class="card-a-header">
+            <div class="priority-indicator-a critical"></div>
+            <div class="card-a-title-block">
+              <div class="card-a-tier critical">Critical Priority</div>
+              <h3 class="card-a-title">Address "Build Quality & Finish" reputation issue</h3>
+              <p class="card-a-desc">Negative sentiment detected with 70% frequency and 0.8 severity score across French market automotive coverage.</p>
+            </div>
+          </div>
+
+          <div class="card-a-metrics">
+            <div class="metric-item-a">
+              <span class="metric-label-a">Impact Score</span>
+              <span class="metric-value-a positive">100%</span>
+            </div>
+            <div class="metric-item-a">
+              <span class="metric-label-a">Effort Required</span>
+              <span class="metric-value-a">50%</span>
+            </div>
+            <div class="metric-item-a">
+              <span class="metric-label-a">Sentiment</span>
+              <span class="metric-value-a negative">-0.8</span>
+            </div>
+            <div class="metric-item-a">
+              <span class="metric-label-a">Sources</span>
+              <span class="metric-value-a">13</span>
+            </div>
+          </div>
+
+          <div class="evidence-section-a">
+            <div class="evidence-label-a">Key Evidence Quotes</div>
+            <div class="evidence-quotes-a">
+              <span class="quote-chip-a">"problèmes de finition"</span>
+              <span class="quote-chip-a">"défauts de peinture"</span>
+              <span class="quote-chip-a">"qualité de fabrication"</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-a-sidebar">
+          <div class="sidebar-section-a">
+            <span class="sidebar-label-a">LLM Detection</span>
+            <div class="llm-breakdown-a">
+              <div class="llm-item-a">
+                <div class="llm-logo-a gemini">G</div>
+                <div class="llm-info-a">
+                  <span class="llm-name-a">Gemini</span>
+                  <span class="llm-stat-a">Cited 8 times</span>
+                </div>
+                <span class="llm-badge-a detected">Detected</span>
+              </div>
+              <div class="llm-item-a">
+                <div class="llm-logo-a openai">O</div>
+                <div class="llm-info-a">
+                  <span class="llm-name-a">OpenAI</span>
+                  <span class="llm-stat-a">Cited 5 times</span>
+                </div>
+                <span class="llm-badge-a detected">Detected</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar-section-a">
+            <span class="sidebar-label-a">Markets Affected</span>
+            <div class="markets-grid-a">
+              <div class="market-tag-a">
+                <span class="market-flag-a">🇫🇷</span>
+                <span>France</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar-section-a">
+            <span class="sidebar-label-a">Triggering Questions</span>
+            <div class="questions-list-a">
+              <div class="question-item-a">What are the main complaints about Tesla Model Y?</div>
+              <div class="question-item-a">How does Tesla build quality compare to competitors?</div>
+              <div class="question-item-a">What are common issues with electric vehicles?</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Design B: Compact Data Card -->
+    <section class="proposal-section">
+      <div class="proposal-header">
+        <span class="proposal-number">02</span>
+        <h2 class="proposal-title">Compact Expandable Card</h2>
+        <p class="proposal-desc">Space-efficient design with expandable detail panel. Good for lists with many items.</p>
+      </div>
+
+      <div class="card-design-b">
+        <div class="card-b-header expanded">
+          <span class="priority-badge-b critical">Critical</span>
+
+          <div class="card-b-content">
+            <h3 class="card-b-title">Address "Build Quality & Finish" reputation issue</h3>
+            <div class="card-b-meta">
+              <span class="meta-item-b">
+                <svg class="meta-icon-b" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                France
+              </span>
+              <span class="meta-item-b">
+                <svg class="meta-icon-b" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                13 sources
+              </span>
+            </div>
+          </div>
+
+          <div class="card-b-scores">
+            <div>
+              <div class="score-ring-b">
+                <svg width="48" height="48" viewBox="0 0 48 48">
+                  <circle class="bg" cx="24" cy="24" r="20"/>
+                  <circle class="progress impact" cx="24" cy="24" r="20"
+                    stroke-dasharray="125.6"
+                    stroke-dashoffset="0"/>
+                </svg>
+                <span class="score-value-b">100%</span>
+              </div>
+              <div class="score-label-b">Impact</div>
+            </div>
+            <div>
+              <div class="score-ring-b">
+                <svg width="48" height="48" viewBox="0 0 48 48">
+                  <circle class="bg" cx="24" cy="24" r="20"/>
+                  <circle class="progress effort" cx="24" cy="24" r="20"
+                    stroke-dasharray="125.6"
+                    stroke-dashoffset="62.8"/>
+                </svg>
+                <span class="score-value-b">50%</span>
+              </div>
+              <div class="score-label-b">Effort</div>
+            </div>
+          </div>
+
+          <svg class="expand-icon-b" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </div>
+
+        <div class="card-b-expanded">
+          <div class="expanded-section-b">
+            <span class="expanded-label-b">LLM Visibility</span>
+            <div class="llm-comparison-b">
+              <div class="llm-bar-b">
+                <div class="llm-label-b">
+                  <span class="llm-dot-b gemini"></span>
+                  Gemini
+                </div>
+                <div class="bar-track-b">
+                  <div class="bar-fill-b gemini" style="width: 80%"></div>
+                </div>
+              </div>
+              <div class="llm-bar-b">
+                <div class="llm-label-b">
+                  <span class="llm-dot-b openai"></span>
+                  OpenAI
+                </div>
+                <div class="bar-track-b">
+                  <div class="bar-fill-b openai" style="width: 60%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="expanded-section-b">
+            <span class="expanded-label-b">Markets</span>
+            <div class="markets-pills-b">
+              <span class="market-pill-b"><span class="flag">🇫🇷</span> fr-FR</span>
+            </div>
+          </div>
+
+          <div class="expanded-section-b">
+            <span class="expanded-label-b">Questions Triggered</span>
+            <div class="questions-accordion-b">
+              <div class="question-row-b">
+                <span class="q-icon-b">Q</span>
+                What are the main complaints about Tesla Model Y?
+              </div>
+              <div class="question-row-b">
+                <span class="q-icon-b">Q</span>
+                How does Tesla build quality compare to competitors?
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Design C: Dashboard Analytics -->
+    <section class="proposal-section">
+      <div class="proposal-header">
+        <span class="proposal-number">03</span>
+        <h2 class="proposal-title">Dashboard Analytics</h2>
+        <p class="proposal-desc">Dark mode data-dense design. Terminal-inspired aesthetic for power users.</p>
+      </div>
+
+      <div class="card-design-c">
+        <div class="card-c-noise"></div>
+
+        <div class="card-c-header">
+          <div class="card-c-priority">
+            <span class="priority-dot-c critical"></span>
+            <span class="priority-text-c">Critical Priority</span>
+          </div>
+          <div class="card-c-scores-row">
+            <div class="score-block-c">
+              <div class="score-num-c green">100%</div>
+              <div class="score-txt-c">Impact</div>
+            </div>
+            <div class="score-block-c">
+              <div class="score-num-c orange">50%</div>
+              <div class="score-txt-c">Effort</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-c-body">
+          <h3 class="card-c-title">Address "Build Quality & Finish" reputation issue</h3>
+          <p class="card-c-desc">Negative sentiment detected with 70% frequency and 0.8 severity score across French market automotive coverage.</p>
+
+          <div class="data-grid-c">
+            <div class="data-cell-c">
+              <div class="cell-label-c">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                  <path d="M2 17l10 5 10-5"/>
+                  <path d="M2 12l10 5 10-5"/>
+                </svg>
+                LLM Breakdown
+              </div>
+              <div class="llm-viz-c">
+                <div class="llm-row-c">
+                  <span class="llm-icon-c gemini">G</span>
+                  <div class="llm-bar-c">
+                    <div class="llm-fill-c gemini" style="width: 80%"></div>
+                  </div>
+                  <span class="llm-pct-c">8 hits</span>
+                </div>
+                <div class="llm-row-c">
+                  <span class="llm-icon-c openai">O</span>
+                  <div class="llm-bar-c">
+                    <div class="llm-fill-c openai" style="width: 60%"></div>
+                  </div>
+                  <span class="llm-pct-c">5 hits</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="data-cell-c">
+              <div class="cell-label-c">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+                Markets
+              </div>
+              <div class="markets-c">
+                <span class="market-chip-c"><span class="flag">🇫🇷</span> France</span>
+              </div>
+            </div>
+
+            <div class="data-cell-c">
+              <div class="cell-label-c">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                Questions
+              </div>
+              <div class="questions-c">
+                <div class="question-c">Main complaints about Tesla Model Y?</div>
+                <div class="question-c">Tesla build quality vs competitors?</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="evidence-c">
+            <div class="evidence-label-c">Evidence Quotes</div>
+            <div class="evidence-chips-c">
+              <span class="evidence-chip-c">"problèmes de finition"</span>
+              <span class="evidence-chip-c">"défauts de peinture"</span>
+              <span class="evidence-chip-c">"qualité de fabrication"</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Design D: Notion-style -->
+    <section class="proposal-section">
+      <div class="proposal-header">
+        <span class="proposal-number">04</span>
+        <h2 class="proposal-title">Notion-style Properties</h2>
+        <p class="proposal-desc">Clean property table layout. Familiar pattern for users of modern productivity tools.</p>
+      </div>
+
+      <div class="card-design-d">
+        <div class="card-d-main">
+          <div class="card-d-row-1">
+            <div class="type-icon-d reputation">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <div class="card-d-meta">
+              <h3 class="card-d-title">Address "Build Quality & Finish" reputation issue</h3>
+              <div class="card-d-tags">
+                <span class="tag-d priority">Critical</span>
+                <span class="tag-d type">Reputation Issue</span>
+              </div>
+            </div>
+            <div class="card-d-scores">
+              <div class="score-mini-d">
+                <span class="label">Impact</span>
+                <span class="value">100%</span>
+              </div>
+              <div class="score-mini-d">
+                <span class="label">Effort</span>
+                <span class="value">50%</span>
+              </div>
+            </div>
+          </div>
+
+          <p class="card-d-desc">Negative sentiment detected with 70% frequency and 0.8 severity score across French market automotive coverage.</p>
+
+          <div class="properties-table-d">
+            <div class="prop-row-d">
+              <div class="prop-label-d">LLMs Detecting</div>
+              <div class="prop-value-d">
+                <div class="llm-inline-d">
+                  <span class="llm-inline-item-d">
+                    <span class="llm-inline-dot-d gemini"></span>
+                    <span class="llm-inline-text-d active">Gemini (8)</span>
+                  </span>
+                  <span class="llm-inline-item-d">
+                    <span class="llm-inline-dot-d openai"></span>
+                    <span class="llm-inline-text-d active">OpenAI (5)</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="prop-row-d">
+              <div class="prop-label-d">Markets</div>
+              <div class="prop-value-d">
+                <div class="markets-inline-d">
+                  <span class="market-inline-d">🇫🇷 France</span>
+                </div>
+              </div>
+            </div>
+            <div class="prop-row-d">
+              <div class="prop-label-d">Questions</div>
+              <div class="prop-value-d">
+                <div class="questions-inline-d">
+                  <span class="question-inline-d">What are the main complaints about Tesla Model Y?</span>
+                  <span class="question-inline-d">How does Tesla build quality compare to competitors?</span>
+                </div>
+              </div>
+            </div>
+            <div class="prop-row-d">
+              <div class="prop-label-d">Evidence</div>
+              <div class="prop-value-d">
+                "problèmes de finition", "défauts de peinture", "qualité de fabrication"
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-d-footer">
+          <div class="sources-row-d">
+            <a href="#" class="source-link-d">
+              lesnumeriques.com
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+            <a href="#" class="source-link-d">
+              frandroid.com
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+            <a href="#" class="source-link-d">
+              carisoko.com
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+            <a href="#" class="source-link-d">
+              +2 more
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</body>
+</html>

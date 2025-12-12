@@ -67,13 +67,17 @@ function generatePrioritySourceTargets(allSources, opportunities, config) {
           source_type: sourceType,
           citation_count: 0,
           cited_by_llms: new Set(),
-          urls: new Set(),
+          llm_citations: { gemini: 0, openai: 0 },
+          urls: new Map(), // Changed to Map for URL citation counts
           opportunity_count: 0,
           opportunity_ids: [],
           opportunity_types: new Set(),
           priority_tiers: new Set(),
           visibility_gap_count: 0,
           competitive_loss_count: 0,
+          visibility_gap_questions: [],
+          competitive_loss_questions: [],
+          negative_topics: [],
           total_impact_score: 0,
           is_high_authority: ['Journalism', 'Academic/Research', 'Government/NGO'].includes(sourceType),
           competitor_mentions: []
@@ -81,8 +85,20 @@ function generatePrioritySourceTargets(allSources, opportunities, config) {
       }
       const domainData = domainMap.get(domain);
       domainData.citation_count++;
-      if (url) domainData.urls.add(url);
-      citedBy.forEach(llm => domainData.cited_by_llms.add(llm));
+      if (url) {
+        // Track URL with citation count
+        const urlEntry = domainData.urls.get(url) || { url, title, citation_count: 0 };
+        urlEntry.citation_count++;
+        if (title && !urlEntry.title) urlEntry.title = title;
+        domainData.urls.set(url, urlEntry);
+      }
+      citedBy.forEach(llm => {
+        domainData.cited_by_llms.add(llm);
+        // Track LLM-specific citation counts
+        const llmLower = llm.toLowerCase();
+        if (llmLower === 'gemini') domainData.llm_citations.gemini++;
+        else if (llmLower === 'openai') domainData.llm_citations.openai++;
+      });
     }
 
     if (url) {
@@ -128,6 +144,13 @@ function generatePrioritySourceTargets(allSources, opportunities, config) {
     const impactScore = opp.scores?.impact_score || 0;
     const isVisibilityGap = oppType === 'AI Visibility Gap';
     const isCompetitiveLoss = oppType === 'Competitive Positioning Gap';
+    const isReputationIssue = oppType === 'Reputation Issue';
+
+    // Extract question/topic data from opportunity
+    const questionText = opp.current_state?.question_text || opp.title || '';
+    const market = opp.metadata?.market || 'unknown';
+    const currentRank = opp.current_state?.current_rank || opp.current_state?.rank;
+    const topRankedEntity = opp.competitor_analysis?.top_ranked_entity;
 
     sources.forEach(source => {
       const url = source.url || '';
@@ -146,10 +169,39 @@ function generatePrioritySourceTargets(allSources, opportunities, config) {
         domainData.opportunity_types.add(oppType);
         domainData.priority_tiers.add(priority);
         domainData.total_impact_score += impactScore;
-        if (isVisibilityGap) domainData.visibility_gap_count++;
-        if (isCompetitiveLoss) domainData.competitive_loss_count++;
+
+        // Store detailed question/topic data
+        if (isVisibilityGap) {
+          domainData.visibility_gap_count++;
+          // Avoid duplicates by checking if question already exists
+          if (questionText && !domainData.visibility_gap_questions.some(q => q.question === questionText)) {
+            domainData.visibility_gap_questions.push({
+              question: questionText,
+              market,
+              current_rank: currentRank,
+              competitor: topRankedEntity
+            });
+          }
+        }
+        if (isCompetitiveLoss) {
+          domainData.competitive_loss_count++;
+          if (questionText && !domainData.competitive_loss_questions.some(q => q.question === questionText)) {
+            domainData.competitive_loss_questions.push({
+              question: questionText,
+              market,
+              competitor_chosen: topRankedEntity
+            });
+          }
+        }
+        if (isReputationIssue) {
+          // Extract topic from title
+          const topic = opp.title?.replace('Address Negative Perception: ', '').replace('Negative Brand Perception: ', '') || questionText;
+          if (topic && !domainData.negative_topics.includes(topic)) {
+            domainData.negative_topics.push(topic);
+          }
+        }
+
         // Only track competitors that aren't the same brand family
-        const topRankedEntity = opp.competitor_analysis?.top_ranked_entity;
         if (topRankedEntity && !isSameBrandFamily(topRankedEntity, targetEntity)) {
           domainData.competitor_mentions.push(topRankedEntity);
         }
@@ -165,7 +217,6 @@ function generatePrioritySourceTargets(allSources, opportunities, config) {
         if (isVisibilityGap) urlData.visibility_gap_count++;
         if (isCompetitiveLoss) urlData.competitive_loss_count++;
         // Only track competitors that aren't the same brand family
-        const topRankedEntity = opp.competitor_analysis?.top_ranked_entity;
         if (topRankedEntity && !isSameBrandFamily(topRankedEntity, targetEntity)) {
           urlData.competitor_mentions.push(topRankedEntity);
         }
@@ -192,8 +243,9 @@ function generatePrioritySourceTargets(allSources, opportunities, config) {
     score += Math.min(data.visibility_gap_count * 12.5, 25);
     score += Math.min(data.competitive_loss_count * 12.5, 25);
     if (data.is_high_authority) score += 10;
+    // V3 uses High Priority/Medium Priority instead of Strategic/Quick Wins
     if (data.priority_tiers.has('Critical')) score += 10;
-    else if (data.priority_tiers.has('Strategic')) score += 5;
+    else if (data.priority_tiers.has('High Priority') || data.priority_tiers.has('Strategic')) score += 5;
     return Math.min(Math.round(score), 100);
   };
 
@@ -202,7 +254,8 @@ function generatePrioritySourceTargets(allSources, opportunities, config) {
     cited_by_llms: Array.from(d.cited_by_llms),
     opportunity_types: Array.from(d.opportunity_types),
     priority_tiers: Array.from(d.priority_tiers),
-    urls: Array.from(d.urls),
+    // Convert URL Map to array with citation counts, sorted by count
+    urls: Array.from(d.urls.values()).sort((a, b) => b.citation_count - a.citation_count),
     url_count: d.urls.size,
     priority_score: calculatePriorityScore(d),
     top_competitor: getTopCompetitor(d.competitor_mentions),
@@ -275,21 +328,27 @@ router.get('/:reportId', (req, res) => {
       insights = {
         ...insights,
         opportunities: insights.opportunities.filter(opp => {
-          // Keep opportunity if any of its sources were cited by selected LLMs
+          // Keep opportunity if no sources or sources don't have LLM info
           if (!opp.sources || opp.sources.length === 0) return true;
-          return opp.sources.some(source => {
+
+          // Check if any source has cited_by info
+          const sourcesWithLLMInfo = opp.sources.filter(s => s.cited_by && s.cited_by.length > 0);
+          if (sourcesWithLLMInfo.length === 0) return true; // No LLM info, keep opportunity
+
+          // Filter based on LLM if we have that info
+          return sourcesWithLLMInfo.some(source => {
             const citedBy = source.cited_by || [];
             return citedBy.some(llm => llmsFilter.includes(llm.toLowerCase()));
           });
         })
       };
 
-      // Recalculate totals
+      // Recalculate totals - V3 uses High Priority/Medium Priority instead of Strategic/Quick Wins
       insights.total_opportunities = insights.opportunities.length;
       insights.priority_summary = {
         critical: insights.opportunities.filter(o => o.priority?.tier === 'Critical').length,
-        strategic: insights.opportunities.filter(o => o.priority?.tier === 'Strategic').length,
-        quick_wins: insights.opportunities.filter(o => o.priority?.tier === 'Quick Wins').length,
+        high_priority: insights.opportunities.filter(o => o.priority?.tier === 'High Priority' || o.priority?.tier === 'Strategic').length,
+        medium_priority: insights.opportunities.filter(o => o.priority?.tier === 'Medium Priority' || o.priority?.tier === 'Quick Wins').length,
         low_priority: insights.opportunities.filter(o => o.priority?.tier === 'Low Priority').length
       };
     }

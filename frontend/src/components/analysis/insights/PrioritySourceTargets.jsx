@@ -1,8 +1,7 @@
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 import {
-  Globe, ExternalLink, ChevronDown, ChevronUp,
-  AlertCircle, Users, FileText, HelpCircle
+  ChevronDown, Eye, Flag, MessageSquare, Layers, Link, ExternalLink
 } from 'lucide-react';
 
 /**
@@ -10,7 +9,6 @@ import {
  */
 function generateDomainIconUrl(domain) {
   if (!domain) return null;
-  // Clean the domain
   const cleanDomain = domain
     .replace(/^https?:\/\//, '')
     .replace(/^www\./, '')
@@ -21,8 +19,18 @@ function generateDomainIconUrl(domain) {
 }
 
 /**
+ * Get initials from domain name
+ */
+function getDomainInitials(domain) {
+  if (!domain) return '??';
+  const parts = domain.replace(/\.(com|org|net|io|co|fr|it|de|uk|es).*$/, '').split('.');
+  const name = parts[parts.length - 1] || parts[0];
+  return name.substring(0, 2).toUpperCase();
+}
+
+/**
  * PrioritySourceTargets Component
- * Displays domain and URL-level priority targets for PR outreach
+ * Displays domain-centric priority targets with expandable details
  */
 export default function PrioritySourceTargets({ sourceTargets }) {
   const [expandedDomains, setExpandedDomains] = useState(new Set());
@@ -43,393 +51,353 @@ export default function PrioritySourceTargets({ sourceTargets }) {
     });
   };
 
-  const getPriorityColor = (score) => {
-    // Distinct colors for each priority level
-    if (score >= 70) return { bg: 'bg-[#FEF2F2]', text: 'text-[#DC2626]', border: 'border-[#FEE2E2]' }; // Critical - red
-    if (score >= 50) return { bg: 'bg-[#FFFBEB]', text: 'text-[#D97706]', border: 'border-[#FEF3C7]' }; // High - amber/orange
-    if (score >= 30) return { bg: 'bg-[#EFF6FF]', text: 'text-[#2563EB]', border: 'border-[#DBEAFE]' }; // Medium - blue
-    return { bg: 'bg-[#F8FAFC]', text: 'text-[#64748B]', border: 'border-[#F1F5F9]' }; // Low - gray
+  const getPriorityBarColor = (score) => {
+    if (score >= 70) return 'bg-red-500';
+    if (score >= 50) return 'bg-amber-500';
+    if (score >= 30) return 'bg-blue-500';
+    return 'bg-slate-400';
   };
 
-  const getSourceTypeIcon = (sourceType) => {
-    switch (sourceType) {
-      case 'Journalism': return FileText;
-      case 'Academic/Research': return Globe;
-      case 'Government/NGO': return Users;
-      default: return Globe;
-    }
-  };
+  // Flatten all domains into a single sorted array
+  const allDomains = [
+    ...(domain_targets?.critical || []),
+    ...(domain_targets?.high_priority || []),
+    ...(domain_targets?.medium_priority || [])
+  ].sort((a, b) => (b.priority_score || 0) - (a.priority_score || 0));
 
-  const DomainCard = ({ domain, showUrls = true }) => {
-    const colors = getPriorityColor(domain.priority_score);
-    const isExpanded = expandedDomains.has(domain.domain);
-    const Icon = getSourceTypeIcon(domain.source_type);
-
-    // Get LLM citation breakdown
-    const geminiCitations = domain.llm_citations?.gemini || 0;
-    const openaiCitations = domain.llm_citations?.openai || 0;
-    const hasLlmBreakdown = geminiCitations > 0 || openaiCitations > 0;
-
-    // Get breakdown scores
-    const scores = domain.scores || {};
-    const hasScores = scores.reputation_impact !== undefined || scores.visibility_gap !== undefined;
-
+  if (allDomains.length === 0) {
     return (
-      <div className={`border ${colors.border} rounded-lg overflow-hidden`}>
-        <div
-          className={`${colors.bg} p-4 cursor-pointer`}
-          onClick={() => toggleDomain(domain.domain)}
-        >
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-3">
-              <div className={`p-1.5 rounded-lg ${colors.bg} flex items-center justify-center`}>
-                {domain.icon_url || generateDomainIconUrl(domain.domain) ? (
-                  <img
-                    src={domain.icon_url || generateDomainIconUrl(domain.domain)}
-                    alt=""
-                    className="w-10 h-10 object-contain rounded"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.nextElementSibling.style.display = 'block';
-                    }}
-                  />
-                ) : null}
-                <Icon
-                  className={`w-10 h-10 ${colors.text}`}
-                  style={{ display: (domain.icon_url || generateDomainIconUrl(domain.domain)) ? 'none' : 'block' }}
-                />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h4 className="font-medium text-[#212121]">{domain.domain}</h4>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${colors.bg} ${colors.text} flex items-center gap-1`}>
-                    Score: {domain.priority_score}
-                    <span className="relative group overflow-visible">
-                      <HelpCircle className="w-3 h-3 opacity-60 hover:opacity-100 cursor-help" />
-                      <span className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-[#424242] text-white text-xs rounded-lg w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[100] shadow-lg pointer-events-none">
-                        <span className="block">Calculated using a weighted mix of reputation impact, visibility gaps, competitive positioning, and domain authority.</span>
-                        <span className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-[#424242]"></span>
-                      </span>
-                    </span>
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 mt-1 text-xs text-[#757575] flex-wrap">
-                  <span>{domain.source_type}</span>
-                  <span>•</span>
-                  <span>{domain.citation_count || domain.opportunity_count} citations</span>
-                  {domain.reputation_impact_count > 0 && (
-                    <>
-                      <span>•</span>
-                      <span className="text-pink-600">{domain.reputation_impact_count} reputation impacts</span>
-                    </>
-                  )}
-                  {domain.visibility_gap_count > 0 && (
-                    <>
-                      <span>•</span>
-                      <span className="text-orange-600">{domain.visibility_gap_count} visibility gaps</span>
-                    </>
-                  )}
-                  {domain.competitive_loss_count > 0 && (
-                    <>
-                      <span>•</span>
-                      <span className="text-red-600">{domain.competitive_loss_count} competitive losses</span>
-                    </>
-                  )}
-                  <span>•</span>
-                  <span>{domain.url_count} URLs</span>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {domain.is_high_authority && (
-                <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">
-                  High Authority
-                </span>
-              )}
-              {showUrls && (domain.urls?.length > 0 || domain.visibility_gap_questions?.length > 0 || domain.competitive_loss_questions?.length > 0) && (
-                isExpanded ? <ChevronUp className="w-5 h-5 text-[#757575]" /> : <ChevronDown className="w-5 h-5 text-[#757575]" />
-              )}
-            </div>
-          </div>
-
-          {/* LLM Citation Breakdown */}
-          {hasLlmBreakdown && (
-            <div className="mt-3 flex items-center gap-4 text-xs">
-              <span className="text-[#757575]">Cited by:</span>
-              {geminiCitations > 0 && (
-                <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded flex items-center gap-1">
-                  <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                  Gemini ({geminiCitations})
-                </span>
-              )}
-              {openaiCitations > 0 && (
-                <span className="px-2 py-0.5 bg-green-50 text-green-700 rounded flex items-center gap-1">
-                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                  ChatGPT ({openaiCitations})
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Breakdown Scores */}
-          {hasScores && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {scores.reputation_impact > 0 && (
-                <div className="text-xs px-2 py-1 bg-pink-50 text-pink-700 rounded flex items-center gap-1">
-                  <span className="font-medium">Rep:</span>
-                  <span>{Math.round(scores.reputation_impact * 100)}%</span>
-                </div>
-              )}
-              {scores.visibility_gap > 0 && (
-                <div className="text-xs px-2 py-1 bg-orange-50 text-orange-700 rounded flex items-center gap-1">
-                  <span className="font-medium">Vis:</span>
-                  <span>{Math.round(scores.visibility_gap * 100)}%</span>
-                </div>
-              )}
-              {scores.competitive_loss > 0 && (
-                <div className="text-xs px-2 py-1 bg-purple-50 text-purple-700 rounded flex items-center gap-1">
-                  <span className="font-medium">Comp:</span>
-                  <span>{Math.round(scores.competitive_loss * 100)}%</span>
-                </div>
-              )}
-              {scores.source_authority > 0 && (
-                <div className="text-xs px-2 py-1 bg-green-50 text-green-700 rounded flex items-center gap-1">
-                  <span className="font-medium">Auth:</span>
-                  <span>{Math.round(scores.source_authority * 100)}%</span>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Negative Topics (Reputation) */}
-          {domain.negative_topics?.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-1">
-              <span className="text-xs text-pink-700 font-medium">Negative topics:</span>
-              {domain.negative_topics.slice(0, 3).map((topic, i) => (
-                <span key={i} className="text-xs px-2 py-0.5 bg-pink-50 text-pink-600 rounded">
-                  {topic}
-                </span>
-              ))}
-              {domain.negative_topics.length > 3 && (
-                <span className="text-xs text-pink-500">+{domain.negative_topics.length - 3} more</span>
-              )}
-            </div>
-          )}
-
-          {/* Opportunity types and competitor context */}
-          <div className="mt-3 flex flex-wrap gap-2">
-            {domain.opportunity_types?.map((type, i) => (
-              <span key={i} className="text-xs px-2 py-1 bg-white bg-opacity-60 rounded text-[#424242]">
-                {type}
-              </span>
-            ))}
-            {domain.top_competitor && (
-              <span className="text-xs px-2 py-1 bg-orange-50 text-orange-700 rounded flex items-center gap-1">
-                <AlertCircle className="w-3 h-3" />
-                Favoring {domain.top_competitor}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Expanded Content */}
-        {isExpanded && (
-          <div className="bg-white border-t border-[#E0E0E0]">
-            {/* Visibility Gap Questions */}
-            {domain.visibility_gap_questions?.length > 0 && (
-              <div className="p-4 border-b border-[#E0E0E0]">
-                <h5 className="text-xs font-medium text-orange-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <AlertCircle className="w-3 h-3" />
-                  Visibility Gap Questions ({domain.visibility_gap_questions.length})
-                </h5>
-                <div className="space-y-3">
-                  {domain.visibility_gap_questions.map((q, i) => (
-                    <div key={i} className="bg-orange-50 rounded-lg p-3">
-                      <p className="text-sm text-[#424242] font-medium">{q.question}</p>
-                      <div className="flex items-center gap-3 mt-2 text-xs text-[#757575]">
-                        {q.current_rank && (
-                          <span className="px-2 py-0.5 bg-white rounded">
-                            Current rank: #{q.current_rank}
-                          </span>
-                        )}
-                        {q.top_competitor && (
-                          <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded">
-                            #1: {q.top_competitor}
-                          </span>
-                        )}
-                      </div>
-                      {q.why_they_win && (
-                        <p className="text-xs text-[#757575] mt-2 italic">
-                          Why they rank: {q.why_they_win.length > 100 ? q.why_they_win.substring(0, 100) + '...' : q.why_they_win}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Competitive Loss Questions */}
-            {domain.competitive_loss_questions?.length > 0 && (
-              <div className="p-4 border-b border-[#E0E0E0]">
-                <h5 className="text-xs font-medium text-red-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <AlertCircle className="w-3 h-3" />
-                  Competitive Loss Questions ({domain.competitive_loss_questions.length})
-                </h5>
-                <div className="space-y-3">
-                  {domain.competitive_loss_questions.map((q, i) => (
-                    <div key={i} className="bg-red-50 rounded-lg p-3">
-                      <p className="text-sm text-[#424242] font-medium">{q.question}</p>
-                      <div className="flex items-center gap-3 mt-2 text-xs">
-                        {q.competitor_chosen && (
-                          <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded">
-                            Lost to: {q.competitor_chosen}
-                          </span>
-                        )}
-                      </div>
-                      {q.why_chosen && (
-                        <p className="text-xs text-[#757575] mt-2 italic">
-                          Why: {q.why_chosen.length > 100 ? q.why_chosen.substring(0, 100) + '...' : q.why_chosen}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Specific URLs */}
-            {domain.urls?.length > 0 && (
-              <div className="p-4">
-                <h5 className="text-xs font-medium text-[#757575] uppercase tracking-wider mb-3">
-                  Specific Articles ({domain.urls.length})
-                </h5>
-                <div className="space-y-2">
-                  {domain.urls.slice(0, 10).map((url, i) => (
-                    <a
-                      key={i}
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-sm text-[#1976D2] hover:text-[#1565C0] hover:underline"
-                    >
-                      <ExternalLink className="w-3 h-3 flex-shrink-0" />
-                      <span className="truncate">{url}</span>
-                    </a>
-                  ))}
-                  {domain.urls.length > 10 && (
-                    <p className="text-xs text-[#9E9E9E]">+{domain.urls.length - 10} more URLs</p>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+      <div className="bg-slate-50 rounded-lg p-8 text-center">
+        <p className="text-slate-500">No priority source targets identified</p>
       </div>
     );
-  };
-
-  DomainCard.propTypes = {
-    domain: PropTypes.object.isRequired,
-    showUrls: PropTypes.bool
-  };
-
-  const UrlCard = ({ urlData }) => {
-    const colors = getPriorityColor(urlData.priority_score);
-
-    return (
-      <div className={`border ${colors.border} rounded-lg p-4 ${colors.bg}`}>
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <span className={`text-xs px-2 py-0.5 rounded-full ${colors.bg} ${colors.text} font-medium flex items-center gap-1`}>
-                Score: {urlData.priority_score}
-                <span className="relative group overflow-visible">
-                  <HelpCircle className="w-3 h-3 opacity-60 hover:opacity-100 cursor-help" />
-                  <span className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-[#424242] text-white text-xs rounded-lg w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[100] shadow-lg pointer-events-none">
-                    <span className="block">Calculated using a weighted mix of reputation impact, visibility gaps, competitive positioning, and domain authority.</span>
-                    <span className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-[#424242]"></span>
-                  </span>
-                </span>
-              </span>
-              <span className="text-xs text-[#757575]">{urlData.source_type}</span>
-            </div>
-            <a
-              href={urlData.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm font-medium text-[#1976D2] hover:text-[#1565C0] hover:underline flex items-center gap-1"
-            >
-              <span className="truncate">{urlData.title || urlData.url}</span>
-              <ExternalLink className="w-3 h-3 flex-shrink-0" />
-            </a>
-            <p className="text-xs text-[#757575] mt-1">{urlData.domain}</p>
-          </div>
-          <div className="text-right flex-shrink-0">
-            <div className="text-lg font-bold text-[#212121]">{urlData.opportunity_count}</div>
-            <div className="text-xs text-[#757575]">opportunities</div>
-          </div>
-        </div>
-        {urlData.top_competitor && (
-          <div className="mt-2 text-xs text-orange-700 flex items-center gap-1">
-            <AlertCircle className="w-3 h-3" />
-            Currently favoring {urlData.top_competitor}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  UrlCard.propTypes = {
-    urlData: PropTypes.object.isRequired
-  };
+  }
 
   return (
-    <div className="space-y-4">
-      {/* Critical Targets */}
-      {domain_targets?.critical?.length > 0 && (
-        <div>
-          <h4 className="text-sm font-medium text-[#DC2626] mb-3 flex items-center gap-2">
-            <AlertCircle className="w-4 h-4" />
-            Critical Targets (Score 70+)
-          </h4>
-          <div className="space-y-3">
-            {domain_targets.critical.map((domain, i) => (
-              <DomainCard key={i} domain={domain} />
-            ))}
-          </div>
-        </div>
-      )}
+    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+      {/* Header Row */}
+      <div className="grid grid-cols-[1fr_140px_100px_200px_40px] gap-4 px-4 py-3 bg-slate-50 border-b border-slate-200 text-xs font-medium text-slate-500 uppercase tracking-wider">
+        <span>Domain</span>
+        <span className="text-center">Priority</span>
+        <span className="text-center">Citations</span>
+        <span>Impact Areas</span>
+        <span></span>
+      </div>
 
-      {/* High Priority */}
-      {domain_targets?.high_priority?.length > 0 && (
-        <div className="mt-6">
-          <h4 className="text-sm font-medium text-[#D97706] mb-3">
-            High Priority (Score 50-69)
-          </h4>
-          <div className="space-y-3">
-            {domain_targets.high_priority.map((domain, i) => (
-              <DomainCard key={i} domain={domain} />
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Domain Rows */}
+      <div className="divide-y divide-slate-100">
+        {allDomains.map((domain, idx) => {
+          const isExpanded = expandedDomains.has(domain.domain);
+          const visGaps = domain.visibility_gap_count || 0;
+          const compLosses = domain.competitive_loss_count || 0;
+          const repIssues = domain.reputation_impact_count || domain.negative_topics?.length || 0;
+          const geminiCitations = domain.llm_citations?.gemini || 0;
+          const openaiCitations = domain.llm_citations?.openai || 0;
+          const isJournalism = domain.source_type === 'Journalism';
 
-      {/* Medium Priority */}
-      {domain_targets?.medium_priority?.length > 0 && (
-        <div className="mt-6">
-          <h4 className="text-sm font-medium text-[#2563EB] mb-3">
-            Medium Priority (Score 30-49)
-          </h4>
-          <div className="space-y-3">
-            {domain_targets.medium_priority.slice(0, 5).map((domain, i) => (
-              <DomainCard key={i} domain={domain} />
-            ))}
-          </div>
-        </div>
-      )}
+          return (
+            <div key={idx}>
+              {/* Collapsed Row */}
+              <div
+                className={`grid grid-cols-[1fr_140px_100px_200px_40px] gap-4 px-4 py-3 items-center cursor-pointer transition-colors ${
+                  isExpanded ? 'bg-slate-50' : 'hover:bg-slate-50'
+                }`}
+                onClick={() => toggleDomain(domain.domain)}
+              >
+                {/* Domain Info */}
+                <div className="flex items-center gap-3">
+                  <div className={`w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold border ${
+                    isJournalism
+                      ? 'bg-gradient-to-br from-blue-50 to-blue-100 text-blue-600 border-blue-200'
+                      : 'bg-slate-100 text-slate-500 border-slate-200'
+                  }`}>
+                    <img
+                      src={generateDomainIconUrl(domain.domain)}
+                      alt=""
+                      className="w-5 h-5 object-contain"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.parentElement.innerText = getDomainInitials(domain.domain);
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-slate-900 text-sm">{domain.domain}</div>
+                    <div className="text-xs text-slate-500">
+                      {domain.source_type}
+                      {domain.is_high_authority && ' • High Authority'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Priority Score Bar */}
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${getPriorityBarColor(domain.priority_score)}`}
+                      style={{ width: `${Math.min(domain.priority_score || 0, 100)}%` }}
+                    />
+                  </div>
+                  <span className="font-mono text-xs font-semibold text-slate-700 w-7 text-right">
+                    {domain.priority_score || 0}
+                  </span>
+                </div>
+
+                {/* Citations */}
+                <div className="text-center">
+                  <div className="font-mono text-base font-semibold text-slate-800">
+                    {domain.citation_count || domain.opportunity_count || 0}
+                  </div>
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wide">Citations</div>
+                </div>
+
+                {/* Impact Badges */}
+                <div className="flex gap-1 flex-wrap">
+                  {visGaps > 0 && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold bg-violet-100 text-violet-700">
+                      <Eye className="w-3 h-3" />
+                      {visGaps}
+                    </span>
+                  )}
+                  {compLosses > 0 && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold bg-amber-100 text-amber-700">
+                      <Flag className="w-3 h-3" />
+                      {compLosses}
+                    </span>
+                  )}
+                  {repIssues > 0 && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold bg-red-100 text-red-700">
+                      <MessageSquare className="w-3 h-3" />
+                      {repIssues}
+                    </span>
+                  )}
+                  {visGaps === 0 && compLosses === 0 && repIssues === 0 && (
+                    <span className="text-xs text-slate-400">—</span>
+                  )}
+                </div>
+
+                {/* Expand Button */}
+                <button className="w-7 h-7 rounded-md bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors">
+                  <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                </button>
+              </div>
+
+              {/* Expanded Detail Panel */}
+              {isExpanded && (
+                <div className="bg-slate-50 px-4 py-4 border-t border-slate-200">
+                  {/* Top Row: 3 columns for issues + LLM citations */}
+                  <div className="grid grid-cols-4 gap-4 mb-4">
+                    {/* Visibility Gaps */}
+                    <div className="bg-white rounded-lg p-4 border border-slate-200">
+                      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100">
+                        <div className="w-5 h-5 rounded flex items-center justify-center bg-violet-100 text-violet-600">
+                          <Eye className="w-3 h-3" />
+                        </div>
+                        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-600">
+                          Visibility Gaps
+                        </span>
+                        <span className="ml-auto font-mono text-xs font-semibold px-2 py-0.5 bg-slate-100 rounded text-slate-600">
+                          {visGaps}
+                        </span>
+                      </div>
+                      <div className="space-y-2 max-h-36 overflow-y-auto">
+                        {domain.visibility_gap_questions?.length > 0 ? (
+                          domain.visibility_gap_questions.slice(0, 4).map((q, i) => (
+                            <div key={i} className="bg-slate-50 rounded-md p-2 border-l-[3px] border-violet-500 text-xs text-slate-700">
+                              <div className="line-clamp-2">{q.question}</div>
+                              <div className="flex gap-2 mt-1 text-[10px] text-slate-500">
+                                {q.market && <span>{q.market}</span>}
+                                {q.current_rank && <span>Rank #{q.current_rank}</span>}
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-xs text-slate-400 py-2">No visibility gaps</div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Competitive Losses */}
+                    <div className="bg-white rounded-lg p-4 border border-slate-200">
+                      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100">
+                        <div className="w-5 h-5 rounded flex items-center justify-center bg-amber-100 text-amber-600">
+                          <Flag className="w-3 h-3" />
+                        </div>
+                        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-600">
+                          Competitive Losses
+                        </span>
+                        <span className="ml-auto font-mono text-xs font-semibold px-2 py-0.5 bg-slate-100 rounded text-slate-600">
+                          {compLosses}
+                        </span>
+                      </div>
+                      <div className="space-y-2 max-h-36 overflow-y-auto">
+                        {domain.competitive_loss_questions?.length > 0 ? (
+                          domain.competitive_loss_questions.slice(0, 4).map((q, i) => (
+                            <div key={i} className="bg-slate-50 rounded-md p-2 border-l-[3px] border-amber-500 text-xs text-slate-700">
+                              <div className="line-clamp-2">{q.question}</div>
+                              <div className="flex gap-2 mt-1 text-[10px] text-slate-500">
+                                {q.market && <span>{q.market}</span>}
+                                {q.competitor_chosen && <span>Winner: {q.competitor_chosen}</span>}
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-xs text-slate-400 py-2">No competitive losses</div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Reputation Issues */}
+                    <div className="bg-white rounded-lg p-4 border border-slate-200">
+                      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100">
+                        <div className="w-5 h-5 rounded flex items-center justify-center bg-red-100 text-red-600">
+                          <MessageSquare className="w-3 h-3" />
+                        </div>
+                        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-600">
+                          Reputation Issues
+                        </span>
+                        <span className="ml-auto font-mono text-xs font-semibold px-2 py-0.5 bg-slate-100 rounded text-slate-600">
+                          {repIssues}
+                        </span>
+                      </div>
+                      <div className="space-y-2 max-h-36 overflow-y-auto">
+                        {domain.negative_topics?.length > 0 ? (
+                          domain.negative_topics.slice(0, 4).map((topic, i) => (
+                            <div key={i} className="bg-slate-50 rounded-md p-2 border-l-[3px] border-red-500 text-xs text-slate-700">
+                              <div className="line-clamp-2">{topic}</div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-xs text-slate-400 py-2">No reputation issues</div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* LLM Citations */}
+                    <div className="bg-white rounded-lg p-4 border border-slate-200">
+                      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100">
+                        <div className="w-5 h-5 rounded flex items-center justify-center bg-emerald-100 text-emerald-600">
+                          <Layers className="w-3 h-3" />
+                        </div>
+                        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-600">
+                          LLM Citations
+                        </span>
+                      </div>
+                      <div className="space-y-2">
+                        {/* Gemini */}
+                        <div className="flex items-center gap-3 bg-slate-50 rounded-md p-2">
+                          <div className="w-5 h-5 rounded bg-gradient-to-br from-blue-500 to-red-500 flex items-center justify-center text-[9px] font-bold text-white">
+                            G
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-xs font-medium text-slate-800">Gemini</div>
+                          </div>
+                          <span className="font-mono text-xs font-semibold text-slate-700">{geminiCitations}</span>
+                        </div>
+                        {/* OpenAI */}
+                        <div className="flex items-center gap-3 bg-slate-50 rounded-md p-2">
+                          <div className="w-5 h-5 rounded bg-emerald-500 flex items-center justify-center text-[9px] font-bold text-white">
+                            O
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-xs font-medium text-slate-800">OpenAI</div>
+                          </div>
+                          <span className="font-mono text-xs font-semibold text-slate-700">{openaiCitations}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom Row: Full-width URLs section */}
+                  <div className="bg-white rounded-lg p-4 border border-slate-200">
+                    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100">
+                      <div className="w-5 h-5 rounded flex items-center justify-center bg-blue-100 text-blue-600">
+                        <Link className="w-3 h-3" />
+                      </div>
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-600">
+                        Cited URLs
+                      </span>
+                      <span className="ml-auto font-mono text-xs font-semibold px-2 py-0.5 bg-slate-100 rounded text-slate-600">
+                        {domain.urls?.length || domain.url_count || 0}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                      {domain.urls?.length > 0 ? (
+                        domain.urls.slice(0, 20).map((urlItem, i) => {
+                          // Handle both old format (string) and new format (object with url, title, citation_count)
+                          const url = typeof urlItem === 'string' ? urlItem : urlItem.url;
+                          const title = typeof urlItem === 'object' ? urlItem.title : null;
+                          const citationCount = typeof urlItem === 'object' ? urlItem.citation_count : 1;
+
+                          // Extract path for display
+                          let displayPath = url;
+                          try {
+                            const urlObj = new URL(url);
+                            displayPath = urlObj.pathname + urlObj.search;
+                            if (displayPath.length > 60) displayPath = displayPath.substring(0, 57) + '...';
+                          } catch {
+                            displayPath = url.substring(0, 60);
+                          }
+
+                          return (
+                            <a
+                              key={i}
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="group flex items-start gap-2 bg-slate-50 hover:bg-blue-50 rounded-md p-2 transition-colors"
+                            >
+                              <ExternalLink className="w-3 h-3 mt-0.5 flex-shrink-0 text-slate-400 group-hover:text-blue-500" />
+                              <div className="flex-1 min-w-0">
+                                {title && (
+                                  <div className="text-xs font-medium text-slate-700 group-hover:text-blue-700 truncate">
+                                    {title}
+                                  </div>
+                                )}
+                                <div className="text-[10px] text-slate-500 truncate">
+                                  {displayPath}
+                                </div>
+                              </div>
+                              {citationCount > 1 && (
+                                <span className="flex-shrink-0 font-mono text-[10px] font-semibold px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
+                                  ×{citationCount}
+                                </span>
+                              )}
+                            </a>
+                          );
+                        })
+                      ) : (
+                        <div className="col-span-2 text-xs text-slate-400 py-2">No URLs recorded</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
+}
+
+/**
+ * Get flag emoji for market code
+ */
+function getMarketFlag(market) {
+  const flags = {
+    'fr-FR': '🇫🇷',
+    'it-IT': '🇮🇹',
+    'en-US': '🇺🇸',
+    'en-GB': '🇬🇧',
+    'de-DE': '🇩🇪',
+    'es-ES': '🇪🇸',
+    'pt-BR': '🇧🇷',
+    'ja-JP': '🇯🇵',
+    'ko-KR': '🇰🇷',
+    'zh-CN': '🇨🇳'
+  };
+  return flags[market] || '🌍';
 }
 
 PrioritySourceTargets.propTypes = {
