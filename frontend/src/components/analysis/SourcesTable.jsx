@@ -3,12 +3,10 @@ import React, { useState } from 'react';
 import { Link2, ExternalLink, Youtube, ChevronDown, ChevronRight, Play } from 'lucide-react';
 
 /**
- * Generate Brandfetch icon URL from domain
- * Uses the simple hotlinking format: https://cdn.brandfetch.io/:domain?c=CLIENT_ID
+ * Generate icon URL from domain using Google's favicon service
  */
 function generateDomainIconUrl(domain) {
-  const clientId = import.meta.env.VITE_LOGO_API_KEY;
-  if (!clientId || !domain) return null;
+  if (!domain) return null;
 
   const cleanDomain = domain
     .replace(/^https?:\/\//, '')
@@ -17,7 +15,7 @@ function generateDomainIconUrl(domain) {
     .toLowerCase()
     .trim();
 
-  return `https://cdn.brandfetch.io/${cleanDomain}?c=${clientId}`;
+  return `https://www.google.com/s2/favicons?domain=${cleanDomain}&sz=128`;
 }
 
 // Color palette for source types

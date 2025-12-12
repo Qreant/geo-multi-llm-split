@@ -22,6 +22,106 @@ const formatCategoryName = (name) => {
 };
 
 /**
+ * Map country suffix (from market code) to ISO 3166-1 alpha-2 country codes for flags
+ */
+const COUNTRY_SUFFIX_TO_ISO = {
+  // Standard ISO codes
+  'US': 'US', 'CA': 'CA', 'MX': 'MX', 'GB': 'GB', 'UK': 'GB', 'IE': 'IE', 'FR': 'FR',
+  'DE': 'DE', 'ES': 'ES', 'IT': 'IT', 'PT': 'PT', 'NL': 'NL', 'BE': 'BE', 'AT': 'AT',
+  'CH': 'CH', 'LU': 'LU', 'SE': 'SE', 'NO': 'NO', 'DK': 'DK', 'FI': 'FI', 'IS': 'IS',
+  'PL': 'PL', 'CZ': 'CZ', 'SK': 'SK', 'HU': 'HU', 'RO': 'RO', 'BG': 'BG', 'UA': 'UA',
+  'RU': 'RU', 'GR': 'GR', 'HR': 'HR', 'SI': 'SI', 'RS': 'RS', 'JP': 'JP', 'KR': 'KR',
+  'CN': 'CN', 'TW': 'TW', 'HK': 'HK', 'SG': 'SG', 'AU': 'AU', 'NZ': 'NZ', 'TH': 'TH',
+  'VN': 'VN', 'ID': 'ID', 'MY': 'MY', 'PH': 'PH', 'IN': 'IN', 'BD': 'BD', 'PK': 'PK',
+  'SA': 'SA', 'AE': 'AE', 'EG': 'EG', 'IL': 'IL', 'TR': 'TR', 'IR': 'IR', 'QA': 'QA',
+  'KW': 'KW', 'BH': 'BH', 'OM': 'OM', 'JO': 'JO', 'LB': 'LB', 'BR': 'BR', 'AR': 'AR',
+  'CL': 'CL', 'CO': 'CO', 'PE': 'PE', 'VE': 'VE', 'EC': 'EC', 'UY': 'UY', 'PY': 'PY',
+  'BO': 'BO', 'ZA': 'ZA', 'NG': 'NG', 'KE': 'KE', 'MA': 'MA', 'SN': 'SN', 'GH': 'GH',
+  'DZ': 'DZ', 'TN': 'TN',
+  // Auto-generated codes from country names
+  'UN': 'US', 'GE': 'DE', 'SP': 'ES', 'SW': 'CH', 'NE': 'NL', 'PO': 'PT',
+  'JA': 'JP', 'KO': 'KR', 'SO': 'KR', 'TA': 'TW', 'HO': 'HK', 'TU': 'TR',
+  'ME': 'MX', 'IR': 'IE', 'IS': 'IL',
+};
+
+/**
+ * Convert ISO country code to flag emoji
+ * Uses regional indicator symbols: A=🇦 (U+1F1E6), etc.
+ */
+const countryCodeToFlagEmoji = (countryCode) => {
+  if (!countryCode || countryCode.length !== 2) return '';
+  const codePoints = countryCode
+    .toUpperCase()
+    .split('')
+    .map(char => 0x1F1E6 + char.charCodeAt(0) - 65);
+  return String.fromCodePoint(...codePoints);
+};
+
+/**
+ * Extract country code from market code (e.g., 'en-US' -> 'US', 'fr-FR' -> 'FR')
+ * Also handles market labels like "Electric Vehicles (United States)"
+ */
+const getCountryCodeFromMarket = (marketCode, marketLabel) => {
+  // Try to extract from marketCode first (e.g., 'en-US')
+  if (marketCode) {
+    const parts = marketCode.split('-');
+    const countrySuffix = parts.length > 1 ? parts[1].toUpperCase() : parts[0].toUpperCase();
+    if (COUNTRY_SUFFIX_TO_ISO[countrySuffix]) {
+      return COUNTRY_SUFFIX_TO_ISO[countrySuffix];
+    }
+    if (countrySuffix.length === 2) {
+      return countrySuffix;
+    }
+  }
+
+  // Try to extract from marketLabel parentheses (e.g., "Category (France)")
+  if (marketLabel) {
+    const match = marketLabel.match(/\(([^)]+)\)$/);
+    if (match) {
+      const countryName = match[1].trim().toLowerCase();
+      // Map common country names to codes
+      const nameToCode = {
+        'united states': 'US', 'usa': 'US', 'america': 'US',
+        'united kingdom': 'GB', 'uk': 'GB', 'britain': 'GB', 'england': 'GB',
+        'france': 'FR', 'germany': 'DE', 'italy': 'IT', 'spain': 'ES',
+        'portugal': 'PT', 'netherlands': 'NL', 'belgium': 'BE', 'austria': 'AT',
+        'switzerland': 'CH', 'sweden': 'SE', 'norway': 'NO', 'denmark': 'DK',
+        'finland': 'FI', 'poland': 'PL', 'czech republic': 'CZ', 'czechia': 'CZ',
+        'hungary': 'HU', 'romania': 'RO', 'bulgaria': 'BG', 'ukraine': 'UA',
+        'russia': 'RU', 'greece': 'GR', 'croatia': 'HR', 'japan': 'JP',
+        'south korea': 'KR', 'korea': 'KR', 'china': 'CN', 'taiwan': 'TW',
+        'hong kong': 'HK', 'singapore': 'SG', 'australia': 'AU', 'new zealand': 'NZ',
+        'thailand': 'TH', 'vietnam': 'VN', 'indonesia': 'ID', 'malaysia': 'MY',
+        'philippines': 'PH', 'india': 'IN', 'pakistan': 'PK', 'saudi arabia': 'SA',
+        'uae': 'AE', 'united arab emirates': 'AE', 'egypt': 'EG', 'israel': 'IL',
+        'turkey': 'TR', 'brazil': 'BR', 'argentina': 'AR', 'chile': 'CL',
+        'colombia': 'CO', 'peru': 'PE', 'mexico': 'MX', 'canada': 'CA',
+        'south africa': 'ZA', 'nigeria': 'NG', 'kenya': 'KE', 'morocco': 'MA',
+        'ireland': 'IE', 'luxembourg': 'LU', 'iceland': 'IS', 'slovakia': 'SK',
+        'slovenia': 'SI', 'serbia': 'RS', 'bangladesh': 'BD', 'qatar': 'QA',
+        'kuwait': 'KW', 'bahrain': 'BH', 'oman': 'OM', 'jordan': 'JO',
+        'lebanon': 'LB', 'iran': 'IR', 'venezuela': 'VE', 'ecuador': 'EC',
+        'uruguay': 'UY', 'paraguay': 'PY', 'bolivia': 'BO', 'senegal': 'SN',
+        'ghana': 'GH', 'algeria': 'DZ', 'tunisia': 'TN',
+      };
+      if (nameToCode[countryName]) {
+        return nameToCode[countryName];
+      }
+    }
+  }
+
+  return null;
+};
+
+/**
+ * Get flag emoji from market code or label
+ */
+const getFlagEmoji = (marketCode, marketLabel) => {
+  const countryCode = getCountryCodeFromMarket(marketCode, marketLabel);
+  return countryCode ? countryCodeToFlagEmoji(countryCode) : '';
+};
+
+/**
  * Get quadrant color based on position
  */
 function getQuadrantColor(x, y) {
@@ -243,6 +343,9 @@ export default function VisibilityCompetitivenessMatrix({ categoryMetrics = [], 
       // Record this label's position
       placedLabels.push({ px: x, py: y, labelY, labelAlign });
 
+      // Get flag emoji for this market
+      const flagEmoji = getFlagEmoji(cat.marketCode, cat.marketLabel);
+
       return {
         x,
         y,
@@ -254,12 +357,8 @@ export default function VisibilityCompetitivenessMatrix({ categoryMetrics = [], 
         color: quadrant.fill,
         borderColor: quadrant.border,
         quadrantName: quadrant.name,
-        marker: {
-          fillColor: quadrant.fill,
-          lineColor: '#FFFFFF',
-          lineWidth: 2,
-          radius: 12
-        },
+        flagEmoji: flagEmoji,
+        marketCode: cat.marketCode,
         dataLabels: {
           y: labelY,
           x: labelX,
@@ -466,6 +565,7 @@ export default function VisibilityCompetitivenessMatrix({ categoryMetrics = [], 
       plotOptions: {
         scatter: {
           marker: {
+            enabled: false,  // Hide default markers - we use custom data labels with flag emoji
             symbol: 'circle',
             states: {
               hover: {
@@ -482,32 +582,54 @@ export default function VisibilityCompetitivenessMatrix({ categoryMetrics = [], 
               const point = this.point;
               const match = point.name.match(/^(.+?)\s*\(([^)]+)\)$/);
               let categoryName = point.name;
-              let countryName = '';
 
               if (match) {
                 categoryName = match[1].trim();
-                countryName = match[2].trim();
               }
 
-              const maxLen = 14;
+              const maxLen = 12;
               const truncatedCategory = categoryName.length > maxLen
                 ? categoryName.substring(0, maxLen - 1) + '…'
                 : categoryName;
 
+              // Use flag emoji if available
+              const flagEmoji = point.flagEmoji || '';
+
               return `
                 <div style="
-                  background: white;
-                  padding: 6px 10px;
-                  border-radius: 8px;
-                  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                  border-left: 3px solid ${point.color};
-                  white-space: nowrap;
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  gap: 3px;
                   pointer-events: none;
                 ">
-                  <div style="font-size: 11px; font-weight: 600; color: #334155; line-height: 1.3;">
+                  <div style="
+                    width: 26px;
+                    height: 26px;
+                    border-radius: 50%;
+                    background: ${point.color};
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+                  ">
+                    ${flagEmoji ? `<span style="font-size: 13px; line-height: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));">${flagEmoji}</span>` : ''}
+                  </div>
+                  <div style="
+                    background: rgba(0,0,0,0.6);
+                    backdrop-filter: blur(8px);
+                    padding: 2px 6px;
+                    border-radius: 4px;
+                    font-size: 9px;
+                    font-weight: 500;
+                    color: white;
+                    white-space: nowrap;
+                    max-width: 80px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  ">
                     ${truncatedCategory}
                   </div>
-                  ${countryName ? `<div style="font-size: 9px; color: #94A3B8; line-height: 1.3;">${countryName}</div>` : ''}
                 </div>
               `;
             },

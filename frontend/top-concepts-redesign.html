@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Top Concepts - UX/UI Redesign Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    .bubble:hover { transform: scale(1.05); }
+  </style>
+</head>
+<body class="bg-gray-50 p-8">
+
+  <div class="max-w-7xl mx-auto space-y-16">
+
+    <!-- Page Header -->
+    <div class="text-center">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Top Concepts - Redesign Options</h1>
+      <p class="text-gray-500">Three different approaches for the Reputation Analysis concepts view</p>
+    </div>
+
+    <!-- ================================================== -->
+    <!-- OPTION 1: Interactive Bubble Cloud -->
+    <!-- ================================================== -->
+    <section>
+      <div class="flex items-center gap-3 mb-6">
+        <span class="px-3 py-1 bg-violet-100 text-violet-700 text-sm font-semibold rounded-full">Option 1</span>
+        <h2 class="text-xl font-bold text-gray-900">Interactive Bubble Cloud</h2>
+      </div>
+      <p class="text-gray-500 mb-6">Visual, engaging layout where bubble size = frequency, color = sentiment. Great for presentations.</p>
+
+      <div class="bg-white rounded-2xl border border-gray-200 p-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900">Top Concepts Associated with Your Brand</h3>
+            <p class="text-sm text-gray-500">Click any bubble to see quotes and sources</p>
+          </div>
+          <div class="flex items-center gap-4 text-sm">
+            <div class="flex items-center gap-1.5">
+              <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+              <span class="text-gray-600">Positive</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+              <span class="text-gray-600">Mixed</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+              <span class="text-gray-600">Negative</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bubble Cloud -->
+        <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-8 min-h-[350px] flex flex-wrap items-center justify-center gap-3">
+          <!-- Large bubbles (high frequency) -->
+          <button class="bubble px-8 py-5 bg-gradient-to-br from-emerald-400 to-emerald-600 text-white rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition-all cursor-pointer">
+            Innovation Leadership
+          </button>
+          <button class="bubble px-7 py-4 bg-gradient-to-br from-rose-400 to-rose-600 text-white rounded-full text-base font-semibold shadow-lg hover:shadow-xl transition-all cursor-pointer">
+            Customer Service Issues
+          </button>
+          <button class="bubble px-6 py-4 bg-gradient-to-br from-emerald-400 to-emerald-600 text-white rounded-full text-base font-medium shadow-lg hover:shadow-xl transition-all cursor-pointer">
+            Product Quality
+          </button>
+
+          <!-- Medium bubbles -->
+          <button class="bubble px-5 py-3 bg-gradient-to-br from-amber-400 to-amber-600 text-white rounded-full text-sm font-medium shadow-md hover:shadow-lg transition-all cursor-pointer">
+            Price Value
+          </button>
+          <button class="bubble px-5 py-3 bg-gradient-to-br from-emerald-300 to-emerald-500 text-white rounded-full text-sm font-medium shadow-md hover:shadow-lg transition-all cursor-pointer">
+            Brand Trust
+          </button>
+          <button class="bubble px-5 py-3 bg-gradient-to-br from-rose-300 to-rose-500 text-white rounded-full text-sm font-medium shadow-md hover:shadow-lg transition-all cursor-pointer">
+            Delivery Delays
+          </button>
+          <button class="bubble px-5 py-3 bg-gradient-to-br from-emerald-300 to-emerald-500 text-white rounded-full text-sm font-medium shadow-md hover:shadow-lg transition-all cursor-pointer">
+            Design Excellence
+          </button>
+
+          <!-- Small bubbles -->
+          <button class="bubble px-4 py-2 bg-gradient-to-br from-amber-300 to-amber-500 text-white rounded-full text-xs font-medium shadow hover:shadow-md transition-all cursor-pointer">
+            Market Position
+          </button>
+          <button class="bubble px-4 py-2 bg-gradient-to-br from-emerald-200 to-emerald-400 text-emerald-900 rounded-full text-xs font-medium shadow hover:shadow-md transition-all cursor-pointer">
+            Sustainability
+          </button>
+          <button class="bubble px-4 py-2 bg-gradient-to-br from-rose-200 to-rose-400 text-rose-900 rounded-full text-xs font-medium shadow hover:shadow-md transition-all cursor-pointer">
+            Software Bugs
+          </button>
+          <button class="bubble px-4 py-2 bg-gradient-to-br from-amber-200 to-amber-400 text-amber-900 rounded-full text-xs font-medium shadow hover:shadow-md transition-all cursor-pointer">
+            Warranty
+          </button>
+        </div>
+
+        <!-- Expanded Detail (shown when bubble clicked) -->
+        <div class="mt-6 bg-emerald-50 border border-emerald-200 rounded-xl p-5">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-4 h-4 rounded-full bg-emerald-500"></div>
+              <h4 class="font-semibold text-gray-900">Innovation Leadership</h4>
+              <span class="px-2 py-0.5 bg-emerald-500 text-white text-xs font-medium rounded-full">78% frequency</span>
+            </div>
+            <button class="text-gray-400 hover:text-gray-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <h5 class="text-xs font-semibold text-gray-400 uppercase mb-2">Quotes</h5>
+              <div class="space-y-2">
+                <div class="bg-white p-3 rounded-lg border-l-4 border-emerald-500">
+                  <p class="text-sm text-gray-700 italic">"Tesla continues to lead the EV market with groundbreaking battery technology..."</p>
+                  <p class="text-xs text-gray-400 mt-1">— reuters.com</p>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h5 class="text-xs font-semibold text-gray-400 uppercase mb-2">Sources</h5>
+              <div class="flex flex-wrap gap-2">
+                <a href="#" class="flex items-center gap-2 px-3 py-2 bg-white rounded-lg hover:bg-gray-50 text-sm">
+                  <span>📰</span> reuters.com
+                </a>
+                <a href="#" class="flex items-center gap-2 px-3 py-2 bg-white rounded-lg hover:bg-gray-50 text-sm">
+                  <span>🏢</span> techcrunch.com
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pros/Cons -->
+      <div class="mt-4 flex gap-4 text-sm">
+        <div class="flex-1 bg-emerald-50 rounded-lg p-4">
+          <span class="font-medium text-emerald-700">Pros:</span>
+          <span class="text-emerald-600"> Visual hierarchy, engaging, easy sentiment scanning, great for presentations</span>
+        </div>
+        <div class="flex-1 bg-rose-50 rounded-lg p-4">
+          <span class="font-medium text-rose-700">Cons:</span>
+          <span class="text-rose-600"> Less precise comparison, can feel chaotic with many items, harder to implement</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================== -->
+    <!-- OPTION 2: Unified List with Side Drawer -->
+    <!-- ================================================== -->
+    <section>
+      <div class="flex items-center gap-3 mb-6">
+        <span class="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-semibold rounded-full">Option 2</span>
+        <h2 class="text-xl font-bold text-gray-900">Unified List with Detail Drawer</h2>
+      </div>
+      <p class="text-gray-500 mb-6">Single sortable/filterable list with a slide-out panel. Great for power users who want to compare.</p>
+
+      <div class="bg-white rounded-2xl border border-gray-200 p-6">
+        <div class="flex gap-6">
+          <!-- Left: List -->
+          <div class="flex-1">
+            <!-- Header & Controls -->
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-gray-900">All Concepts</h3>
+              <div class="flex items-center gap-3">
+                <select class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white">
+                  <option>Sort: Frequency</option>
+                  <option>Sort: Sentiment</option>
+                  <option>Sort: A-Z</option>
+                </select>
+                <div class="flex gap-1">
+                  <button class="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200">All</button>
+                  <button class="px-3 py-1 text-xs font-medium rounded-full bg-emerald-100 text-emerald-700">Positive</button>
+                  <button class="px-3 py-1 text-xs font-medium rounded-full bg-amber-100 text-amber-700">Mixed</button>
+                  <button class="px-3 py-1 text-xs font-medium rounded-full bg-rose-100 text-rose-700">Negative</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- List Items -->
+            <div class="space-y-2">
+              <!-- Selected Item -->
+              <div class="p-4 bg-blue-50 border-2 border-blue-500 rounded-xl cursor-pointer">
+                <div class="flex items-center gap-4">
+                  <div class="w-1.5 h-12 rounded-full bg-emerald-500"></div>
+                  <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                      <span class="font-medium text-gray-900">Innovation Leadership</span>
+                      <span class="text-lg font-bold text-emerald-600">78%</span>
+                    </div>
+                    <div class="flex items-center gap-4 mt-1 text-xs text-gray-500">
+                      <span>12 mentions</span>
+                      <span>3 sources</span>
+                      <span class="text-emerald-600">+0.82 sentiment</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Other Items -->
+              <div class="p-4 bg-white border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-sm cursor-pointer transition-all">
+                <div class="flex items-center gap-4">
+                  <div class="w-1.5 h-12 rounded-full bg-rose-500"></div>
+                  <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                      <span class="font-medium text-gray-900">Customer Service Issues</span>
+                      <span class="text-lg font-bold text-rose-600">65%</span>
+                    </div>
+                    <div class="flex items-center gap-4 mt-1 text-xs text-gray-500">
+                      <span>9 mentions</span>
+                      <span>5 sources</span>
+                      <span class="text-rose-600">-0.65 sentiment</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-4 bg-white border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-sm cursor-pointer transition-all">
+                <div class="flex items-center gap-4">
+                  <div class="w-1.5 h-12 rounded-full bg-emerald-500"></div>
+                  <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                      <span class="font-medium text-gray-900">Product Quality</span>
+                      <span class="text-lg font-bold text-emerald-600">58%</span>
+                    </div>
+                    <div class="flex items-center gap-4 mt-1 text-xs text-gray-500">
+                      <span>8 mentions</span>
+                      <span>4 sources</span>
+                      <span class="text-emerald-600">+0.71 sentiment</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-4 bg-white border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-sm cursor-pointer transition-all">
+                <div class="flex items-center gap-4">
+                  <div class="w-1.5 h-12 rounded-full bg-amber-500"></div>
+                  <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                      <span class="font-medium text-gray-900">Price Value Perception</span>
+                      <span class="text-lg font-bold text-amber-600">42%</span>
+                    </div>
+                    <div class="flex items-center gap-4 mt-1 text-xs text-gray-500">
+                      <span>6 mentions</span>
+                      <span>2 sources</span>
+                      <span class="text-amber-600">+0.12 sentiment</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Detail Drawer -->
+          <div class="w-80 bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
+            <div class="bg-emerald-500 p-4">
+              <h4 class="font-semibold text-white">Innovation Leadership</h4>
+              <div class="flex items-center gap-3 mt-1 text-emerald-100 text-sm">
+                <span>78% frequency</span>
+                <span>•</span>
+                <span>+0.82 sentiment</span>
+              </div>
+            </div>
+            <div class="p-4 space-y-4 max-h-[350px] overflow-y-auto">
+              <!-- Sentiment Bar -->
+              <div>
+                <div class="flex justify-between text-xs text-gray-500 mb-1">
+                  <span>Negative</span>
+                  <span>Positive</span>
+                </div>
+                <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-rose-500 via-amber-500 to-emerald-500" style="width: 91%"></div>
+                </div>
+              </div>
+
+              <!-- Quotes -->
+              <div>
+                <h5 class="text-xs font-semibold text-gray-400 uppercase mb-2">Quotes</h5>
+                <div class="space-y-2">
+                  <div class="bg-white p-3 rounded-lg border-l-4 border-emerald-500 text-sm">
+                    <p class="text-gray-700 italic">"Tesla continues to lead the EV market with groundbreaking battery technology..."</p>
+                    <p class="text-xs text-gray-400 mt-1">— reuters.com</p>
+                  </div>
+                  <div class="bg-white p-3 rounded-lg border-l-4 border-emerald-500 text-sm">
+                    <p class="text-gray-700 italic">"The company's innovation pipeline remains unmatched..."</p>
+                    <p class="text-xs text-gray-400 mt-1">— techcrunch.com</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sources -->
+              <div>
+                <h5 class="text-xs font-semibold text-gray-400 uppercase mb-2">Sources</h5>
+                <div class="space-y-1">
+                  <a href="#" class="flex items-center gap-2 p-2 bg-white rounded-lg hover:bg-gray-100 text-sm group">
+                    <span>📰</span>
+                    <span class="flex-1">reuters.com</span>
+                    <svg class="w-4 h-4 text-gray-300 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                    </svg>
+                  </a>
+                  <a href="#" class="flex items-center gap-2 p-2 bg-white rounded-lg hover:bg-gray-100 text-sm group">
+                    <span>🏢</span>
+                    <span class="flex-1">techcrunch.com</span>
+                    <svg class="w-4 h-4 text-gray-300 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pros/Cons -->
+      <div class="mt-4 flex gap-4 text-sm">
+        <div class="flex-1 bg-emerald-50 rounded-lg p-4">
+          <span class="font-medium text-emerald-700">Pros:</span>
+          <span class="text-emerald-600"> All concepts visible, sortable/filterable, detail panel keeps context, great for comparison</span>
+        </div>
+        <div class="flex-1 bg-rose-50 rounded-lg p-4">
+          <span class="font-medium text-rose-700">Cons:</span>
+          <span class="text-rose-600"> Takes horizontal space, less visual sentiment grouping, may need scroll</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================== -->
+    <!-- OPTION 3: Card Grid with Inline Expansion -->
+    <!-- ================================================== -->
+    <section>
+      <div class="flex items-center gap-3 mb-6">
+        <span class="px-3 py-1 bg-emerald-100 text-emerald-700 text-sm font-semibold rounded-full">Option 3 - Recommended</span>
+        <h2 class="text-xl font-bold text-gray-900">Card Grid with Inline Expansion</h2>
+      </div>
+      <p class="text-gray-500 mb-6">Compact cards grouped by sentiment that expand in-place. Best balance of scannability and detail.</p>
+
+      <div class="bg-white rounded-2xl border border-gray-200 p-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900">Top Concepts Associated with Your Brand</h3>
+            <p class="text-sm text-gray-500">Click any concept to expand quotes and sources</p>
+          </div>
+          <!-- Summary Pills -->
+          <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 rounded-full">
+              <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+              <span class="text-sm font-medium text-emerald-700">7</span>
+            </div>
+            <div class="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 rounded-full">
+              <div class="w-2 h-2 rounded-full bg-amber-500"></div>
+              <span class="text-sm font-medium text-amber-700">3</span>
+            </div>
+            <div class="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 rounded-full">
+              <div class="w-2 h-2 rounded-full bg-rose-500"></div>
+              <span class="text-sm font-medium text-rose-700">4</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sections -->
+        <div class="space-y-8">
+
+          <!-- POSITIVE -->
+          <div>
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-1 h-6 rounded-full bg-emerald-500"></div>
+              <h4 class="font-medium text-gray-700">Positive</h4>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <!-- Expanded Card -->
+              <div class="md:col-span-2 lg:col-span-3 bg-emerald-50 rounded-xl border-2 border-emerald-500 overflow-hidden">
+                <div class="p-4 cursor-pointer flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <span class="font-semibold text-gray-900">Innovation Leadership</span>
+                    <span class="px-2 py-0.5 bg-emerald-500 text-white text-xs font-medium rounded-full">78%</span>
+                  </div>
+                  <svg class="w-5 h-5 text-emerald-600 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                  </svg>
+                </div>
+                <div class="px-4 pb-4">
+                  <div class="bg-white rounded-lg p-4 grid md:grid-cols-2 gap-6">
+                    <div>
+                      <h5 class="text-xs font-semibold text-gray-400 uppercase mb-3">Quotes</h5>
+                      <div class="space-y-3">
+                        <div class="border-l-4 border-emerald-500 pl-3 py-1">
+                          <p class="text-sm text-gray-700 italic">"Tesla continues to lead the EV market with groundbreaking battery technology..."</p>
+                          <p class="text-xs text-gray-400 mt-1">— reuters.com</p>
+                        </div>
+                        <div class="border-l-4 border-emerald-500 pl-3 py-1">
+                          <p class="text-sm text-gray-700 italic">"The company's innovation pipeline remains unmatched in the automotive industry."</p>
+                          <p class="text-xs text-gray-400 mt-1">— techcrunch.com</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <h5 class="text-xs font-semibold text-gray-400 uppercase mb-3">Sources</h5>
+                      <div class="space-y-2">
+                        <a href="#" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 group">
+                          <div class="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">📰</div>
+                          <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-900">reuters.com</p>
+                            <p class="text-xs text-gray-500">Journalism</p>
+                          </div>
+                          <svg class="w-4 h-4 text-gray-300 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                          </svg>
+                        </a>
+                        <a href="#" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 group">
+                          <div class="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">🏢</div>
+                          <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-900">techcrunch.com</p>
+                            <p class="text-xs text-gray-500">Tech News</p>
+                          </div>
+                          <svg class="w-4 h-4 text-gray-300 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                          </svg>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Collapsed Cards -->
+              <div class="bg-white rounded-xl border border-gray-200 hover:border-emerald-300 hover:shadow-md transition-all cursor-pointer p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="font-medium text-gray-900">Product Quality</span>
+                  <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full">58%</span>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-gray-500 mb-2">
+                  <span>2 quotes</span>
+                  <span>•</span>
+                  <span>4 sources</span>
+                </div>
+                <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-emerald-500 rounded-full" style="width: 58%"></div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl border border-gray-200 hover:border-emerald-300 hover:shadow-md transition-all cursor-pointer p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="font-medium text-gray-900">Brand Trust</span>
+                  <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full">45%</span>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-gray-500 mb-2">
+                  <span>1 quote</span>
+                  <span>•</span>
+                  <span>2 sources</span>
+                </div>
+                <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-emerald-500 rounded-full" style="width: 45%"></div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl border border-gray-200 hover:border-emerald-300 hover:shadow-md transition-all cursor-pointer p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="font-medium text-gray-900">Design Excellence</span>
+                  <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full">38%</span>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-gray-500 mb-2">
+                  <span>3 quotes</span>
+                  <span>•</span>
+                  <span>5 sources</span>
+                </div>
+                <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-emerald-500 rounded-full" style="width: 38%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MIXED -->
+          <div>
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-1 h-6 rounded-full bg-amber-500"></div>
+              <h4 class="font-medium text-gray-700">Mixed</h4>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div class="bg-white rounded-xl border border-gray-200 hover:border-amber-300 hover:shadow-md transition-all cursor-pointer p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="font-medium text-gray-900">Price Value</span>
+                  <span class="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-medium rounded-full">52%</span>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-gray-500 mb-2">
+                  <span>3 quotes</span>
+                  <span>•</span>
+                  <span>4 sources</span>
+                </div>
+                <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-amber-500 rounded-full" style="width: 52%"></div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl border border-gray-200 hover:border-amber-300 hover:shadow-md transition-all cursor-pointer p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="font-medium text-gray-900">Market Position</span>
+                  <span class="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-medium rounded-full">41%</span>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-gray-500 mb-2">
+                  <span>2 quotes</span>
+                  <span>•</span>
+                  <span>3 sources</span>
+                </div>
+                <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-amber-500 rounded-full" style="width: 41%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- NEGATIVE -->
+          <div>
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-1 h-6 rounded-full bg-rose-500"></div>
+              <h4 class="font-medium text-gray-700">Negative</h4>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div class="bg-white rounded-xl border border-gray-200 hover:border-rose-300 hover:shadow-md transition-all cursor-pointer p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="font-medium text-gray-900">Customer Service Issues</span>
+                  <span class="px-2 py-0.5 bg-rose-100 text-rose-700 text-xs font-medium rounded-full">65%</span>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-gray-500 mb-2">
+                  <span>4 quotes</span>
+                  <span>•</span>
+                  <span>5 sources</span>
+                </div>
+                <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-rose-500 rounded-full" style="width: 65%"></div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl border border-gray-200 hover:border-rose-300 hover:shadow-md transition-all cursor-pointer p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="font-medium text-gray-900">Delivery Delays</span>
+                  <span class="px-2 py-0.5 bg-rose-100 text-rose-700 text-xs font-medium rounded-full">42%</span>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-gray-500 mb-2">
+                  <span>2 quotes</span>
+                  <span>•</span>
+                  <span>3 sources</span>
+                </div>
+                <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-rose-500 rounded-full" style="width: 42%"></div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl border border-gray-200 hover:border-rose-300 hover:shadow-md transition-all cursor-pointer p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="font-medium text-gray-900">Software Bugs</span>
+                  <span class="px-2 py-0.5 bg-rose-100 text-rose-700 text-xs font-medium rounded-full">28%</span>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-gray-500 mb-2">
+                  <span>1 quote</span>
+                  <span>•</span>
+                  <span>2 sources</span>
+                </div>
+                <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-rose-500 rounded-full" style="width: 28%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Pros/Cons -->
+      <div class="mt-4 flex gap-4 text-sm">
+        <div class="flex-1 bg-emerald-50 rounded-lg p-4">
+          <span class="font-medium text-emerald-700">Pros:</span>
+          <span class="text-emerald-600"> Clean layout, clear sentiment grouping, inline expansion keeps context, shows metadata preview, responsive</span>
+        </div>
+        <div class="flex-1 bg-rose-50 rounded-lg p-4">
+          <span class="font-medium text-rose-700">Cons:</span>
+          <span class="text-rose-600"> Expanded cards push others down, less visual "wow" factor</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Comparison Table -->
+    <section class="bg-white rounded-2xl border border-gray-200 p-6">
+      <h2 class="text-xl font-bold text-gray-900 mb-6">Quick Comparison</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-gray-200">
+              <th class="text-left py-3 px-4 font-medium text-gray-500">Feature</th>
+              <th class="text-center py-3 px-4 font-medium text-violet-600">Bubble Cloud</th>
+              <th class="text-center py-3 px-4 font-medium text-blue-600">List + Drawer</th>
+              <th class="text-center py-3 px-4 font-medium text-emerald-600">Card Grid</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr>
+              <td class="py-3 px-4 text-gray-700">Visual Appeal</td>
+              <td class="py-3 px-4 text-center">⭐⭐⭐</td>
+              <td class="py-3 px-4 text-center">⭐⭐</td>
+              <td class="py-3 px-4 text-center">⭐⭐⭐</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-4 text-gray-700">Scannability</td>
+              <td class="py-3 px-4 text-center">⭐⭐</td>
+              <td class="py-3 px-4 text-center">⭐⭐⭐</td>
+              <td class="py-3 px-4 text-center">⭐⭐⭐</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-4 text-gray-700">Comparison</td>
+              <td class="py-3 px-4 text-center">⭐</td>
+              <td class="py-3 px-4 text-center">⭐⭐⭐</td>
+              <td class="py-3 px-4 text-center">⭐⭐</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-4 text-gray-700">Mobile Friendly</td>
+              <td class="py-3 px-4 text-center">⭐</td>
+              <td class="py-3 px-4 text-center">⭐⭐</td>
+              <td class="py-3 px-4 text-center">⭐⭐⭐</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-4 text-gray-700">Implementation</td>
+              <td class="py-3 px-4 text-center">Hard</td>
+              <td class="py-3 px-4 text-center">Medium</td>
+              <td class="py-3 px-4 text-center">Easy</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-4 text-gray-700">Best For</td>
+              <td class="py-3 px-4 text-center text-xs">Presentations</td>
+              <td class="py-3 px-4 text-center text-xs">Power Users</td>
+              <td class="py-3 px-4 text-center text-xs">General Use</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+</body>
+</html>

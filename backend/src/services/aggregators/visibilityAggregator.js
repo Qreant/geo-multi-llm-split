@@ -5,6 +5,7 @@
 
 import { extractDomainInfo } from '../sourceClassifier.js';
 import { groupBrandVariations } from '../brandMatcher.js';
+import { classifyDimensions } from '../dimensionClassifier.js';
 
 /**
  * Fuzzy brand matching - matches brand names with some flexibility
@@ -384,6 +385,16 @@ export async function aggregateVisibilityAnalysis(rawResponses, config, options 
   // Sort by frequency (most mentioned first)
   pros_cons.pros.sort((a, b) => b.frequency - a.frequency);
   pros_cons.cons.sort((a, b) => b.frequency - a.frequency);
+
+  // AI-powered dimension classification for Battle Cards
+  const apiKeyForDimensions = options.geminiApiKey || process.env.GEMINI_API_KEY;
+  if (pros_cons.pros.length > 0 || pros_cons.cons.length > 0) {
+    const category = config.category || 'products';
+    const classifiedProsConsResult = await classifyDimensions(pros_cons, category, apiKeyForDimensions);
+    pros_cons.pros = classifiedProsConsResult.pros;
+    pros_cons.cons = classifiedProsConsResult.cons;
+    console.log(`🎯 Dimension classification complete: ${pros_cons.pros.length} pros, ${pros_cons.cons.length} cons`);
+  }
 
   // Calculate per-LLM performance metrics for AI Model Performance section
   const totalQuestions = questionResults.length;

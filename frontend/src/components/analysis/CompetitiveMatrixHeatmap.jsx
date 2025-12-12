@@ -29,10 +29,18 @@ function getFlagUrl(marketCode) {
 }
 
 function getLLMLogoUrl(llm) {
-  const clientId = import.meta.env.VITE_LOGO_API_KEY;
-  if (!clientId) return null;
   const domain = llm === 'gemini' ? 'google.com' : 'openai.com';
-  return `https://cdn.brandfetch.io/${domain}?c=${clientId}`;
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+}
+
+function getBrandLogoUrl(brandName) {
+  if (!brandName) return null;
+  const domain = brandName
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, '')
+    .trim() + '.com';
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
 }
 
 // LLM display names for tooltips
@@ -359,9 +367,17 @@ export default function CompetitiveMatrixHeatmap({
                         </div>
                       </div>
                     ) : (
-                      <span className="text-sm text-[#212121]">
-                        {q.status === 'won' ? entity : q.winner}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={getBrandLogoUrl(q.status === 'won' ? entity : q.winner)}
+                          alt=""
+                          className="w-5 h-5 rounded object-contain"
+                          onError={(e) => e.target.style.display = 'none'}
+                        />
+                        <span className="text-sm text-[#212121]">
+                          {q.status === 'won' ? entity : q.winner}
+                        </span>
+                      </div>
                     )}
                   </td>
                   {availableMarkets.length > 0 && (

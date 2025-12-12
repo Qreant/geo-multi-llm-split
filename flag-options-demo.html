@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Positioning Matrix - Flag Options</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f1419;
+            --bg-secondary: #1a1f26;
+            --bg-card: #242b35;
+            --text-primary: #f7f9fa;
+            --text-secondary: #8b98a5;
+            --text-muted: #6e7681;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --accent-yellow: #f59e0b;
+            --accent-blue: #3b82f6;
+            --border-color: rgba(255,255,255,0.08);
+            --quadrant-stars: rgba(34, 197, 94, 0.06);
+            --quadrant-opportunity: rgba(59, 130, 246, 0.04);
+            --quadrant-risk: rgba(239, 68, 68, 0.06);
+            --quadrant-watch: rgba(245, 158, 11, 0.04);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 40px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .page-header h1 {
+            font-family: 'Fraunces', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #fff 0%, #a0aec0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .option-card {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 32px;
+            border: 1px solid var(--border-color);
+        }
+
+        .option-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .option-number {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-blue) 0%, #6366f1 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .option-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .option-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        /* Matrix Container */
+        .matrix-container {
+            position: relative;
+            height: 400px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .matrix-grid {
+            position: absolute;
+            inset: 50px 50px 40px 60px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+        }
+
+        .quadrant {
+            position: relative;
+        }
+
+        .quadrant-opportunity { background: var(--quadrant-opportunity); }
+        .quadrant-stars { background: var(--quadrant-stars); }
+        .quadrant-watch { background: var(--quadrant-watch); }
+        .quadrant-risk { background: var(--quadrant-risk); }
+
+        .quadrant-label {
+            position: absolute;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 8px 12px;
+        }
+
+        .quadrant-opportunity .quadrant-label { top: 8px; left: 8px; color: var(--accent-blue); }
+        .quadrant-stars .quadrant-label { top: 8px; right: 8px; color: var(--accent-green); }
+        .quadrant-watch .quadrant-label { bottom: 8px; left: 8px; color: var(--accent-yellow); }
+        .quadrant-risk .quadrant-label { bottom: 8px; right: 8px; color: var(--accent-red); }
+
+        /* Axis Labels */
+        .axis-y {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .axis-x {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-secondary);
+        }
+
+        /* Axis Ticks */
+        .tick-y {
+            position: absolute;
+            left: 40px;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            transform: translateY(50%);
+        }
+
+        .tick-y.top { top: 50px; }
+        .tick-y.mid { top: calc(50% - 5px); }
+        .tick-y.bot { bottom: 40px; transform: translateY(-50%); }
+
+        /* Dashed Lines */
+        .center-line-h, .center-line-v {
+            position: absolute;
+            border: 1px dashed rgba(255,255,255,0.15);
+        }
+
+        .center-line-h {
+            left: 60px;
+            right: 50px;
+            top: 50%;
+            border-bottom: none;
+        }
+
+        .center-line-v {
+            top: 50px;
+            bottom: 40px;
+            left: 50%;
+            border-right: none;
+        }
+
+        /* Data Points Base */
+        .data-point {
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .data-point:hover {
+            z-index: 100;
+            transform: scale(1.15);
+        }
+
+        /* ==========================================
+           OPTION 1: Flag Circle with Tooltip
+           ========================================== */
+        .opt1 .point-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        .opt1 .point-circle.green { border-color: var(--accent-green); }
+        .opt1 .point-circle.red { border-color: var(--accent-red); }
+        .opt1 .point-circle.gray { border-color: var(--text-muted); }
+
+        .opt1 .flag-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .opt1 .point-tooltip {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            padding: 8px 12px;
+            border-radius: 8px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+
+        .opt1 .point-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: var(--bg-card);
+        }
+
+        .opt1 .data-point:hover .point-tooltip {
+            opacity: 1;
+        }
+
+        .opt1 .tooltip-category {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* ==========================================
+           OPTION 2: Flag Badge on Colored Dot
+           ========================================== */
+        .opt2 .point-dot {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+
+        .opt2 .point-dot.green { background: var(--accent-green); }
+        .opt2 .point-dot.red { background: var(--accent-red); }
+        .opt2 .point-dot.gray { background: var(--text-muted); }
+
+        .opt2 .flag-badge {
+            position: absolute;
+            bottom: -4px;
+            right: -6px;
+            width: 18px;
+            height: 14px;
+            border-radius: 3px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .opt2 .flag-badge img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .opt2 .point-label {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            padding: 4px 10px;
+            border-radius: 6px;
+            white-space: nowrap;
+            font-size: 0.7rem;
+            font-weight: 500;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        /* ==========================================
+           OPTION 3: Flag Emoji in Label Card
+           ========================================== */
+        .opt3 .point-card {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-card);
+            padding: 6px 12px 6px 8px;
+            border-radius: 20px;
+            border: 2px solid;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+        }
+
+        .opt3 .point-card.green { border-color: var(--accent-green); }
+        .opt3 .point-card.red { border-color: var(--accent-red); }
+        .opt3 .point-card.gray { border-color: var(--text-muted); }
+
+        .opt3 .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .opt3 .point-card.green .status-dot { background: var(--accent-green); }
+        .opt3 .point-card.red .status-dot { background: var(--accent-red); }
+        .opt3 .point-card.gray .status-dot { background: var(--text-muted); }
+
+        .opt3 .card-text {
+            font-size: 0.72rem;
+            font-weight: 500;
+            white-space: nowrap;
+            max-width: 90px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .opt3 .card-flag {
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        /* ==========================================
+           OPTION 4: Minimal Flag Marker
+           ========================================== */
+        .opt4 .flag-marker {
+            position: relative;
+        }
+
+        .opt4 .flag-rect {
+            width: 32px;
+            height: 22px;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            border: 2px solid;
+        }
+
+        .opt4 .flag-rect.green { border-color: var(--accent-green); }
+        .opt4 .flag-rect.red { border-color: var(--accent-red); }
+        .opt4 .flag-rect.gray { border-color: var(--text-muted); }
+
+        .opt4 .flag-rect img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .opt4 .marker-pointer {
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 8px solid;
+        }
+
+        .opt4 .flag-rect.green + .marker-pointer { border-top-color: var(--accent-green); }
+        .opt4 .flag-rect.red + .marker-pointer { border-top-color: var(--accent-red); }
+        .opt4 .flag-rect.gray + .marker-pointer { border-top-color: var(--text-muted); }
+
+        .opt4 .marker-label {
+            position: absolute;
+            top: calc(100% + 12px);
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            text-align: center;
+            max-width: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ==========================================
+           OPTION 5: Stacked Flag + Category
+           ========================================== */
+        .opt5 .stacked-marker {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .opt5 .stack-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+
+        .opt5 .stack-dot.green { background: var(--accent-green); }
+        .opt5 .stack-dot.red { background: var(--accent-red); }
+        .opt5 .stack-dot.gray { background: var(--text-muted); }
+
+        .opt5 .stack-flag {
+            font-size: 0.9rem;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+        }
+
+        .opt5 .stack-label {
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            font-weight: 500;
+            white-space: nowrap;
+            max-width: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ==========================================
+           OPTION 6: Floating Card with Flag Corner
+           ========================================== */
+        .opt6 .floating-card {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 8px 12px;
+            border-left: 4px solid;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+            position: relative;
+            min-width: 100px;
+        }
+
+        .opt6 .floating-card.green { border-left-color: var(--accent-green); }
+        .opt6 .floating-card.red { border-left-color: var(--accent-red); }
+        .opt6 .floating-card.gray { border-left-color: var(--text-muted); }
+
+        .opt6 .float-category {
+            font-size: 0.72rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 90px;
+        }
+
+        .opt6 .float-flag {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            font-size: 1.1rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 16px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.green { background: var(--accent-green); }
+        .legend-dot.red { background: var(--accent-red); }
+        .legend-dot.gray { background: var(--text-muted); }
+
+        /* Recommendation Badge */
+        .recommended {
+            position: relative;
+        }
+
+        .recommended::before {
+            content: 'RECOMMENDED';
+            position: absolute;
+            top: -12px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--accent-green) 0%, #16a34a 100%);
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 4px;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <h1>Category Positioning Matrix</h1>
+        <p>Flag display options for Visibility vs Competitiveness chart</p>
+    </div>
+
+    <div class="options-grid">
+        <!-- Option 1: Flag Circle with Tooltip -->
+        <div class="option-card">
+            <div class="option-header">
+                <div class="option-number">1</div>
+                <div>
+                    <div class="option-title">Flag Circle with Hover Tooltip</div>
+                    <div class="option-description">Clean circular flags, category shows on hover</div>
+                </div>
+            </div>
+            <div class="matrix-container opt1">
+                <span class="axis-y">Competitiveness</span>
+                <span class="axis-x">Visibility</span>
+                <span class="tick-y top">100%</span>
+                <span class="tick-y mid">50%</span>
+                <span class="tick-y bot">0%</span>
+                <div class="center-line-h"></div>
+                <div class="center-line-v"></div>
+                <div class="matrix-grid">
+                    <div class="quadrant quadrant-opportunity"><span class="quadrant-label">Opportunity</span></div>
+                    <div class="quadrant quadrant-stars"><span class="quadrant-label">Stars</span></div>
+                    <div class="quadrant quadrant-watch"><span class="quadrant-label">Watch</span></div>
+                    <div class="quadrant quadrant-risk"><span class="quadrant-label">Risk</span></div>
+                </div>
+                <!-- Data Points -->
+                <div class="data-point" style="left: 78%; top: 18%;">
+                    <div class="point-circle green">
+                        <img class="flag-img" src="https://flagcdn.com/w80/us.png" alt="US">
+                    </div>
+                    <div class="point-tooltip"><span class="tooltip-category">Battery Storage</span></div>
+                </div>
+                <div class="data-point" style="left: 72%; top: 26%;">
+                    <div class="point-circle green">
+                        <img class="flag-img" src="https://flagcdn.com/w80/it.png" alt="IT">
+                    </div>
+                    <div class="point-tooltip"><span class="tooltip-category">Accumulo di energia</span></div>
+                </div>
+                <div class="data-point" style="left: 85%; top: 28%;">
+                    <div class="point-circle green">
+                        <img class="flag-img" src="https://flagcdn.com/w80/fr.png" alt="FR">
+                    </div>
+                    <div class="point-tooltip"><span class="tooltip-category">Véhicules électriques</span></div>
+                </div>
+                <div class="data-point" style="left: 68%; top: 38%;">
+                    <div class="point-circle green">
+                        <img class="flag-img" src="https://flagcdn.com/w80/us.png" alt="US">
+                    </div>
+                    <div class="point-tooltip"><span class="tooltip-category">Electric Vehicles</span></div>
+                </div>
+                <div class="data-point" style="left: 35%; top: 62%;">
+                    <div class="point-circle gray">
+                        <img class="flag-img" src="https://flagcdn.com/w80/fr.png" alt="FR">
+                    </div>
+                    <div class="point-tooltip"><span class="tooltip-category">Infrastructure</span></div>
+                </div>
+                <div class="data-point" style="left: 82%; top: 52%;">
+                    <div class="point-circle red">
+                        <img class="flag-img" src="https://flagcdn.com/w80/it.png" alt="IT">
+                    </div>
+                    <div class="point-tooltip"><span class="tooltip-category">Veicoli elettrici</span></div>
+                </div>
+            </div>
+            <div class="legend">
+                <div class="legend-item"><div class="legend-dot green"></div>High Performance</div>
+                <div class="legend-item"><div class="legend-dot gray"></div>Medium</div>
+                <div class="legend-item"><div class="legend-dot red"></div>At Risk</div>
+            </div>
+        </div>
+
+        <!-- Option 2: Flag Badge on Colored Dot -->
+        <div class="option-card recommended">
+            <div class="option-header">
+                <div class="option-number">2</div>
+                <div>
+                    <div class="option-title">Flag Badge on Status Dot</div>
+                    <div class="option-description">Colored dot with small flag badge, category label below</div>
+                </div>
+            </div>
+            <div class="matrix-container opt2">
+                <span class="axis-y">Competitiveness</span>
+                <span class="axis-x">Visibility</span>
+                <span class="tick-y top">100%</span>
+                <span class="tick-y mid">50%</span>
+                <span class="tick-y bot">0%</span>
+                <div class="center-line-h"></div>
+                <div class="center-line-v"></div>
+                <div class="matrix-grid">
+                    <div class="quadrant quadrant-opportunity"><span class="quadrant-label">Opportunity</span></div>
+                    <div class="quadrant quadrant-stars"><span class="quadrant-label">Stars</span></div>
+                    <div class="quadrant quadrant-watch"><span class="quadrant-label">Watch</span></div>
+                    <div class="quadrant quadrant-risk"><span class="quadrant-label">Risk</span></div>
+                </div>
+                <!-- Data Points -->
+                <div class="data-point" style="left: 78%; top: 18%;">
+                    <div class="point-dot green"></div>
+                    <div class="flag-badge"><img src="https://flagcdn.com/w40/us.png" alt="US"></div>
+                    <div class="point-label">Battery Storage</div>
+                </div>
+                <div class="data-point" style="left: 68%; top: 28%;">
+                    <div class="point-dot green"></div>
+                    <div class="flag-badge"><img src="https://flagcdn.com/w40/it.png" alt="IT"></div>
+                    <div class="point-label">Accumulo di e...</div>
+                </div>
+                <div class="data-point" style="left: 85%; top: 30%;">
+                    <div class="point-dot green"></div>
+                    <div class="flag-badge"><img src="https://flagcdn.com/w40/fr.png" alt="FR"></div>
+                    <div class="point-label">Véhicules élec...</div>
+                </div>
+                <div class="data-point" style="left: 72%; top: 42%;">
+                    <div class="point-dot green"></div>
+                    <div class="flag-badge"><img src="https://flagcdn.com/w40/us.png" alt="US"></div>
+                    <div class="point-label">Electric Vehicles</div>
+                </div>
+                <div class="data-point" style="left: 35%; top: 64%;">
+                    <div class="point-dot gray"></div>
+                    <div class="flag-badge"><img src="https://flagcdn.com/w40/fr.png" alt="FR"></div>
+                    <div class="point-label">Infrastructure</div>
+                </div>
+                <div class="data-point" style="left: 80%; top: 54%;">
+                    <div class="point-dot red"></div>
+                    <div class="flag-badge"><img src="https://flagcdn.com/w40/it.png" alt="IT"></div>
+                    <div class="point-label">Veicoli elettrici</div>
+                </div>
+            </div>
+            <div class="legend">
+                <div class="legend-item"><div class="legend-dot green"></div>High Performance</div>
+                <div class="legend-item"><div class="legend-dot gray"></div>Medium</div>
+                <div class="legend-item"><div class="legend-dot red"></div>At Risk</div>
+            </div>
+        </div>
+
+        <!-- Option 3: Flag Emoji in Label Card -->
+        <div class="option-card">
+            <div class="option-header">
+                <div class="option-number">3</div>
+                <div>
+                    <div class="option-title">Pill Card with Flag Emoji</div>
+                    <div class="option-description">Category and flag emoji in a compact pill shape</div>
+                </div>
+            </div>
+            <div class="matrix-container opt3">
+                <span class="axis-y">Competitiveness</span>
+                <span class="axis-x">Visibility</span>
+                <span class="tick-y top">100%</span>
+                <span class="tick-y mid">50%</span>
+                <span class="tick-y bot">0%</span>
+                <div class="center-line-h"></div>
+                <div class="center-line-v"></div>
+                <div class="matrix-grid">
+                    <div class="quadrant quadrant-opportunity"><span class="quadrant-label">Opportunity</span></div>
+                    <div class="quadrant quadrant-stars"><span class="quadrant-label">Stars</span></div>
+                    <div class="quadrant quadrant-watch"><span class="quadrant-label">Watch</span></div>
+                    <div class="quadrant quadrant-risk"><span class="quadrant-label">Risk</span></div>
+                </div>
+                <!-- Data Points -->
+                <div class="data-point" style="left: 75%; top: 16%;">
+                    <div class="point-card green">
+                        <span class="status-dot"></span>
+                        <span class="card-text">Battery Storage</span>
+                        <span class="card-flag">🇺🇸</span>
+                    </div>
+                </div>
+                <div class="data-point" style="left: 68%; top: 28%;">
+                    <div class="point-card green">
+                        <span class="status-dot"></span>
+                        <span class="card-text">Accumulo di e...</span>
+                        <span class="card-flag">🇮🇹</span>
+                    </div>
+                </div>
+                <div class="data-point" style="left: 78%; top: 40%;">
+                    <div class="point-card green">
+                        <span class="status-dot"></span>
+                        <span class="card-text">Véhicules élec...</span>
+                        <span class="card-flag">🇫🇷</span>
+                    </div>
+                </div>
+                <div class="data-point" style="left: 30%; top: 62%;">
+                    <div class="point-card gray">
+                        <span class="status-dot"></span>
+                        <span class="card-text">Infrastructure</span>
+                        <span class="card-flag">🇫🇷</span>
+                    </div>
+                </div>
+                <div class="data-point" style="left: 75%; top: 54%;">
+                    <div class="point-card red">
+                        <span class="status-dot"></span>
+                        <span class="card-text">Veicoli elettrici</span>
+                        <span class="card-flag">🇮🇹</span>
+                    </div>
+                </div>
+            </div>
+            <div class="legend">
+                <div class="legend-item"><div class="legend-dot green"></div>High Performance</div>
+                <div class="legend-item"><div class="legend-dot gray"></div>Medium</div>
+                <div class="legend-item"><div class="legend-dot red"></div>At Risk</div>
+            </div>
+        </div>
+
+        <!-- Option 4: Minimal Flag Marker -->
+        <div class="option-card">
+            <div class="option-header">
+                <div class="option-number">4</div>
+                <div>
+                    <div class="option-title">Flag Pin Marker</div>
+                    <div class="option-description">Rectangular flag with map-style pointer, minimal label</div>
+                </div>
+            </div>
+            <div class="matrix-container opt4">
+                <span class="axis-y">Competitiveness</span>
+                <span class="axis-x">Visibility</span>
+                <span class="tick-y top">100%</span>
+                <span class="tick-y mid">50%</span>
+                <span class="tick-y bot">0%</span>
+                <div class="center-line-h"></div>
+                <div class="center-line-v"></div>
+                <div class="matrix-grid">
+                    <div class="quadrant quadrant-opportunity"><span class="quadrant-label">Opportunity</span></div>
+                    <div class="quadrant quadrant-stars"><span class="quadrant-label">Stars</span></div>
+                    <div class="quadrant quadrant-watch"><span class="quadrant-label">Watch</span></div>
+                    <div class="quadrant quadrant-risk"><span class="quadrant-label">Risk</span></div>
+                </div>
+                <!-- Data Points -->
+                <div class="data-point" style="left: 78%; top: 18%;">
+                    <div class="flag-marker">
+                        <div class="flag-rect green"><img src="https://flagcdn.com/w80/us.png" alt="US"></div>
+                        <div class="marker-pointer"></div>
+                        <div class="marker-label">Battery Storage</div>
+                    </div>
+                </div>
+                <div class="data-point" style="left: 68%; top: 30%;">
+                    <div class="flag-marker">
+                        <div class="flag-rect green"><img src="https://flagcdn.com/w80/it.png" alt="IT"></div>
+                        <div class="marker-pointer"></div>
+                        <div class="marker-label">Accumulo di e...</div>
+                    </div>
+                </div>
+                <div class="data-point" style="left: 85%; top: 34%;">
+                    <div class="flag-marker">
+                        <div class="flag-rect green"><img src="https://flagcdn.com/w80/fr.png" alt="FR"></div>
+                        <div class="marker-pointer"></div>
+                        <div class="marker-label">Véhicules élec...</div>
+                    </div>
+                </div>
+                <div class="data-point" style="left: 35%; top: 64%;">
+                    <div class="flag-marker">
+                        <div class="flag-rect gray"><img src="https://flagcdn.com/w80/fr.png" alt="FR"></div>
+                        <div class="marker-pointer"></div>
+                        <div class="marker-label">Infrastructure</div>
+                    </div>
+                </div>
+                <div class="data-point" style="left: 80%; top: 52%;">
+                    <div class="flag-marker">
+                        <div class="flag-rect red"><img src="https://flagcdn.com/w80/it.png" alt="IT"></div>
+                        <div class="marker-pointer"></div>
+                        <div class="marker-label">Veicoli elettrici</div>
+                    </div>
+                </div>
+            </div>
+            <div class="legend">
+                <div class="legend-item"><div class="legend-dot green"></div>High Performance</div>
+                <div class="legend-item"><div class="legend-dot gray"></div>Medium</div>
+                <div class="legend-item"><div class="legend-dot red"></div>At Risk</div>
+            </div>
+        </div>
+
+        <!-- Option 5: Stacked Flag + Category -->
+        <div class="option-card">
+            <div class="option-header">
+                <div class="option-number">5</div>
+                <div>
+                    <div class="option-title">Stacked Dot with Flag Emoji</div>
+                    <div class="option-description">Status dot with flag emoji inside, label below</div>
+                </div>
+            </div>
+            <div class="matrix-container opt5">
+                <span class="axis-y">Competitiveness</span>
+                <span class="axis-x">Visibility</span>
+                <span class="tick-y top">100%</span>
+                <span class="tick-y mid">50%</span>
+                <span class="tick-y bot">0%</span>
+                <div class="center-line-h"></div>
+                <div class="center-line-v"></div>
+                <div class="matrix-grid">
+                    <div class="quadrant quadrant-opportunity"><span class="quadrant-label">Opportunity</span></div>
+                    <div class="quadrant quadrant-stars"><span class="quadrant-label">Stars</span></div>
+                    <div class="quadrant quadrant-watch"><span class="quadrant-label">Watch</span></div>
+                    <div class="quadrant quadrant-risk"><span class="quadrant-label">Risk</span></div>
+                </div>
+                <!-- Data Points -->
+                <div class="data-point" style="left: 78%; top: 16%;">
+                    <div class="stacked-marker">
+                        <div class="stack-dot green"><span class="stack-flag">🇺🇸</span></div>
+                        <div class="stack-label">Battery Storage</div>
+                    </div>
+                </div>
+                <div class="data-point" style="left: 68%; top: 28%;">
+                    <div class="stacked-marker">
+                        <div class="stack-dot green"><span class="stack-flag">🇮🇹</span></div>
+                        <div class="stack-label">Accumulo di e...</div>
+                    </div>
+                </div>
+                <div class="data-point" style="left: 85%; top: 36%;">
+                    <div class="stacked-marker">
+                        <div class="stack-dot green"><span class="stack-flag">🇫🇷</span></div>
+                        <div class="stack-label">Véhicules élec...</div>
+                    </div>
+                </div>
+                <div class="data-point" style="left: 72%; top: 44%;">
+                    <div class="stacked-marker">
+                        <div class="stack-dot green"><span class="stack-flag">🇺🇸</span></div>
+                        <div class="stack-label">Electric Vehicles</div>
+                    </div>
+                </div>
+                <div class="data-point" style="left: 35%; top: 62%;">
+                    <div class="stacked-marker">
+                        <div class="stack-dot gray"><span class="stack-flag">🇫🇷</span></div>
+                        <div class="stack-label">Infrastructure</div>
+                    </div>
+                </div>
+                <div class="data-point" style="left: 80%; top: 54%;">
+                    <div class="stacked-marker">
+                        <div class="stack-dot red"><span class="stack-flag">🇮🇹</span></div>
+                        <div class="stack-label">Veicoli elettrici</div>
+                    </div>
+                </div>
+            </div>
+            <div class="legend">
+                <div class="legend-item"><div class="legend-dot green"></div>High Performance</div>
+                <div class="legend-item"><div class="legend-dot gray"></div>Medium</div>
+                <div class="legend-item"><div class="legend-dot red"></div>At Risk</div>
+            </div>
+        </div>
+
+        <!-- Option 6: Floating Card with Flag Corner -->
+        <div class="option-card">
+            <div class="option-header">
+                <div class="option-number">6</div>
+                <div>
+                    <div class="option-title">Card with Corner Flag</div>
+                    <div class="option-description">Category card with flag emoji in corner, colored border</div>
+                </div>
+            </div>
+            <div class="matrix-container opt6">
+                <span class="axis-y">Competitiveness</span>
+                <span class="axis-x">Visibility</span>
+                <span class="tick-y top">100%</span>
+                <span class="tick-y mid">50%</span>
+                <span class="tick-y bot">0%</span>
+                <div class="center-line-h"></div>
+                <div class="center-line-v"></div>
+                <div class="matrix-grid">
+                    <div class="quadrant quadrant-opportunity"><span class="quadrant-label">Opportunity</span></div>
+                    <div class="quadrant quadrant-stars"><span class="quadrant-label">Stars</span></div>
+                    <div class="quadrant quadrant-watch"><span class="quadrant-label">Watch</span></div>
+                    <div class="quadrant quadrant-risk"><span class="quadrant-label">Risk</span></div>
+                </div>
+                <!-- Data Points -->
+                <div class="data-point" style="left: 72%; top: 16%;">
+                    <div class="floating-card green">
+                        <span class="float-category">Battery Storage</span>
+                        <span class="float-flag">🇺🇸</span>
+                    </div>
+                </div>
+                <div class="data-point" style="left: 65%; top: 30%;">
+                    <div class="floating-card green">
+                        <span class="float-category">Accumulo di e...</span>
+                        <span class="float-flag">🇮🇹</span>
+                    </div>
+                </div>
+                <div class="data-point" style="left: 78%; top: 42%;">
+                    <div class="floating-card green">
+                        <span class="float-category">Véhicules élec...</span>
+                        <span class="float-flag">🇫🇷</span>
+                    </div>
+                </div>
+                <div class="data-point" style="left: 28%; top: 60%;">
+                    <div class="floating-card gray">
+                        <span class="float-category">Infrastructure</span>
+                        <span class="float-flag">🇫🇷</span>
+                    </div>
+                </div>
+                <div class="data-point" style="left: 72%; top: 56%;">
+                    <div class="floating-card red">
+                        <span class="float-category">Veicoli elettrici</span>
+                        <span class="float-flag">🇮🇹</span>
+                    </div>
+                </div>
+            </div>
+            <div class="legend">
+                <div class="legend-item"><div class="legend-dot green"></div>High Performance</div>
+                <div class="legend-item"><div class="legend-dot gray"></div>Medium</div>
+                <div class="legend-item"><div class="legend-dot red"></div>At Risk</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add subtle animation to data points on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const points = document.querySelectorAll('.data-point');
+            points.forEach((point, i) => {
+                point.style.opacity = '0';
+                point.style.transform = 'scale(0.5)';
+                setTimeout(() => {
+                    point.style.transition = 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                    point.style.opacity = '1';
+                    point.style.transform = 'scale(1)';
+                }, 100 + (i * 50));
+            });
+        });
+    </script>
+</body>
+</html>

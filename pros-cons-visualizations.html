@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pros & Cons Visualization Alternatives</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+  <script src="https://code.highcharts.com/highcharts-more.js"></script>
+  <style>
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    .card { background: white; border: 1px solid #E0E0E0; border-radius: 12px; }
+
+    /* Radar/Spider chart custom styles */
+    .radar-wrapper { position: relative; }
+
+    /* Battle card styles */
+    .battle-card {
+      background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    /* Spectrum bar styles */
+    .spectrum-bar {
+      height: 8px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #EF5350 0%, #FFEB3B 50%, #4CAF50 100%);
+    }
+
+    /* Petal/flower chart */
+    .petal { transition: transform 0.3s ease, opacity 0.3s ease; }
+    .petal:hover { transform: scale(1.1); opacity: 0.9; }
+
+    /* Timeline styles */
+    .timeline-connector {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #E0E0E0;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen py-12 px-4">
+  <div class="max-w-7xl mx-auto space-y-16">
+
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <h1 class="text-3xl font-bold text-gray-900 mb-4">Pros & Cons Visualization Alternatives</h1>
+      <p class="text-gray-600 max-w-2xl mx-auto">Exploring different ways to visualize competitive brand attributes. Sample data: Nike vs Adidas vs Puma in Athletic Footwear.</p>
+    </div>
+
+    <!-- Sample Data Reference -->
+    <div class="card p-4 bg-gray-50 text-sm">
+      <p class="font-medium text-gray-700 mb-2">Sample Data Structure:</p>
+      <pre class="text-xs text-gray-600 overflow-x-auto">
+{
+  "Nike": { pros: ["Innovation", "Brand prestige", "Athlete partnerships", "Quality"], cons: ["Premium pricing", "Limited sustainability"] },
+  "Adidas": { pros: ["Sustainability focus", "Style variety", "Collaborations"], cons: ["Inconsistent quality", "Less innovation"] },
+  "Puma": { pros: ["Affordable pricing", "Trendy designs"], cons: ["Lower durability", "Weaker brand perception", "Limited pro athletes"] }
+}
+      </pre>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- VISUALIZATION 1: Diamond/Radar Chart -->
+    <!-- ============================================== -->
+    <section class="card p-8">
+      <div class="mb-6">
+        <span class="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full mb-2">Option 1</span>
+        <h2 class="text-xl font-semibold text-gray-900">Radar/Spider Chart</h2>
+        <p class="text-sm text-gray-600 mt-1">Multi-axis comparison showing relative strength across attributes. Great for holistic view.</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Radar Chart -->
+        <div id="radar-chart" style="height: 400px;"></div>
+
+        <!-- Legend & Insights -->
+        <div class="flex flex-col justify-center space-y-4">
+          <div class="space-y-3">
+            <div class="flex items-center gap-3">
+              <div class="w-4 h-4 rounded-full bg-blue-500"></div>
+              <span class="font-medium text-gray-900">Nike</span>
+              <span class="text-xs text-gray-500">Target brand</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-4 h-4 rounded-full bg-green-500"></div>
+              <span class="font-medium text-gray-900">Adidas</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-4 h-4 rounded-full bg-orange-500"></div>
+              <span class="font-medium text-gray-900">Puma</span>
+            </div>
+          </div>
+          <div class="p-4 bg-blue-50 rounded-lg">
+            <p class="text-sm text-blue-800"><strong>UX Note:</strong> Radar charts excel at showing multiple dimensions simultaneously. Users can quickly see which brand "owns" which attribute.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- VISUALIZATION 2: Battle Cards -->
+    <!-- ============================================== -->
+    <section class="card p-8">
+      <div class="mb-6">
+        <span class="inline-block px-3 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-full mb-2">Option 2</span>
+        <h2 class="text-xl font-semibold text-gray-900">Battle Cards</h2>
+        <p class="text-sm text-gray-600 mt-1">Gaming-inspired cards with stats. Engaging and shareable. Perfect for social/presentations.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Nike Card -->
+        <div class="battle-card border-2 border-blue-200 shadow-lg">
+          <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-4 text-white">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xl font-bold">Nike</h3>
+              <span class="text-3xl font-black">A+</span>
+            </div>
+            <p class="text-blue-100 text-sm">Athletic Footwear</p>
+          </div>
+          <div class="p-4 space-y-4">
+            <!-- Stats -->
+            <div class="space-y-2">
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Innovation</span>
+                <div class="flex gap-0.5">
+                  <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                </div>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Brand Prestige</span>
+                <div class="flex gap-0.5">
+                  <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                </div>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Pricing</span>
+                <div class="flex gap-0.5">
+                  <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-gray-200"></div>
+                  <div class="w-3 h-3 rounded-full bg-gray-200"></div>
+                  <div class="w-3 h-3 rounded-full bg-gray-200"></div>
+                </div>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Sustainability</span>
+                <div class="flex gap-0.5">
+                  <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-gray-200"></div>
+                  <div class="w-3 h-3 rounded-full bg-gray-200"></div>
+                </div>
+              </div>
+            </div>
+            <!-- Badges -->
+            <div class="flex flex-wrap gap-2 pt-2 border-t border-gray-100">
+              <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">+Innovation</span>
+              <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">+Prestige</span>
+              <span class="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full">-Premium Price</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Adidas Card -->
+        <div class="battle-card border-2 border-green-200 shadow-lg">
+          <div class="bg-gradient-to-r from-green-500 to-green-600 p-4 text-white">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xl font-bold">Adidas</h3>
+              <span class="text-3xl font-black">A</span>
+            </div>
+            <p class="text-green-100 text-sm">Athletic Footwear</p>
+          </div>
+          <div class="p-4 space-y-4">
+            <div class="space-y-2">
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Innovation</span>
+                <div class="flex gap-0.5">
+                  <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-gray-200"></div>
+                  <div class="w-3 h-3 rounded-full bg-gray-200"></div>
+                </div>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Brand Prestige</span>
+                <div class="flex gap-0.5">
+                  <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-gray-200"></div>
+                </div>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Pricing</span>
+                <div class="flex gap-0.5">
+                  <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-gray-200"></div>
+                  <div class="w-3 h-3 rounded-full bg-gray-200"></div>
+                </div>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Sustainability</span>
+                <div class="flex gap-0.5">
+                  <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                </div>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2 pt-2 border-t border-gray-100">
+              <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">+Sustainability</span>
+              <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">+Collabs</span>
+              <span class="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full">-Quality Variance</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Puma Card -->
+        <div class="battle-card border-2 border-orange-200 shadow-lg">
+          <div class="bg-gradient-to-r from-orange-500 to-orange-600 p-4 text-white">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xl font-bold">Puma</h3>
+              <span class="text-3xl font-black">B+</span>
+            </div>
+            <p class="text-orange-100 text-sm">Athletic Footwear</p>
+          </div>
+          <div class="p-4 space-y-4">
+            <div class="space-y-2">
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Innovation</span>
+                <div class="flex gap-0.5">
+                  <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-gray-200"></div>
+                  <div class="w-3 h-3 rounded-full bg-gray-200"></div>
+                  <div class="w-3 h-3 rounded-full bg-gray-200"></div>
+                </div>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Brand Prestige</span>
+                <div class="flex gap-0.5">
+                  <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-gray-200"></div>
+                  <div class="w-3 h-3 rounded-full bg-gray-200"></div>
+                </div>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Pricing</span>
+                <div class="flex gap-0.5">
+                  <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+                </div>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Sustainability</span>
+                <div class="flex gap-0.5">
+                  <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-gray-200"></div>
+                  <div class="w-3 h-3 rounded-full bg-gray-200"></div>
+                </div>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2 pt-2 border-t border-gray-100">
+              <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">+Affordable</span>
+              <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">+Trendy</span>
+              <span class="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full">-Durability</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 p-4 bg-purple-50 rounded-lg">
+        <p class="text-sm text-purple-800"><strong>UX Note:</strong> Battle cards create emotional engagement. The grade system (A+, A, B+) provides instant ranking. Dot-based stats feel gaming-like and approachable.</p>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- VISUALIZATION 3: Horizontal Diverging Bars -->
+    <!-- ============================================== -->
+    <section class="card p-8">
+      <div class="mb-6">
+        <span class="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full mb-2">Option 3</span>
+        <h2 class="text-xl font-semibold text-gray-900">Diverging Bar Chart (Butterfly)</h2>
+        <p class="text-sm text-gray-600 mt-1">Pros extend right, cons extend left. Clear visual balance for each brand.</p>
+      </div>
+
+      <div class="space-y-8">
+        <!-- Nike -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+            <h4 class="font-semibold text-gray-900">Nike</h4>
+          </div>
+          <div class="flex items-center">
+            <!-- Cons (left) -->
+            <div class="flex-1 flex justify-end gap-1">
+              <div class="h-8 bg-red-400 rounded-l-md flex items-center justify-end px-3 text-white text-xs font-medium" style="width: 30%;">
+                Limited sustainability
+              </div>
+              <div class="h-8 bg-red-500 rounded-l-md flex items-center justify-end px-3 text-white text-xs font-medium" style="width: 40%;">
+                Premium pricing
+              </div>
+            </div>
+            <!-- Center divider -->
+            <div class="w-px h-12 bg-gray-300 mx-2"></div>
+            <!-- Pros (right) -->
+            <div class="flex-1 flex gap-1">
+              <div class="h-8 bg-green-500 rounded-r-md flex items-center px-3 text-white text-xs font-medium" style="width: 45%;">
+                Innovation
+              </div>
+              <div class="h-8 bg-green-400 rounded-r-md flex items-center px-3 text-white text-xs font-medium" style="width: 40%;">
+                Brand prestige
+              </div>
+              <div class="h-8 bg-green-300 rounded-r-md flex items-center px-3 text-white text-xs font-medium" style="width: 35%;">
+                Athlete partnerships
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Adidas -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+            <h4 class="font-semibold text-gray-900">Adidas</h4>
+          </div>
+          <div class="flex items-center">
+            <div class="flex-1 flex justify-end gap-1">
+              <div class="h-8 bg-red-400 rounded-l-md flex items-center justify-end px-3 text-white text-xs font-medium" style="width: 35%;">
+                Less innovation
+              </div>
+              <div class="h-8 bg-red-500 rounded-l-md flex items-center justify-end px-3 text-white text-xs font-medium" style="width: 38%;">
+                Inconsistent quality
+              </div>
+            </div>
+            <div class="w-px h-12 bg-gray-300 mx-2"></div>
+            <div class="flex-1 flex gap-1">
+              <div class="h-8 bg-green-500 rounded-r-md flex items-center px-3 text-white text-xs font-medium" style="width: 48%;">
+                Sustainability focus
+              </div>
+              <div class="h-8 bg-green-400 rounded-r-md flex items-center px-3 text-white text-xs font-medium" style="width: 35%;">
+                Style variety
+              </div>
+              <div class="h-8 bg-green-300 rounded-r-md flex items-center px-3 text-white text-xs font-medium" style="width: 32%;">
+                Collaborations
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Puma -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+            <h4 class="font-semibold text-gray-900">Puma</h4>
+          </div>
+          <div class="flex items-center">
+            <div class="flex-1 flex justify-end gap-1">
+              <div class="h-8 bg-red-300 rounded-l-md flex items-center justify-end px-3 text-white text-xs font-medium" style="width: 28%;">
+                Limited athletes
+              </div>
+              <div class="h-8 bg-red-400 rounded-l-md flex items-center justify-end px-3 text-white text-xs font-medium" style="width: 35%;">
+                Weaker brand
+              </div>
+              <div class="h-8 bg-red-500 rounded-l-md flex items-center justify-end px-3 text-white text-xs font-medium" style="width: 32%;">
+                Lower durability
+              </div>
+            </div>
+            <div class="w-px h-12 bg-gray-300 mx-2"></div>
+            <div class="flex-1 flex gap-1">
+              <div class="h-8 bg-green-500 rounded-r-md flex items-center px-3 text-white text-xs font-medium" style="width: 42%;">
+                Affordable pricing
+              </div>
+              <div class="h-8 bg-green-400 rounded-r-md flex items-center px-3 text-white text-xs font-medium" style="width: 35%;">
+                Trendy designs
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 flex items-center justify-center gap-8 text-sm text-gray-500">
+        <span class="flex items-center gap-2"><span class="w-3 h-3 bg-red-500 rounded"></span> Cons (Weaknesses)</span>
+        <span class="flex items-center gap-2"><span class="w-3 h-3 bg-green-500 rounded"></span> Pros (Strengths)</span>
+      </div>
+
+      <div class="mt-4 p-4 bg-emerald-50 rounded-lg">
+        <p class="text-sm text-emerald-800"><strong>UX Note:</strong> Butterfly charts show the balance of positive vs negative attributes at a glance. Width could represent frequency/importance of each attribute.</p>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- VISUALIZATION 4: Attribute Matrix Heatmap -->
+    <!-- ============================================== -->
+    <section class="card p-8">
+      <div class="mb-6">
+        <span class="inline-block px-3 py-1 bg-amber-100 text-amber-700 text-xs font-medium rounded-full mb-2">Option 4</span>
+        <h2 class="text-xl font-semibold text-gray-900">Attribute Matrix Heatmap</h2>
+        <p class="text-sm text-gray-600 mt-1">Grid showing all attributes vs all brands with color-coded sentiment.</p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr>
+              <th class="text-left p-3 bg-gray-50 font-medium text-gray-700">Attribute</th>
+              <th class="p-3 bg-gray-50 font-medium text-gray-700 text-center">Nike</th>
+              <th class="p-3 bg-gray-50 font-medium text-gray-700 text-center">Adidas</th>
+              <th class="p-3 bg-gray-50 font-medium text-gray-700 text-center">Puma</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t border-gray-100">
+              <td class="p-3 font-medium text-gray-900">Innovation</td>
+              <td class="p-3 text-center"><div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-green-500 text-white font-bold">++</div></td>
+              <td class="p-3 text-center"><div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-yellow-400 text-gray-800 font-bold">~</div></td>
+              <td class="p-3 text-center"><div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-red-400 text-white font-bold">-</div></td>
+            </tr>
+            <tr class="border-t border-gray-100">
+              <td class="p-3 font-medium text-gray-900">Brand Prestige</td>
+              <td class="p-3 text-center"><div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-green-500 text-white font-bold">++</div></td>
+              <td class="p-3 text-center"><div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-green-400 text-white font-bold">+</div></td>
+              <td class="p-3 text-center"><div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-red-400 text-white font-bold">-</div></td>
+            </tr>
+            <tr class="border-t border-gray-100">
+              <td class="p-3 font-medium text-gray-900">Pricing Value</td>
+              <td class="p-3 text-center"><div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-red-400 text-white font-bold">-</div></td>
+              <td class="p-3 text-center"><div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-yellow-400 text-gray-800 font-bold">~</div></td>
+              <td class="p-3 text-center"><div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-green-500 text-white font-bold">++</div></td>
+            </tr>
+            <tr class="border-t border-gray-100">
+              <td class="p-3 font-medium text-gray-900">Sustainability</td>
+              <td class="p-3 text-center"><div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-yellow-400 text-gray-800 font-bold">~</div></td>
+              <td class="p-3 text-center"><div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-green-500 text-white font-bold">++</div></td>
+              <td class="p-3 text-center"><div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-yellow-400 text-gray-800 font-bold">~</div></td>
+            </tr>
+            <tr class="border-t border-gray-100">
+              <td class="p-3 font-medium text-gray-900">Quality Consistency</td>
+              <td class="p-3 text-center"><div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-green-400 text-white font-bold">+</div></td>
+              <td class="p-3 text-center"><div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-red-400 text-white font-bold">-</div></td>
+              <td class="p-3 text-center"><div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-red-400 text-white font-bold">-</div></td>
+            </tr>
+            <tr class="border-t border-gray-100">
+              <td class="p-3 font-medium text-gray-900">Style/Design</td>
+              <td class="p-3 text-center"><div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-green-400 text-white font-bold">+</div></td>
+              <td class="p-3 text-center"><div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-green-500 text-white font-bold">++</div></td>
+              <td class="p-3 text-center"><div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-green-400 text-white font-bold">+</div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-4 flex items-center justify-center gap-4 text-xs text-gray-500">
+        <span class="flex items-center gap-1"><div class="w-6 h-6 rounded bg-green-500 text-white flex items-center justify-center font-bold">++</div> Strong positive</span>
+        <span class="flex items-center gap-1"><div class="w-6 h-6 rounded bg-green-400 text-white flex items-center justify-center font-bold">+</div> Positive</span>
+        <span class="flex items-center gap-1"><div class="w-6 h-6 rounded bg-yellow-400 text-gray-800 flex items-center justify-center font-bold">~</div> Neutral</span>
+        <span class="flex items-center gap-1"><div class="w-6 h-6 rounded bg-red-400 text-white flex items-center justify-center font-bold">-</div> Negative</span>
+      </div>
+
+      <div class="mt-4 p-4 bg-amber-50 rounded-lg">
+        <p class="text-sm text-amber-800"><strong>UX Note:</strong> Matrix view is best for detailed comparison. Users can scan columns (brand view) or rows (attribute view). Color-coding makes patterns jump out.</p>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- VISUALIZATION 5: Stacked Score Bars -->
+    <!-- ============================================== -->
+    <section class="card p-8">
+      <div class="mb-6">
+        <span class="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-medium rounded-full mb-2">Option 5</span>
+        <h2 class="text-xl font-semibold text-gray-900">Stacked Score Bars</h2>
+        <p class="text-sm text-gray-600 mt-1">Shows pros vs cons ratio as stacked horizontal bars. Quick visual comparison.</p>
+      </div>
+
+      <div class="space-y-6 max-w-2xl">
+        <!-- Nike -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+              <span class="font-semibold text-gray-900">Nike</span>
+            </div>
+            <span class="text-sm text-gray-500">4 pros / 2 cons</span>
+          </div>
+          <div class="flex h-8 rounded-lg overflow-hidden">
+            <div class="bg-green-500 flex items-center justify-center text-white text-xs font-medium" style="width: 66.7%;">67% Pros</div>
+            <div class="bg-red-400 flex items-center justify-center text-white text-xs font-medium" style="width: 33.3%;">33% Cons</div>
+          </div>
+        </div>
+
+        <!-- Adidas -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 rounded-full bg-green-500"></div>
+              <span class="font-semibold text-gray-900">Adidas</span>
+            </div>
+            <span class="text-sm text-gray-500">3 pros / 2 cons</span>
+          </div>
+          <div class="flex h-8 rounded-lg overflow-hidden">
+            <div class="bg-green-500 flex items-center justify-center text-white text-xs font-medium" style="width: 60%;">60% Pros</div>
+            <div class="bg-red-400 flex items-center justify-center text-white text-xs font-medium" style="width: 40%;">40% Cons</div>
+          </div>
+        </div>
+
+        <!-- Puma -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+              <span class="font-semibold text-gray-900">Puma</span>
+            </div>
+            <span class="text-sm text-gray-500">2 pros / 3 cons</span>
+          </div>
+          <div class="flex h-8 rounded-lg overflow-hidden">
+            <div class="bg-green-500 flex items-center justify-center text-white text-xs font-medium" style="width: 40%;">40% Pros</div>
+            <div class="bg-red-400 flex items-center justify-center text-white text-xs font-medium" style="width: 60%;">60% Cons</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 p-4 bg-indigo-50 rounded-lg">
+        <p class="text-sm text-indigo-800"><strong>UX Note:</strong> Simple and scannable. Great for executive summary. Users instantly see which brand has more favorable sentiment ratio.</p>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- VISUALIZATION 6: Petal/Flower Diagram -->
+    <!-- ============================================== -->
+    <section class="card p-8">
+      <div class="mb-6">
+        <span class="inline-block px-3 py-1 bg-pink-100 text-pink-700 text-xs font-medium rounded-full mb-2">Option 6</span>
+        <h2 class="text-xl font-semibold text-gray-900">Petal/Flower Diagram</h2>
+        <p class="text-sm text-gray-600 mt-1">Each petal represents an attribute. Green petals = pros, red petals = cons. Size = importance.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center">
+        <!-- Nike Flower -->
+        <div class="text-center">
+          <svg viewBox="0 0 200 200" class="w-48 h-48">
+            <!-- Pros petals (green, top half) -->
+            <ellipse cx="100" cy="50" rx="25" ry="40" fill="#4CAF50" class="petal" opacity="0.9" transform="rotate(0 100 100)"/>
+            <ellipse cx="100" cy="50" rx="22" ry="35" fill="#66BB6A" class="petal" opacity="0.85" transform="rotate(45 100 100)"/>
+            <ellipse cx="100" cy="50" rx="20" ry="32" fill="#81C784" class="petal" opacity="0.8" transform="rotate(90 100 100)"/>
+            <ellipse cx="100" cy="50" rx="18" ry="28" fill="#A5D6A7" class="petal" opacity="0.75" transform="rotate(135 100 100)"/>
+            <!-- Cons petals (red, bottom half) -->
+            <ellipse cx="100" cy="50" rx="20" ry="35" fill="#EF5350" class="petal" opacity="0.9" transform="rotate(210 100 100)"/>
+            <ellipse cx="100" cy="50" rx="15" ry="25" fill="#E57373" class="petal" opacity="0.8" transform="rotate(270 100 100)"/>
+            <!-- Center -->
+            <circle cx="100" cy="100" r="20" fill="#2196F3"/>
+            <text x="100" y="105" text-anchor="middle" fill="white" font-size="10" font-weight="bold">Nike</text>
+          </svg>
+          <p class="mt-2 text-sm font-medium text-gray-700">4 strengths, 2 weaknesses</p>
+        </div>
+
+        <!-- Adidas Flower -->
+        <div class="text-center">
+          <svg viewBox="0 0 200 200" class="w-48 h-48">
+            <ellipse cx="100" cy="50" rx="22" ry="38" fill="#4CAF50" class="petal" opacity="0.9" transform="rotate(0 100 100)"/>
+            <ellipse cx="100" cy="50" rx="20" ry="32" fill="#66BB6A" class="petal" opacity="0.85" transform="rotate(60 100 100)"/>
+            <ellipse cx="100" cy="50" rx="18" ry="30" fill="#81C784" class="petal" opacity="0.8" transform="rotate(120 100 100)"/>
+            <ellipse cx="100" cy="50" rx="18" ry="30" fill="#EF5350" class="petal" opacity="0.9" transform="rotate(210 100 100)"/>
+            <ellipse cx="100" cy="50" rx="16" ry="28" fill="#E57373" class="petal" opacity="0.8" transform="rotate(280 100 100)"/>
+            <circle cx="100" cy="100" r="20" fill="#4CAF50"/>
+            <text x="100" y="105" text-anchor="middle" fill="white" font-size="9" font-weight="bold">Adidas</text>
+          </svg>
+          <p class="mt-2 text-sm font-medium text-gray-700">3 strengths, 2 weaknesses</p>
+        </div>
+
+        <!-- Puma Flower -->
+        <div class="text-center">
+          <svg viewBox="0 0 200 200" class="w-48 h-48">
+            <ellipse cx="100" cy="50" rx="20" ry="32" fill="#4CAF50" class="petal" opacity="0.9" transform="rotate(30 100 100)"/>
+            <ellipse cx="100" cy="50" rx="18" ry="28" fill="#66BB6A" class="petal" opacity="0.85" transform="rotate(90 100 100)"/>
+            <ellipse cx="100" cy="50" rx="20" ry="35" fill="#EF5350" class="petal" opacity="0.9" transform="rotate(180 100 100)"/>
+            <ellipse cx="100" cy="50" rx="18" ry="32" fill="#E57373" class="petal" opacity="0.85" transform="rotate(240 100 100)"/>
+            <ellipse cx="100" cy="50" rx="16" ry="28" fill="#FFCDD2" class="petal" opacity="0.8" transform="rotate(300 100 100)"/>
+            <circle cx="100" cy="100" r="20" fill="#FF9800"/>
+            <text x="100" y="105" text-anchor="middle" fill="white" font-size="9" font-weight="bold">Puma</text>
+          </svg>
+          <p class="mt-2 text-sm font-medium text-gray-700">2 strengths, 3 weaknesses</p>
+        </div>
+      </div>
+
+      <div class="mt-6 p-4 bg-pink-50 rounded-lg">
+        <p class="text-sm text-pink-800"><strong>UX Note:</strong> Organic, memorable visualization. Petal size can encode importance. Good for infographics and presentations. Less precise but more engaging.</p>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- VISUALIZATION 7: Parallel Coordinates -->
+    <!-- ============================================== -->
+    <section class="card p-8">
+      <div class="mb-6">
+        <span class="inline-block px-3 py-1 bg-cyan-100 text-cyan-700 text-xs font-medium rounded-full mb-2">Option 7</span>
+        <h2 class="text-xl font-semibold text-gray-900">Parallel Coordinates</h2>
+        <p class="text-sm text-gray-600 mt-1">Each vertical axis is an attribute. Lines connect each brand's position across all attributes.</p>
+      </div>
+
+      <div id="parallel-chart" style="height: 350px;"></div>
+
+      <div class="mt-4 p-4 bg-cyan-50 rounded-lg">
+        <p class="text-sm text-cyan-800"><strong>UX Note:</strong> Great for seeing patterns and crossings. When lines cross frequently, brands trade off on different attributes. Excellent for data-savvy users.</p>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- VISUALIZATION 8: Bubble Chart -->
+    <!-- ============================================== -->
+    <section class="card p-8">
+      <div class="mb-6">
+        <span class="inline-block px-3 py-1 bg-rose-100 text-rose-700 text-xs font-medium rounded-full mb-2">Option 8</span>
+        <h2 class="text-xl font-semibold text-gray-900">Sentiment Bubble Chart</h2>
+        <p class="text-sm text-gray-600 mt-1">X-axis = sentiment (negative to positive), Y-axis = frequency of mention, bubble size = source credibility.</p>
+      </div>
+
+      <div id="bubble-chart" style="height: 400px;"></div>
+
+      <div class="mt-4 p-4 bg-rose-50 rounded-lg">
+        <p class="text-sm text-rose-800"><strong>UX Note:</strong> Shows three dimensions at once: sentiment position, how often mentioned, and importance. Click bubbles for details. Very analytical.</p>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- VISUALIZATION 9: Win/Loss Timeline -->
+    <!-- ============================================== -->
+    <section class="card p-8">
+      <div class="mb-6">
+        <span class="inline-block px-3 py-1 bg-violet-100 text-violet-700 text-xs font-medium rounded-full mb-2">Option 9</span>
+        <h2 class="text-xl font-semibold text-gray-900">Attribute Showdown Cards</h2>
+        <p class="text-sm text-gray-600 mt-1">Head-to-head comparison on each attribute. Shows clear winner per dimension.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Innovation -->
+        <div class="bg-gray-50 rounded-xl p-4">
+          <h4 class="text-sm font-medium text-gray-500 mb-3 text-center">Innovation</h4>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-900 w-16">Nike</span>
+              <div class="flex-1 h-6 bg-green-500 rounded-md flex items-center px-2">
+                <span class="text-white text-xs font-medium">Leader</span>
+              </div>
+              <span class="text-lg">🥇</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-900 w-16">Adidas</span>
+              <div class="flex-1 h-6 bg-yellow-400 rounded-md" style="width: 65%;"></div>
+              <span class="text-lg">🥈</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-900 w-16">Puma</span>
+              <div class="flex-1 h-6 bg-red-400 rounded-md" style="width: 40%;"></div>
+              <span class="text-lg">🥉</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sustainability -->
+        <div class="bg-gray-50 rounded-xl p-4">
+          <h4 class="text-sm font-medium text-gray-500 mb-3 text-center">Sustainability</h4>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-900 w-16">Adidas</span>
+              <div class="flex-1 h-6 bg-green-500 rounded-md flex items-center px-2">
+                <span class="text-white text-xs font-medium">Leader</span>
+              </div>
+              <span class="text-lg">🥇</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-900 w-16">Puma</span>
+              <div class="flex-1 h-6 bg-yellow-400 rounded-md" style="width: 55%;"></div>
+              <span class="text-lg">🥈</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-900 w-16">Nike</span>
+              <div class="flex-1 h-6 bg-red-400 rounded-md" style="width: 45%;"></div>
+              <span class="text-lg">🥉</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pricing -->
+        <div class="bg-gray-50 rounded-xl p-4">
+          <h4 class="text-sm font-medium text-gray-500 mb-3 text-center">Pricing Value</h4>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-900 w-16">Puma</span>
+              <div class="flex-1 h-6 bg-green-500 rounded-md flex items-center px-2">
+                <span class="text-white text-xs font-medium">Best Value</span>
+              </div>
+              <span class="text-lg">🥇</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-900 w-16">Adidas</span>
+              <div class="flex-1 h-6 bg-yellow-400 rounded-md" style="width: 60%;"></div>
+              <span class="text-lg">🥈</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-900 w-16">Nike</span>
+              <div class="flex-1 h-6 bg-red-400 rounded-md" style="width: 35%;"></div>
+              <span class="text-lg">🥉</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Brand Prestige -->
+        <div class="bg-gray-50 rounded-xl p-4">
+          <h4 class="text-sm font-medium text-gray-500 mb-3 text-center">Brand Prestige</h4>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-900 w-16">Nike</span>
+              <div class="flex-1 h-6 bg-green-500 rounded-md flex items-center px-2">
+                <span class="text-white text-xs font-medium">Leader</span>
+              </div>
+              <span class="text-lg">🥇</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-900 w-16">Adidas</span>
+              <div class="flex-1 h-6 bg-green-400 rounded-md" style="width: 80%;"></div>
+              <span class="text-lg">🥈</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-900 w-16">Puma</span>
+              <div class="flex-1 h-6 bg-yellow-400 rounded-md" style="width: 50%;"></div>
+              <span class="text-lg">🥉</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Style -->
+        <div class="bg-gray-50 rounded-xl p-4">
+          <h4 class="text-sm font-medium text-gray-500 mb-3 text-center">Style & Design</h4>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-900 w-16">Adidas</span>
+              <div class="flex-1 h-6 bg-green-500 rounded-md flex items-center px-2">
+                <span class="text-white text-xs font-medium">Leader</span>
+              </div>
+              <span class="text-lg">🥇</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-900 w-16">Nike</span>
+              <div class="flex-1 h-6 bg-green-400 rounded-md" style="width: 85%;"></div>
+              <span class="text-lg">🥈</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-900 w-16">Puma</span>
+              <div class="flex-1 h-6 bg-green-300 rounded-md" style="width: 75%;"></div>
+              <span class="text-lg">🥉</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quality -->
+        <div class="bg-gray-50 rounded-xl p-4">
+          <h4 class="text-sm font-medium text-gray-500 mb-3 text-center">Quality Consistency</h4>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-900 w-16">Nike</span>
+              <div class="flex-1 h-6 bg-green-500 rounded-md flex items-center px-2">
+                <span class="text-white text-xs font-medium">Leader</span>
+              </div>
+              <span class="text-lg">🥇</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-900 w-16">Puma</span>
+              <div class="flex-1 h-6 bg-red-400 rounded-md" style="width: 45%;"></div>
+              <span class="text-lg">🥈</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-900 w-16">Adidas</span>
+              <div class="flex-1 h-6 bg-red-400 rounded-md" style="width: 40%;"></div>
+              <span class="text-lg">🥉</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 p-4 bg-violet-50 rounded-lg">
+        <p class="text-sm text-violet-800"><strong>UX Note:</strong> Gamified approach with clear winners. Users can quickly see "who wins what." Medal icons add engagement. Great for competitive benchmarking.</p>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- VISUALIZATION 10: Treemap -->
+    <!-- ============================================== -->
+    <section class="card p-8">
+      <div class="mb-6">
+        <span class="inline-block px-3 py-1 bg-teal-100 text-teal-700 text-xs font-medium rounded-full mb-2">Option 10</span>
+        <h2 class="text-xl font-semibold text-gray-900">Attribute Treemap</h2>
+        <p class="text-sm text-gray-600 mt-1">Area represents frequency/importance. Color represents sentiment. Nested by brand.</p>
+      </div>
+
+      <div id="treemap-chart" style="height: 400px;"></div>
+
+      <div class="mt-4 p-4 bg-teal-50 rounded-lg">
+        <p class="text-sm text-teal-800"><strong>UX Note:</strong> Treemaps excel at showing part-to-whole relationships. Size = importance, color = sentiment. Interactive - click to drill down into brand.</p>
+      </div>
+    </section>
+
+    <!-- Summary / Recommendation -->
+    <section class="card p-8 bg-gradient-to-br from-gray-900 to-gray-800 text-white">
+      <h2 class="text-xl font-semibold mb-4">Recommendations by Use Case</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-4">
+          <div class="p-4 bg-white/10 rounded-lg">
+            <h3 class="font-medium text-blue-300 mb-2">For Executive Dashboards</h3>
+            <p class="text-sm text-gray-300">Use <strong>Radar Chart</strong> or <strong>Stacked Score Bars</strong> - Quick insights at a glance</p>
+          </div>
+          <div class="p-4 bg-white/10 rounded-lg">
+            <h3 class="font-medium text-green-300 mb-2">For Detailed Analysis</h3>
+            <p class="text-sm text-gray-300">Use <strong>Attribute Matrix Heatmap</strong> or <strong>Parallel Coordinates</strong> - Full data visibility</p>
+          </div>
+          <div class="p-4 bg-white/10 rounded-lg">
+            <h3 class="font-medium text-purple-300 mb-2">For Presentations/Sales</h3>
+            <p class="text-sm text-gray-300">Use <strong>Battle Cards</strong> or <strong>Showdown Cards</strong> - Engaging and memorable</p>
+          </div>
+        </div>
+        <div class="space-y-4">
+          <div class="p-4 bg-white/10 rounded-lg">
+            <h3 class="font-medium text-orange-300 mb-2">For Infographics</h3>
+            <p class="text-sm text-gray-300">Use <strong>Petal Diagram</strong> or <strong>Diverging Bars</strong> - Visually distinctive</p>
+          </div>
+          <div class="p-4 bg-white/10 rounded-lg">
+            <h3 class="font-medium text-pink-300 mb-2">For Data Scientists</h3>
+            <p class="text-sm text-gray-300">Use <strong>Bubble Chart</strong> or <strong>Treemap</strong> - Multi-dimensional analysis</p>
+          </div>
+          <div class="p-4 bg-white/10 rounded-lg">
+            <h3 class="font-medium text-cyan-300 mb-2">Current Implementation</h3>
+            <p class="text-sm text-gray-300">Table view is functional but lacks visual impact. Consider <strong>Radar + Battle Cards</strong> combo.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    // Radar Chart
+    Highcharts.chart('radar-chart', {
+      chart: {
+        polar: true,
+        type: 'line',
+        backgroundColor: 'transparent'
+      },
+      title: { text: '' },
+      credits: { enabled: false },
+      pane: {
+        size: '85%'
+      },
+      xAxis: {
+        categories: ['Innovation', 'Brand Prestige', 'Pricing Value', 'Sustainability', 'Quality', 'Style/Design'],
+        tickmarkPlacement: 'on',
+        lineWidth: 0,
+        labels: {
+          style: { fontSize: '12px', color: '#666' }
+        }
+      },
+      yAxis: {
+        gridLineInterpolation: 'polygon',
+        lineWidth: 0,
+        min: 0,
+        max: 5,
+        tickInterval: 1,
+        labels: { enabled: false }
+      },
+      tooltip: {
+        shared: true,
+        pointFormat: '<span style="color:{series.color}">{series.name}: <b>{point.y}</b><br/>'
+      },
+      legend: { enabled: false },
+      series: [{
+        name: 'Nike',
+        data: [5, 5, 2, 3, 4, 4],
+        pointPlacement: 'on',
+        color: '#2196F3',
+        fillOpacity: 0.2
+      }, {
+        name: 'Adidas',
+        data: [3, 4, 3, 5, 2, 5],
+        pointPlacement: 'on',
+        color: '#4CAF50',
+        fillOpacity: 0.2
+      }, {
+        name: 'Puma',
+        data: [2, 3, 5, 3, 2, 4],
+        pointPlacement: 'on',
+        color: '#FF9800',
+        fillOpacity: 0.2
+      }]
+    });
+
+    // Parallel Coordinates (simulated with line chart)
+    Highcharts.chart('parallel-chart', {
+      chart: {
+        type: 'spline',
+        backgroundColor: 'transparent'
+      },
+      title: { text: '' },
+      credits: { enabled: false },
+      xAxis: {
+        categories: ['Innovation', 'Brand Prestige', 'Pricing', 'Sustainability', 'Quality', 'Style'],
+        labels: {
+          style: { fontSize: '11px' }
+        }
+      },
+      yAxis: {
+        title: { text: '' },
+        min: 1,
+        max: 5,
+        tickInterval: 1,
+        labels: {
+          formatter: function() {
+            const labels = ['', 'Poor', 'Below Avg', 'Average', 'Good', 'Excellent'];
+            return labels[this.value];
+          }
+        }
+      },
+      legend: {
+        layout: 'horizontal',
+        align: 'center',
+        verticalAlign: 'bottom'
+      },
+      plotOptions: {
+        spline: {
+          marker: {
+            enabled: true,
+            radius: 6
+          },
+          lineWidth: 3
+        }
+      },
+      series: [{
+        name: 'Nike',
+        data: [5, 5, 2, 3, 4, 4],
+        color: '#2196F3'
+      }, {
+        name: 'Adidas',
+        data: [3, 4, 3, 5, 2, 5],
+        color: '#4CAF50'
+      }, {
+        name: 'Puma',
+        data: [2, 3, 5, 3, 2, 4],
+        color: '#FF9800'
+      }]
+    });
+
+    // Bubble Chart
+    Highcharts.chart('bubble-chart', {
+      chart: {
+        type: 'bubble',
+        plotBorderWidth: 1,
+        zoomType: 'xy',
+        backgroundColor: 'transparent'
+      },
+      title: { text: '' },
+      credits: { enabled: false },
+      legend: { enabled: true },
+      xAxis: {
+        title: { text: 'Sentiment Score' },
+        min: -1,
+        max: 1,
+        plotLines: [{
+          color: '#E0E0E0',
+          width: 2,
+          value: 0,
+          dashStyle: 'dash'
+        }],
+        labels: {
+          formatter: function() {
+            if (this.value === -1) return 'Negative';
+            if (this.value === 0) return 'Neutral';
+            if (this.value === 1) return 'Positive';
+            return '';
+          }
+        }
+      },
+      yAxis: {
+        title: { text: 'Mention Frequency' },
+        min: 0,
+        max: 10
+      },
+      tooltip: {
+        useHTML: true,
+        headerFormat: '<table>',
+        pointFormat: '<tr><th colspan="2"><h3>{point.name}</h3></th></tr>' +
+          '<tr><th>Sentiment:</th><td>{point.x}</td></tr>' +
+          '<tr><th>Frequency:</th><td>{point.y}</td></tr>' +
+          '<tr><th>Importance:</th><td>{point.z}</td></tr>',
+        footerFormat: '</table>',
+        followPointer: true
+      },
+      series: [{
+        name: 'Nike',
+        color: 'rgba(33, 150, 243, 0.7)',
+        data: [
+          { x: 0.8, y: 8, z: 15, name: 'Innovation' },
+          { x: 0.9, y: 9, z: 18, name: 'Brand Prestige' },
+          { x: -0.6, y: 7, z: 12, name: 'Pricing' },
+          { x: -0.3, y: 4, z: 8, name: 'Sustainability' }
+        ]
+      }, {
+        name: 'Adidas',
+        color: 'rgba(76, 175, 80, 0.7)',
+        data: [
+          { x: 0.3, y: 5, z: 10, name: 'Innovation' },
+          { x: 0.7, y: 7, z: 14, name: 'Collaborations' },
+          { x: 0.9, y: 8, z: 16, name: 'Sustainability' },
+          { x: -0.4, y: 5, z: 9, name: 'Quality' }
+        ]
+      }, {
+        name: 'Puma',
+        color: 'rgba(255, 152, 0, 0.7)',
+        data: [
+          { x: 0.8, y: 7, z: 14, name: 'Affordable' },
+          { x: 0.5, y: 5, z: 10, name: 'Trendy' },
+          { x: -0.5, y: 6, z: 11, name: 'Durability' },
+          { x: -0.6, y: 4, z: 8, name: 'Brand Perception' }
+        ]
+      }]
+    });
+
+    // Treemap
+    Highcharts.chart('treemap-chart', {
+      chart: { backgroundColor: 'transparent' },
+      title: { text: '' },
+      credits: { enabled: false },
+      series: [{
+        type: 'treemap',
+        layoutAlgorithm: 'squarified',
+        allowTraversingTree: true,
+        animationLimit: 1000,
+        dataLabels: {
+          enabled: false
+        },
+        levels: [{
+          level: 1,
+          dataLabels: {
+            enabled: true,
+            style: { fontSize: '14px', fontWeight: 'bold' }
+          },
+          borderWidth: 3
+        }, {
+          level: 2,
+          dataLabels: {
+            enabled: true,
+            style: { fontSize: '10px' }
+          }
+        }],
+        data: [
+          // Nike
+          { id: 'nike', name: 'Nike', color: '#E3F2FD' },
+          { parent: 'nike', name: 'Innovation', value: 18, color: '#4CAF50' },
+          { parent: 'nike', name: 'Brand Prestige', value: 16, color: '#66BB6A' },
+          { parent: 'nike', name: 'Quality', value: 12, color: '#81C784' },
+          { parent: 'nike', name: 'Athletes', value: 10, color: '#A5D6A7' },
+          { parent: 'nike', name: 'Premium Price', value: 8, color: '#EF5350' },
+          { parent: 'nike', name: 'Sustainability', value: 5, color: '#E57373' },
+          // Adidas
+          { id: 'adidas', name: 'Adidas', color: '#E8F5E9' },
+          { parent: 'adidas', name: 'Sustainability', value: 15, color: '#4CAF50' },
+          { parent: 'adidas', name: 'Style Variety', value: 12, color: '#66BB6A' },
+          { parent: 'adidas', name: 'Collaborations', value: 10, color: '#81C784' },
+          { parent: 'adidas', name: 'Quality Variance', value: 7, color: '#EF5350' },
+          { parent: 'adidas', name: 'Less Innovation', value: 6, color: '#E57373' },
+          // Puma
+          { id: 'puma', name: 'Puma', color: '#FFF3E0' },
+          { parent: 'puma', name: 'Affordable', value: 14, color: '#4CAF50' },
+          { parent: 'puma', name: 'Trendy Designs', value: 10, color: '#66BB6A' },
+          { parent: 'puma', name: 'Durability', value: 8, color: '#EF5350' },
+          { parent: 'puma', name: 'Brand Perception', value: 7, color: '#E57373' },
+          { parent: 'puma', name: 'Limited Athletes', value: 5, color: '#FFCDD2' }
+        ]
+      }],
+      tooltip: {
+        pointFormat: '<b>{point.name}</b>: Importance {point.value}'
+      }
+    });
+  </script>
+</body>
+</html>

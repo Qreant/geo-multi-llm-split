@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
-import { Check, X, Globe } from 'lucide-react';
+import { Globe } from 'lucide-react';
 import SourceAnalysis from './SourceAnalysis';
 import CompetitiveMatrixHeatmap from './CompetitiveMatrixHeatmap';
+import BattleCards from './BattleCards';
 
 // Map country suffix to ISO codes for flag display
 const COUNTRY_SUFFIX_TO_ISO = {
@@ -33,12 +34,10 @@ function getFlagUrl(marketCode) {
 }
 
 /**
- * Generate Brandfetch logo URL from brand name
- * Uses the simple hotlinking format: https://cdn.brandfetch.io/:domain?c=CLIENT_ID
+ * Generate logo URL from brand name using Google's favicon service
  */
 function generateBrandLogoUrl(brandName) {
-  const clientId = import.meta.env.VITE_LOGO_API_KEY;
-  if (!clientId || !brandName) return null;
+  if (!brandName) return null;
 
   // Convert brand name to likely domain
   const domain = brandName
@@ -47,7 +46,7 @@ function generateBrandLogoUrl(brandName) {
     .replace(/\s+/g, '')
     .trim() + '.com';
 
-  return `https://cdn.brandfetch.io/${domain}?c=${clientId}`;
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
 }
 
 /**
@@ -294,46 +293,6 @@ export default function CompetitiveAnalysis({ data, category, entity, competitor
     }]
   }
 
-  // 2. Group pros/cons by brand for table display
-  const prosConsByBrand = useMemo(() => {
-    const brandMap = new Map();
-
-    // Process pros - group by entity
-    (prosConsData.pros || []).forEach(pro => {
-      const brand = pro.entity || entity;
-      if (!brandMap.has(brand)) {
-        brandMap.set(brand, { pros: [], cons: [] });
-      }
-      // Avoid duplicates
-      if (!brandMap.get(brand).pros.includes(pro.attribute)) {
-        brandMap.get(brand).pros.push(pro.attribute);
-      }
-    });
-
-    // Process cons - group by entity
-    (prosConsData.cons || []).forEach(con => {
-      const brand = con.entity || entity;
-      if (!brandMap.has(brand)) {
-        brandMap.set(brand, { pros: [], cons: [] });
-      }
-      // Avoid duplicates
-      if (!brandMap.get(brand).cons.includes(con.attribute)) {
-        brandMap.get(brand).cons.push(con.attribute);
-      }
-    });
-
-    // Sort entries so target entity comes first, then alphabetically
-    const sortedEntries = Array.from(brandMap.entries()).sort((a, b) => {
-      const isATarget = a[0].toLowerCase() === entity.toLowerCase();
-      const isBTarget = b[0].toLowerCase() === entity.toLowerCase();
-      if (isATarget && !isBTarget) return -1;
-      if (!isATarget && isBTarget) return 1;
-      return a[0].localeCompare(b[0]);
-    });
-
-    return new Map(sortedEntries);
-  }, [prosConsData, entity]);
-
   return (
     <div className="space-y-8">
       {/* Section Header */}
@@ -433,8 +392,8 @@ export default function CompetitiveAnalysis({ data, category, entity, competitor
                       <div className="flex items-center gap-2">
                         <img
                           src={perf.llm === 'gemini'
-                            ? `https://cdn.brandfetch.io/google.com?c=${import.meta.env.VITE_LOGO_API_KEY}`
-                            : `https://cdn.brandfetch.io/openai.com?c=${import.meta.env.VITE_LOGO_API_KEY}`
+                            ? 'https://www.google.com/s2/favicons?domain=google.com&sz=128'
+                            : 'https://www.google.com/s2/favicons?domain=openai.com&sz=128'
                           }
                           alt={perf.llm === 'gemini' ? 'Gemini' : 'ChatGPT'}
                           className="w-5 h-5 rounded object-contain"
@@ -566,62 +525,12 @@ export default function CompetitiveAnalysis({ data, category, entity, competitor
         )}
       </div>
 
-      {/* Row 2: Pros and Cons by Brand Table */}
-      {prosConsByBrand.size > 0 && (
-        <div className="bg-white border border-[#E0E0E0] rounded-lg p-6">
-          <div className="mb-6">
-            <h3 className="text-lg font-medium text-[#212121] mb-1">Pros and Cons by Brand</h3>
-            <p className="text-sm text-[#757575]">Comparative strengths and weaknesses</p>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-[#E0E0E0]">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-[#757575] w-32">Brand</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-[#757575]">Pros</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-[#757575]">Cons</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Array.from(prosConsByBrand.entries()).map(([brand, { pros, cons }], idx) => (
-                  <tr key={brand} className={idx % 2 === 0 ? 'bg-white' : 'bg-[#F9FAFB]'}>
-                    <td className="py-4 px-4 align-top">
-                      <span className={`text-sm font-medium ${brand.toLowerCase() === entity.toLowerCase() ? 'text-[#2196F3]' : 'text-[#212121]'}`}>
-                        {brand}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 align-top">
-                      <div className="space-y-2">
-                        {pros.length > 0 ? pros.slice(0, 4).map((pro, proIdx) => (
-                          <div key={proIdx} className="flex items-start gap-2">
-                            <Check className="w-4 h-4 text-[#4CAF50] flex-shrink-0 mt-0.5" />
-                            <span className="text-sm text-[#212121]">{pro}</span>
-                          </div>
-                        )) : (
-                          <span className="text-sm text-[#9E9E9E] italic">No pros identified</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 align-top">
-                      <div className="space-y-2">
-                        {cons.length > 0 ? cons.slice(0, 4).map((con, conIdx) => (
-                          <div key={conIdx} className="flex items-start gap-2">
-                            <X className="w-4 h-4 text-[#EF5350] flex-shrink-0 mt-0.5" />
-                            <span className="text-sm text-[#212121]">{con}</span>
-                          </div>
-                        )) : (
-                          <span className="text-sm text-[#9E9E9E] italic">No cons identified</span>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      {/* Row 2: Battle Cards - Pros and Cons by Brand */}
+      <BattleCards
+        prosConsData={prosConsData}
+        entity={entity}
+        competitors={competitors}
+      />
 
       {/* Competitive Questions Matrix */}
       <CompetitiveMatrixHeatmap

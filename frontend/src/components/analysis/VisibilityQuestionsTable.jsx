@@ -29,10 +29,8 @@ function getFlagUrl(marketCode) {
 }
 
 function getLLMLogoUrl(llm) {
-  const clientId = import.meta.env.VITE_LOGO_API_KEY;
-  if (!clientId) return null;
   const domain = llm === 'gemini' ? 'google.com' : 'openai.com';
-  return `https://cdn.brandfetch.io/${domain}?c=${clientId}`;
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
 }
 
 // LLM display names for tooltips

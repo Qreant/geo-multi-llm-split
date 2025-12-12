@@ -5,13 +5,10 @@ import EntityTrendsChart from './EntityTrendsChart';
 import VisibilityQuestionsTable from './VisibilityQuestionsTable';
 
 /**
- * Generate Brandfetch logo URL from brand name
- * Uses the simple hotlinking format: https://cdn.brandfetch.io/:domain?c=CLIENT_ID
+ * Generate logo URL from brand name using Google's favicon service
  */
 function generateBrandLogoUrl(brandName) {
-  // Get client ID from environment
-  const clientId = import.meta.env.VITE_LOGO_API_KEY;
-  if (!clientId || !brandName) return null;
+  if (!brandName) return null;
 
   // Convert brand name to likely domain
   const domain = brandName
@@ -20,19 +17,15 @@ function generateBrandLogoUrl(brandName) {
     .replace(/\s+/g, '')
     .trim() + '.com';
 
-  // Use the simple hotlinking format from Brandfetch docs
-  return `https://cdn.brandfetch.io/${domain}?c=${clientId}`;
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
 }
 
 /**
- * Generate Brandfetch logo URL for LLM providers
+ * Generate logo URL for LLM providers using Google's favicon service
  */
 function getLLMLogoUrl(llm) {
-  const clientId = import.meta.env.VITE_LOGO_API_KEY;
-  if (!clientId) return null;
-
   const domain = llm === 'gemini' ? 'google.com' : 'openai.com';
-  return `https://cdn.brandfetch.io/${domain}?c=${clientId}`;
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
 }
 
 /**

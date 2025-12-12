@@ -1,6 +1,52 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import TopConceptsChart from './TopConceptsChart';
 import SourceAnalysis from './SourceAnalysis';
+
+/**
+ * Get logo URL using Google's favicon service
+ */
+const getLogoUrl = (entityName) => {
+  if (!entityName) return null;
+  // Clean entity name - remove common suffixes and special characters
+  const cleanName = entityName.toLowerCase()
+    .replace(/\s+(inc|corp|ltd|llc|co|company|group|international)\.?$/i, '')
+    .replace(/[^a-z0-9]/g, '');
+  // Use Google's favicon service which is more reliable
+  return `https://www.google.com/s2/favicons?domain=${cleanName}.com&sz=128`;
+};
+
+/**
+ * CompetitorLogo Component - Shows logo with fallback to initials
+ */
+const CompetitorLogo = ({ name }) => {
+  const [imgError, setImgError] = useState(false);
+  const logoUrl = getLogoUrl(name);
+
+  // Get initials for fallback
+  const getInitials = (str) => {
+    if (!str) return '?';
+    const words = str.split(/\s+/);
+    if (words.length === 1) return str.charAt(0).toUpperCase();
+    return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
+  };
+
+  if (imgError || !logoUrl) {
+    return (
+      <span className="w-5 h-5 rounded-full bg-[#FFE0B2] flex items-center justify-center text-[8px] font-semibold text-[#E65100]">
+        {getInitials(name)}
+      </span>
+    );
+  }
+
+  return (
+    <img
+      src={logoUrl}
+      alt={`${name} logo`}
+      className="w-5 h-5 rounded-full object-contain bg-white"
+      onError={() => setImgError(true)}
+    />
+  );
+};
 
 /**
  * Format category name: replace underscores with spaces and capitalize each word
@@ -156,12 +202,13 @@ export default function ReputationAnalysis({ data, entity, categoriesAssociated 
 
                     {/* Top Competitors */}
                     <td className="px-4 py-4">
-                      <div className="flex flex-wrap gap-1">
+                      <div className="flex flex-wrap gap-2">
                         {category.competitors?.map((competitor, idx) => (
                           <span
                             key={idx}
-                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#FFF3E0] text-[#E65100] border border-[#FFE0B2]"
+                            className="inline-flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full text-xs font-medium bg-[#FFF3E0] text-[#E65100] border border-[#FFE0B2]"
                           >
+                            <CompetitorLogo name={competitor} />
                             {competitor}
                           </span>
                         ))}

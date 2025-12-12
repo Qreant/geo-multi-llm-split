@@ -15,12 +15,10 @@ import OverviewTab from '../components/analysis/OverviewTab';
 import { PRInsightsPanel } from '../components/analysis/insights';
 
 /**
- * Generate Brandfetch logo URL for a brand/entity name
- * Converts brand name to likely domain (e.g., "Nike" -> "nike.com")
+ * Generate logo URL for a brand/entity name using Google's favicon service
  */
 function generateBrandLogoUrl(brandName) {
-  const clientId = import.meta.env.VITE_LOGO_API_KEY;
-  if (!clientId || !brandName) return null;
+  if (!brandName) return null;
 
   const cleanName = brandName
     .toLowerCase()
@@ -28,7 +26,7 @@ function generateBrandLogoUrl(brandName) {
     .replace(/\s+/g, '')
     .trim();
 
-  return `https://cdn.brandfetch.io/${cleanName}.com?c=${clientId}`;
+  return `https://www.google.com/s2/favicons?domain=${cleanName}.com&sz=128`;
 }
 
 // Configure Highcharts defaults with Social Analytics colors

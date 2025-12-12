@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Battle Cards - Pros & Cons Visualization</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    .card { background: white; border: 1px solid #E0E0E0; border-radius: 12px; }
+
+    /* Battle card styles */
+    .battle-card {
+      background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .battle-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    /* Stat row clickable */
+    .stat-row {
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+      border-radius: 6px;
+      padding: 6px 8px;
+      margin: -6px -8px;
+    }
+    .stat-row:hover {
+      background-color: rgba(0,0,0,0.04);
+    }
+
+    /* Score circle */
+    .score-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    /* Progress bar for stats */
+    .stat-bar {
+      height: 6px;
+      border-radius: 3px;
+      background: #E0E0E0;
+      overflow: hidden;
+    }
+    .stat-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    /* Modal/Drawer */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+      z-index: 100;
+    }
+    .drawer-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+    .drawer {
+      position: fixed;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 480px;
+      max-width: 90vw;
+      background: white;
+      box-shadow: -4px 0 24px rgba(0,0,0,0.15);
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      z-index: 101;
+      overflow-y: auto;
+    }
+    .drawer-overlay.open .drawer {
+      transform: translateX(0);
+    }
+
+    /* Source card */
+    .source-card {
+      border: 1px solid #E0E0E0;
+      border-radius: 8px;
+      padding: 12px;
+      transition: border-color 0.15s ease;
+    }
+    .source-card:hover {
+      border-color: #BDBDBD;
+    }
+
+    /* Tabs */
+    .tab-btn {
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+    }
+    .tab-btn.active {
+      background: #212121;
+      color: white;
+    }
+    .tab-btn:not(.active) {
+      color: #757575;
+    }
+    .tab-btn:not(.active):hover {
+      background: #F5F5F5;
+      color: #212121;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <h1 class="text-xl font-semibold text-gray-900">Competitive Battle Cards</h1>
+      <p class="text-sm text-gray-500">Click on any dimension to see sources and metrics</p>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+
+    <!-- Dimension Mapping Info -->
+    <div class="card p-4 mb-8 bg-blue-50 border-blue-200">
+      <h3 class="font-medium text-blue-900 mb-2">Frontend Attribute Mapping</h3>
+      <p class="text-sm text-blue-800 mb-3">Free-form attributes from LLM responses are automatically clustered into common dimensions using keyword matching:</p>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+        <div class="bg-white rounded px-2 py-1"><span class="font-medium">Innovation</span>: innovative, R&D, technology, cutting-edge</div>
+        <div class="bg-white rounded px-2 py-1"><span class="font-medium">Pricing</span>: price, cost, affordable, expensive, premium</div>
+        <div class="bg-white rounded px-2 py-1"><span class="font-medium">Quality</span>: quality, durability, reliable, craftsmanship</div>
+        <div class="bg-white rounded px-2 py-1"><span class="font-medium">Sustainability</span>: sustainable, eco, green, environment</div>
+      </div>
+    </div>
+
+    <!-- Battle Cards Grid -->
+    <div id="battle-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Cards will be rendered by JS -->
+    </div>
+
+    <!-- Legend -->
+    <div class="mt-8 p-4 bg-white rounded-lg border border-gray-200">
+      <h3 class="text-sm font-medium text-gray-700 mb-3">How Scores Are Calculated</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+        <div>
+          <span class="font-medium text-gray-900">Dimension Score (0-100)</span>
+          <p class="text-xs mt-1">Weighted average of mapped attributes: (frequency × sentiment_weight) normalized to 100</p>
+        </div>
+        <div>
+          <span class="font-medium text-gray-900">Overall Score</span>
+          <p class="text-xs mt-1">Average of all dimension scores, weighted by number of source citations</p>
+        </div>
+        <div>
+          <span class="font-medium text-gray-900">Color Coding</span>
+          <p class="text-xs mt-1">Green (70+): Strong | Yellow (40-69): Moderate | Red (&lt;40): Weak</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Drawer for dimension details -->
+  <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()">
+    <div class="drawer" onclick="event.stopPropagation()">
+      <div class="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+        <div>
+          <h2 id="drawer-title" class="text-lg font-semibold text-gray-900">Innovation</h2>
+          <p id="drawer-subtitle" class="text-sm text-gray-500">Nike</p>
+        </div>
+        <button onclick="closeDrawer()" class="p-2 hover:bg-gray-100 rounded-lg">
+          <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-4">
+        <!-- Score Overview -->
+        <div id="drawer-score-section" class="mb-6 p-4 bg-gray-50 rounded-lg">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex gap-2 mb-4">
+          <button class="tab-btn active" onclick="showTab('sources')" id="tab-sources">Sources</button>
+          <button class="tab-btn" onclick="showTab('attributes')" id="tab-attributes">Raw Attributes</button>
+          <button class="tab-btn" onclick="showTab('metrics')" id="tab-metrics">Metrics</button>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="tab-content-sources" class="space-y-3">
+          <!-- Populated by JS -->
+        </div>
+        <div id="tab-content-attributes" class="space-y-2 hidden">
+          <!-- Populated by JS -->
+        </div>
+        <div id="tab-content-metrics" class="hidden">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================
+    // DIMENSION MAPPING CONFIGURATION
+    // ============================================
+    const DIMENSION_KEYWORDS = {
+      'Innovation': {
+        keywords: ['innovation', 'innovative', 'r&d', 'technology', 'cutting-edge', 'advanced', 'pioneer', 'breakthrough', 'research'],
+        icon: '💡',
+        color: '#2196F3'
+      },
+      'Brand Prestige': {
+        keywords: ['brand', 'prestige', 'reputation', 'premium', 'luxury', 'prestigious', 'elite', 'exclusive', 'heritage'],
+        icon: '👑',
+        color: '#9C27B0'
+      },
+      'Pricing': {
+        keywords: ['price', 'pricing', 'cost', 'expensive', 'affordable', 'value', 'budget', 'cheap', 'premium price', 'overpriced'],
+        icon: '💰',
+        color: '#4CAF50'
+      },
+      'Quality': {
+        keywords: ['quality', 'durability', 'durable', 'reliable', 'craftsmanship', 'well-made', 'build quality', 'materials', 'construction'],
+        icon: '⭐',
+        color: '#FF9800'
+      },
+      'Sustainability': {
+        keywords: ['sustainable', 'sustainability', 'eco', 'environment', 'green', 'recycled', 'carbon', 'ethical', 'organic'],
+        icon: '🌱',
+        color: '#00BCD4'
+      },
+      'Style': {
+        keywords: ['style', 'design', 'aesthetic', 'fashionable', 'trendy', 'look', 'appearance', 'sleek', 'modern'],
+        icon: '🎨',
+        color: '#E91E63'
+      },
+      'Performance': {
+        keywords: ['performance', 'athlete', 'sport', 'professional', 'speed', 'comfort', 'fit', 'support', 'cushioning'],
+        icon: '🏃',
+        color: '#F44336'
+      },
+      'Customer Service': {
+        keywords: ['service', 'support', 'customer', 'warranty', 'return', 'experience', 'responsive'],
+        icon: '🤝',
+        color: '#607D8B'
+      }
+    };
+
+    // ============================================
+    // SAMPLE DATA (mimics your actual data structure)
+    // ============================================
+    const sampleData = {
+      pros_cons: {
+        pros: [
+          // Nike pros
+          { attribute: "Industry leader in innovation and R&D", entity: "Nike", frequency: 0.85, sources: [
+            { url: "https://www.forbes.com/nike-innovation", title: "Nike's Innovation Strategy", domain: "forbes.com", source_type: "Journalism" },
+            { url: "https://techcrunch.com/nike-tech", title: "Nike Technology Breakthroughs", domain: "techcrunch.com", source_type: "Journalism" }
+          ]},
+          { attribute: "Strong brand prestige and recognition", entity: "Nike", frequency: 0.92, sources: [
+            { url: "https://brandfinance.com/nike", title: "World's Most Valuable Brands", domain: "brandfinance.com", source_type: "Aggregator/Encyclopedic" }
+          ]},
+          { attribute: "Extensive athlete partnerships and endorsements", entity: "Nike", frequency: 0.78, sources: [
+            { url: "https://espn.com/nike-athletes", title: "Nike's Star Athletes", domain: "espn.com", source_type: "Journalism" }
+          ]},
+          { attribute: "High-quality durable products", entity: "Nike", frequency: 0.70, sources: [
+            { url: "https://runningmagazine.com/review", title: "Running Shoe Quality Test", domain: "runningmagazine.com", source_type: "Review Sites" }
+          ]},
+
+          // Adidas pros
+          { attribute: "Leading sustainable manufacturing practices", entity: "Adidas", frequency: 0.88, sources: [
+            { url: "https://sustainability.adidas.com", title: "Adidas Sustainability Report", domain: "adidas.com", source_type: "Corporate Blogs & Content" },
+            { url: "https://greenbiz.com/adidas", title: "Adidas Ocean Plastic Initiative", domain: "greenbiz.com", source_type: "Journalism" }
+          ]},
+          { attribute: "Wide variety of stylish designs", entity: "Adidas", frequency: 0.75, sources: [
+            { url: "https://gq.com/adidas-style", title: "Adidas Style Guide", domain: "gq.com", source_type: "Journalism" }
+          ]},
+          { attribute: "Strong collaborations with designers", entity: "Adidas", frequency: 0.72, sources: [
+            { url: "https://hypebeast.com/adidas", title: "Adidas Designer Collabs", domain: "hypebeast.com", source_type: "Journalism" }
+          ]},
+          { attribute: "Good brand recognition globally", entity: "Adidas", frequency: 0.68, sources: [
+            { url: "https://interbrand.com/rankings", title: "Global Brand Rankings", domain: "interbrand.com", source_type: "Aggregator/Encyclopedic" }
+          ]},
+
+          // Puma pros
+          { attribute: "Affordable pricing for quality products", entity: "Puma", frequency: 0.82, sources: [
+            { url: "https://consumerreports.org/shoes", title: "Best Value Athletic Shoes", domain: "consumerreports.org", source_type: "Review Sites" }
+          ]},
+          { attribute: "Trendy fashion-forward designs", entity: "Puma", frequency: 0.65, sources: [
+            { url: "https://vogue.com/puma", title: "Puma Fashion Collabs", domain: "vogue.com", source_type: "Journalism" }
+          ]},
+          { attribute: "Growing sustainability initiatives", entity: "Puma", frequency: 0.55, sources: [
+            { url: "https://puma.com/sustainability", title: "Puma Forever Better", domain: "puma.com", source_type: "Corporate Blogs & Content" }
+          ]}
+        ],
+        cons: [
+          // Nike cons
+          { attribute: "Premium pricing makes products expensive", entity: "Nike", frequency: 0.75, sources: [
+            { url: "https://reddit.com/r/sneakers", title: "Discussion: Nike Prices", domain: "reddit.com", source_type: "Social/UGC" },
+            { url: "https://consumeraffairs.com/nike", title: "Nike Price Complaints", domain: "consumeraffairs.com", source_type: "Review Sites" }
+          ]},
+          { attribute: "Limited focus on sustainability compared to competitors", entity: "Nike", frequency: 0.58, sources: [
+            { url: "https://sustainablebrands.com", title: "Sustainability Rankings", domain: "sustainablebrands.com", source_type: "Journalism" }
+          ]},
+
+          // Adidas cons
+          { attribute: "Inconsistent quality across product lines", entity: "Adidas", frequency: 0.62, sources: [
+            { url: "https://trustpilot.com/adidas", title: "Adidas Reviews", domain: "trustpilot.com", source_type: "Review Sites" }
+          ]},
+          { attribute: "Less innovation compared to Nike", entity: "Adidas", frequency: 0.55, sources: [
+            { url: "https://bloomberg.com/sneaker-tech", title: "Sneaker Technology Race", domain: "bloomberg.com", source_type: "Journalism" }
+          ]},
+
+          // Puma cons
+          { attribute: "Lower durability than premium competitors", entity: "Puma", frequency: 0.68, sources: [
+            { url: "https://runrepeat.com/puma", title: "Puma Durability Tests", domain: "runrepeat.com", source_type: "Review Sites" }
+          ]},
+          { attribute: "Weaker brand perception vs Nike/Adidas", entity: "Puma", frequency: 0.72, sources: [
+            { url: "https://marketwatch.com/brands", title: "Brand Perception Study", domain: "marketwatch.com", source_type: "Journalism" }
+          ]},
+          { attribute: "Limited professional athlete endorsements", entity: "Puma", frequency: 0.60, sources: [
+            { url: "https://sportsbusiness.com", title: "Athlete Endorsement Rankings", domain: "sportsbusiness.com", source_type: "Journalism" }
+          ]}
+        ]
+      },
+      entities: ['Nike', 'Adidas', 'Puma'],
+      targetEntity: 'Nike'
+    };
+
+    // ============================================
+    // ATTRIBUTE MAPPING FUNCTIONS
+    // ============================================
+
+    /**
+     * Map a free-form attribute to a dimension
+     */
+    function mapAttributeToDimension(attribute) {
+      const lowerAttr = attribute.toLowerCase();
+
+      for (const [dimension, config] of Object.entries(DIMENSION_KEYWORDS)) {
+        for (const keyword of config.keywords) {
+          if (lowerAttr.includes(keyword)) {
+            return dimension;
+          }
+        }
+      }
+      return null; // Unmapped
+    }
+
+    /**
+     * Process pros_cons data and group by brand and dimension
+     */
+    function processProsCons(prosConsData, entities) {
+      const brandData = {};
+
+      // Initialize brand data structure
+      entities.forEach(entity => {
+        brandData[entity] = {
+          dimensions: {},
+          unmapped: { pros: [], cons: [] }
+        };
+
+        // Initialize all dimensions
+        Object.keys(DIMENSION_KEYWORDS).forEach(dim => {
+          brandData[entity].dimensions[dim] = {
+            pros: [],
+            cons: [],
+            score: null,
+            allSources: []
+          };
+        });
+      });
+
+      // Process pros
+      prosConsData.pros.forEach(pro => {
+        const entity = pro.entity;
+        if (!brandData[entity]) return;
+
+        const dimension = mapAttributeToDimension(pro.attribute);
+        if (dimension) {
+          brandData[entity].dimensions[dimension].pros.push(pro);
+          brandData[entity].dimensions[dimension].allSources.push(...(pro.sources || []));
+        } else {
+          brandData[entity].unmapped.pros.push(pro);
+        }
+      });
+
+      // Process cons
+      prosConsData.cons.forEach(con => {
+        const entity = con.entity;
+        if (!brandData[entity]) return;
+
+        const dimension = mapAttributeToDimension(con.attribute);
+        if (dimension) {
+          brandData[entity].dimensions[dimension].cons.push(con);
+          brandData[entity].dimensions[dimension].allSources.push(...(con.sources || []));
+        } else {
+          brandData[entity].unmapped.cons.push(con);
+        }
+      });
+
+      // Calculate scores for each dimension
+      entities.forEach(entity => {
+        Object.keys(brandData[entity].dimensions).forEach(dim => {
+          const dimData = brandData[entity].dimensions[dim];
+
+          // Skip if no data for this dimension
+          if (dimData.pros.length === 0 && dimData.cons.length === 0) {
+            dimData.score = null;
+            return;
+          }
+
+          // Calculate weighted score
+          // Pros contribute positively, cons contribute negatively
+          let prosScore = 0;
+          let consScore = 0;
+
+          dimData.pros.forEach(p => {
+            prosScore += p.frequency * 100;
+          });
+
+          dimData.cons.forEach(c => {
+            consScore += c.frequency * 100;
+          });
+
+          // Normalize: more pros = higher score, more cons = lower score
+          const totalMentions = dimData.pros.length + dimData.cons.length;
+          const avgProsScore = dimData.pros.length > 0 ? prosScore / dimData.pros.length : 0;
+          const avgConsScore = dimData.cons.length > 0 ? consScore / dimData.cons.length : 0;
+
+          // Final score: balance between pros and cons
+          // If only pros: score based on avg frequency
+          // If only cons: inverse score based on avg frequency
+          // If both: weighted difference
+          if (dimData.cons.length === 0) {
+            dimData.score = Math.round(avgProsScore);
+          } else if (dimData.pros.length === 0) {
+            dimData.score = Math.round(100 - avgConsScore);
+          } else {
+            const prosWeight = dimData.pros.length / totalMentions;
+            const consWeight = dimData.cons.length / totalMentions;
+            dimData.score = Math.round((avgProsScore * prosWeight) + ((100 - avgConsScore) * consWeight));
+          }
+
+          // Clamp between 0-100
+          dimData.score = Math.max(0, Math.min(100, dimData.score));
+
+          // Dedupe sources
+          const seenUrls = new Set();
+          dimData.allSources = dimData.allSources.filter(s => {
+            if (seenUrls.has(s.url)) return false;
+            seenUrls.add(s.url);
+            return true;
+          });
+        });
+      });
+
+      return brandData;
+    }
+
+    /**
+     * Calculate overall score for a brand
+     */
+    function calculateOverallScore(dimensions) {
+      const scores = Object.values(dimensions)
+        .filter(d => d.score !== null)
+        .map(d => d.score);
+
+      if (scores.length === 0) return 0;
+      return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+    }
+
+    /**
+     * Get color based on score
+     */
+    function getScoreColor(score) {
+      if (score >= 70) return { bg: '#E8F5E9', text: '#2E7D32', fill: '#4CAF50' };
+      if (score >= 40) return { bg: '#FFF8E1', text: '#F57F17', fill: '#FFC107' };
+      return { bg: '#FFEBEE', text: '#C62828', fill: '#EF5350' };
+    }
+
+    // ============================================
+    // RENDERING FUNCTIONS
+    // ============================================
+
+    let processedData = null;
+    let currentDrawerData = null;
+
+    function renderBattleCards() {
+      processedData = processProsCons(sampleData.pros_cons, sampleData.entities);
+
+      const container = document.getElementById('battle-cards-container');
+      container.innerHTML = '';
+
+      sampleData.entities.forEach(entity => {
+        const brandInfo = processedData[entity];
+        const overallScore = calculateOverallScore(brandInfo.dimensions);
+        const scoreColor = getScoreColor(overallScore);
+        const isTarget = entity === sampleData.targetEntity;
+
+        // Get brand-specific color
+        const brandColors = {
+          'Nike': { primary: '#F97316', secondary: '#FFF7ED' },
+          'Adidas': { primary: '#10B981', secondary: '#ECFDF5' },
+          'Puma': { primary: '#8B5CF6', secondary: '#F5F3FF' }
+        };
+        const colors = brandColors[entity] || { primary: '#6B7280', secondary: '#F9FAFB' };
+
+        const card = document.createElement('div');
+        card.className = `battle-card border-2 ${isTarget ? 'border-blue-300 ring-2 ring-blue-100' : 'border-gray-200'}`;
+
+        // Get dimensions with scores (non-null)
+        const activeDimensions = Object.entries(brandInfo.dimensions)
+          .filter(([_, data]) => data.score !== null)
+          .sort((a, b) => b[1].score - a[1].score);
+
+        card.innerHTML = `
+          <!-- Card Header -->
+          <div class="p-4" style="background: linear-gradient(135deg, ${colors.primary} 0%, ${colors.primary}dd 100%);">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-xl font-bold text-white">${entity}</h3>
+                ${isTarget ? '<span class="text-xs text-white/80 font-medium">Target Brand</span>' : '<span class="text-xs text-white/70">Competitor</span>'}
+              </div>
+              <div class="score-circle" style="background: white; color: ${scoreColor.text};">
+                ${overallScore}
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats Section -->
+          <div class="p-4 space-y-3">
+            ${activeDimensions.slice(0, 6).map(([dimName, dimData]) => {
+              const config = DIMENSION_KEYWORDS[dimName];
+              const dimColor = getScoreColor(dimData.score);
+              return `
+                <div class="stat-row" onclick="openDrawer('${entity}', '${dimName}')">
+                  <div class="flex items-center justify-between mb-1">
+                    <div class="flex items-center gap-2">
+                      <span class="text-sm">${config.icon}</span>
+                      <span class="text-sm font-medium text-gray-700">${dimName}</span>
+                    </div>
+                    <span class="text-sm font-bold" style="color: ${dimColor.text}">${dimData.score}</span>
+                  </div>
+                  <div class="stat-bar">
+                    <div class="stat-bar-fill" style="width: ${dimData.score}%; background: ${dimColor.fill}"></div>
+                  </div>
+                  <div class="flex items-center justify-between mt-1">
+                    <span class="text-xs text-gray-400">${dimData.pros.length} pros, ${dimData.cons.length} cons</span>
+                    <span class="text-xs text-gray-400">${dimData.allSources.length} sources</span>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+
+            ${activeDimensions.length === 0 ? '<p class="text-sm text-gray-400 text-center py-4">No dimension data available</p>' : ''}
+          </div>
+
+          <!-- Footer with badges -->
+          <div class="px-4 pb-4">
+            <div class="flex flex-wrap gap-1.5">
+              ${brandInfo.dimensions['Innovation']?.score >= 70 ? '<span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">Innovation Leader</span>' : ''}
+              ${brandInfo.dimensions['Sustainability']?.score >= 70 ? '<span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium">Eco-Friendly</span>' : ''}
+              ${brandInfo.dimensions['Pricing']?.score >= 70 ? '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">Great Value</span>' : ''}
+              ${brandInfo.dimensions['Pricing']?.score !== null && brandInfo.dimensions['Pricing']?.score < 40 ? '<span class="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full font-medium">Premium Priced</span>' : ''}
+            </div>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function openDrawer(entity, dimension) {
+      const brandData = processedData[entity];
+      const dimData = brandData.dimensions[dimension];
+      const config = DIMENSION_KEYWORDS[dimension];
+      const scoreColor = getScoreColor(dimData.score);
+
+      currentDrawerData = { entity, dimension, dimData, config };
+
+      // Update header
+      document.getElementById('drawer-title').innerHTML = `${config.icon} ${dimension}`;
+      document.getElementById('drawer-subtitle').textContent = entity;
+
+      // Update score section
+      document.getElementById('drawer-score-section').innerHTML = `
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <div class="text-3xl font-bold" style="color: ${scoreColor.text}">${dimData.score}</div>
+            <div class="text-sm text-gray-500">Dimension Score</div>
+          </div>
+          <div class="text-right">
+            <div class="text-lg font-semibold text-gray-700">${dimData.pros.length} Pros</div>
+            <div class="text-lg font-semibold text-gray-700">${dimData.cons.length} Cons</div>
+          </div>
+        </div>
+        <div class="stat-bar" style="height: 8px;">
+          <div class="stat-bar-fill" style="width: ${dimData.score}%; background: ${scoreColor.fill}"></div>
+        </div>
+        <div class="flex justify-between mt-2 text-xs text-gray-500">
+          <span>Weak (0)</span>
+          <span>Strong (100)</span>
+        </div>
+      `;
+
+      // Render sources tab
+      renderSourcesTab(dimData);
+
+      // Render attributes tab
+      renderAttributesTab(dimData);
+
+      // Render metrics tab
+      renderMetricsTab(dimData, entity, dimension);
+
+      // Show drawer
+      document.getElementById('drawer-overlay').classList.add('open');
+
+      // Reset to sources tab
+      showTab('sources');
+    }
+
+    function renderSourcesTab(dimData) {
+      const container = document.getElementById('tab-content-sources');
+
+      if (dimData.allSources.length === 0) {
+        container.innerHTML = '<p class="text-sm text-gray-400 text-center py-8">No sources available for this dimension</p>';
+        return;
+      }
+
+      container.innerHTML = dimData.allSources.map(source => `
+        <div class="source-card">
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded bg-gray-100 flex items-center justify-center text-xs font-medium text-gray-600 flex-shrink-0">
+              ${getSourceIcon(source.source_type)}
+            </div>
+            <div class="flex-1 min-w-0">
+              <a href="${source.url}" target="_blank" class="text-sm font-medium text-blue-600 hover:underline line-clamp-1">
+                ${source.title || source.domain}
+              </a>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="text-xs text-gray-500">${source.domain}</span>
+                <span class="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">${source.source_type || 'Unknown'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderAttributesTab(dimData) {
+      const container = document.getElementById('tab-content-attributes');
+
+      let html = '';
+
+      if (dimData.pros.length > 0) {
+        html += '<h4 class="text-sm font-medium text-green-700 mb-2">Positive Attributes</h4>';
+        html += dimData.pros.map(p => `
+          <div class="flex items-start gap-2 p-2 bg-green-50 rounded-lg mb-2">
+            <svg class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <div>
+              <p class="text-sm text-gray-800">${p.attribute}</p>
+              <p class="text-xs text-gray-500 mt-1">Frequency: ${(p.frequency * 100).toFixed(0)}% | ${p.sources?.length || 0} sources</p>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      if (dimData.cons.length > 0) {
+        html += '<h4 class="text-sm font-medium text-red-700 mb-2 mt-4">Negative Attributes</h4>';
+        html += dimData.cons.map(c => `
+          <div class="flex items-start gap-2 p-2 bg-red-50 rounded-lg mb-2">
+            <svg class="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+            <div>
+              <p class="text-sm text-gray-800">${c.attribute}</p>
+              <p class="text-xs text-gray-500 mt-1">Frequency: ${(c.frequency * 100).toFixed(0)}% | ${c.sources?.length || 0} sources</p>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      if (html === '') {
+        html = '<p class="text-sm text-gray-400 text-center py-8">No attributes mapped to this dimension</p>';
+      }
+
+      container.innerHTML = html;
+    }
+
+    function renderMetricsTab(dimData, entity, dimension) {
+      const container = document.getElementById('tab-content-metrics');
+
+      // Calculate various metrics
+      const avgProsFreq = dimData.pros.length > 0
+        ? dimData.pros.reduce((sum, p) => sum + p.frequency, 0) / dimData.pros.length
+        : 0;
+      const avgConsFreq = dimData.cons.length > 0
+        ? dimData.cons.reduce((sum, c) => sum + c.frequency, 0) / dimData.cons.length
+        : 0;
+
+      // Source type breakdown
+      const sourceTypes = {};
+      dimData.allSources.forEach(s => {
+        const type = s.source_type || 'Unknown';
+        sourceTypes[type] = (sourceTypes[type] || 0) + 1;
+      });
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <!-- Score Breakdown -->
+          <div class="p-3 bg-gray-50 rounded-lg">
+            <h4 class="text-sm font-medium text-gray-700 mb-3">Score Calculation</h4>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Positive mentions</span>
+                <span class="font-medium">${dimData.pros.length}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Avg. positive frequency</span>
+                <span class="font-medium">${(avgProsFreq * 100).toFixed(1)}%</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Negative mentions</span>
+                <span class="font-medium">${dimData.cons.length}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Avg. negative frequency</span>
+                <span class="font-medium">${(avgConsFreq * 100).toFixed(1)}%</span>
+              </div>
+              <div class="border-t border-gray-200 pt-2 mt-2 flex justify-between">
+                <span class="text-gray-700 font-medium">Final Score</span>
+                <span class="font-bold text-lg">${dimData.score}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Source Distribution -->
+          <div class="p-3 bg-gray-50 rounded-lg">
+            <h4 class="text-sm font-medium text-gray-700 mb-3">Source Distribution</h4>
+            <div class="space-y-2">
+              ${Object.entries(sourceTypes).map(([type, count]) => `
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-gray-600">${type}</span>
+                  <div class="flex items-center gap-2">
+                    <div class="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div class="h-full bg-blue-500 rounded-full" style="width: ${(count / dimData.allSources.length) * 100}%"></div>
+                    </div>
+                    <span class="text-sm font-medium text-gray-700 w-6 text-right">${count}</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Formula -->
+          <div class="p-3 bg-blue-50 rounded-lg">
+            <h4 class="text-sm font-medium text-blue-700 mb-2">Score Formula</h4>
+            <p class="text-xs text-blue-600 font-mono">
+              score = (avgProsFreq × prosWeight) + ((100 - avgConsFreq) × consWeight)
+            </p>
+            <p class="text-xs text-blue-600 mt-1">
+              Where weights = proportion of pros/cons out of total mentions
+            </p>
+          </div>
+        </div>
+      `;
+    }
+
+    function getSourceIcon(sourceType) {
+      const icons = {
+        'Journalism': '📰',
+        'Corporate Blogs & Content': '🏢',
+        'Review Sites': '⭐',
+        'Social/UGC': '💬',
+        'Aggregator/Encyclopedic': '📚',
+        'Academic/Research': '🎓',
+        'Government/NGO': '🏛️',
+        'Press Release': '📣'
+      };
+      return icons[sourceType] || '🔗';
+    }
+
+    function closeDrawer() {
+      document.getElementById('drawer-overlay').classList.remove('open');
+    }
+
+    function showTab(tabName) {
+      // Update tab buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+
+      // Update tab content
+      document.querySelectorAll('[id^="tab-content-"]').forEach(content => content.classList.add('hidden'));
+      document.getElementById(`tab-content-${tabName}`).classList.remove('hidden');
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', renderBattleCards);
+  </script>
+</body>
+</html>
