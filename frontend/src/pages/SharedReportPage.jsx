@@ -398,135 +398,23 @@ export default function SharedReportPage() {
     return { categories: builtCategories };
   };
 
-  // Build overview data from report for shared view
-  const buildOverviewData = () => {
-    if (!report) return null;
-
-    const categoryMetrics = [];
-    let totalMentions = 0;
-    let totalVisibility = 0;
-    let totalSOV = 0;
-    let totalPosition = 0;
-    let totalWinRate = 0;
-    let categoryCount = 0;
-    let hasCompetitiveData = false;
-
-    categories.forEach((cat, idx) => {
-      const visibility = cat.visibility?.visibility || {};
-      const competitive = cat.competitive;
-
-      const catVisibility = visibility.visibility || 0;
-      const catSOV = visibility.sov || 0;
-      const catPosition = visibility.averagePosition || 0;
-      const catMentions = visibility.mentions || 0;
-      const catWinRate = competitive?.win_rate || 0;
-
-      if (competitive) hasCompetitiveData = true;
-
-      categoryMetrics.push({
-        name: cat.name,
-        visibility: catVisibility,
-        sov: catSOV,
-        avgPosition: catPosition,
-        mentions: catMentions,
-        winRate: catWinRate
-      });
-
-      totalVisibility += catVisibility;
-      totalSOV += catSOV;
-      totalPosition += catPosition;
-      totalMentions += catMentions;
-      totalWinRate += catWinRate;
-      categoryCount++;
-    });
-
-    const avgDivisor = categoryCount || 1;
-
-    return {
-      overallMetrics: {
-        avgVisibility: totalVisibility / avgDivisor,
-        avgSOV: totalSOV / avgDivisor,
-        avgPosition: totalPosition / avgDivisor,
-        totalMentions,
-        avgWinRate: totalWinRate / avgDivisor,
-        totalCategories: categoryCount,
-        totalMarkets: report.markets?.length || 1
-      },
-      categoryMetrics,
-      sourceAnalysis: report.sources || [],
-      hasCompetitiveData
-    };
-  };
-
   const renderActiveContent = () => {
     if (activeView.type === 'overview') {
-      const overviewData = buildOverviewData();
-      if (!overviewData || categories.length <= 1) {
+      // Use the OverviewTab component - it will fetch its own data using the report ID
+      if (!report.id) {
         return (
           <div className="p-8 text-center">
-            <p className="text-[#757575]">Overview requires multiple categories</p>
+            <p className="text-[#757575]">Overview not available</p>
           </div>
         );
       }
-
-      // Render a simplified overview for shared view
-      const { overallMetrics, categoryMetrics, hasCompetitiveData } = overviewData;
-      const formatPercent = (value) => value ? `${(value * 100).toFixed(1)}%` : '-';
-      const formatPosition = (value) => value ? value.toFixed(1) : '-';
-
       return (
-        <div className="space-y-6">
-          <div className="mb-2">
-            <h2 className="text-xl font-medium text-[#212121] mb-2">Overview Dashboard</h2>
-            <p className="text-sm text-[#757575]">
-              Aggregated insights across {overallMetrics.totalCategories} categories
-            </p>
-          </div>
-
-          <div className={`grid grid-cols-2 gap-4 ${hasCompetitiveData ? 'md:grid-cols-5' : 'md:grid-cols-4'}`}>
-            <div className="bg-[#F4F6F8] rounded-lg p-4">
-              <p className="text-xs text-[#757575] mb-1">Avg Visibility</p>
-              <p className="text-xl font-bold text-[#212121]">{formatPercent(overallMetrics.avgVisibility)}</p>
-            </div>
-            <div className="bg-[#F4F6F8] rounded-lg p-4">
-              <p className="text-xs text-[#757575] mb-1">Avg SOV</p>
-              <p className="text-xl font-bold text-[#212121]">{formatPercent(overallMetrics.avgSOV)}</p>
-            </div>
-            <div className="bg-[#F4F6F8] rounded-lg p-4">
-              <p className="text-xs text-[#757575] mb-1">Avg Position</p>
-              <p className="text-xl font-bold text-[#212121]">{formatPosition(overallMetrics.avgPosition)}</p>
-            </div>
-            {hasCompetitiveData && (
-              <div className="bg-[#F4F6F8] rounded-lg p-4">
-                <p className="text-xs text-[#757575] mb-1">Avg Win Rate</p>
-                <p className="text-xl font-bold text-[#212121]">{formatPercent(overallMetrics.avgWinRate)}</p>
-              </div>
-            )}
-            <div className="bg-[#F4F6F8] rounded-lg p-4">
-              <p className="text-xs text-[#757575] mb-1">Total Mentions</p>
-              <p className="text-xl font-bold text-[#212121]">{overallMetrics.totalMentions}</p>
-            </div>
-          </div>
-
-          {/* Category breakdown */}
-          <div className="bg-white border border-[#E0E0E0] rounded-lg overflow-hidden">
-            <div className="px-4 py-3 bg-[#F4F6F8] border-b border-[#E0E0E0]">
-              <h3 className="font-medium text-[#212121]">Category Breakdown</h3>
-            </div>
-            <div className="divide-y divide-[#E0E0E0]">
-              {categoryMetrics.map((cat, idx) => (
-                <div key={idx} className="px-4 py-3 flex items-center justify-between">
-                  <span className="font-medium text-[#212121]">{cat.name}</span>
-                  <div className="flex gap-6 text-sm">
-                    <span className="text-[#757575]">Visibility: <span className="text-[#212121] font-medium">{formatPercent(cat.visibility)}</span></span>
-                    <span className="text-[#757575]">SOV: <span className="text-[#212121] font-medium">{formatPercent(cat.sov)}</span></span>
-                    <span className="text-[#757575]">Mentions: <span className="text-[#212121] font-medium">{cat.mentions}</span></span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <OverviewTab
+          reportId={report.id}
+          entity={report.entity}
+          selectedMarket={selectedMarket}
+          selectedLLMs={selectedLLMs}
+        />
       );
     }
 
@@ -581,98 +469,22 @@ export default function SharedReportPage() {
     }
 
     if (activeView.type === 'insights') {
-      const prInsights = report.prInsights;
-
-      if (!prInsights || !prInsights.opportunities || prInsights.opportunities.length === 0) {
+      // Use the PRInsightsPanel component - it will fetch its own data using the report ID
+      if (!report.id) {
         return (
           <div className="p-8 text-center">
             <Lightbulb className="w-12 h-12 text-[#E0E0E0] mx-auto mb-4" />
-            <p className="text-[#757575]">No PR Insights available for this report</p>
+            <p className="text-[#757575]">PR Insights not available</p>
           </div>
         );
       }
-
-      const { priority_summary, opportunities } = prInsights;
-
-      // Priority tier colors and labels
-      const priorityConfig = {
-        'Critical': { color: 'bg-[#EF5350]', textColor: 'text-[#EF5350]', bgLight: 'bg-[#FFEBEE]' },
-        'Strategic': { color: 'bg-[#FF9800]', textColor: 'text-[#FF9800]', bgLight: 'bg-[#FFF3E0]' },
-        'Quick Wins': { color: 'bg-[#FFEB3B]', textColor: 'text-[#F9A825]', bgLight: 'bg-[#FFFDE7]' },
-        'Low Priority': { color: 'bg-[#9E9E9E]', textColor: 'text-[#757575]', bgLight: 'bg-[#F5F5F5]' }
-      };
-
       return (
-        <div className="space-y-6">
-          <div className="mb-2">
-            <h2 className="text-xl font-medium text-[#212121] mb-2">PR Insights & Recommendations</h2>
-            <p className="text-sm text-[#757575]">
-              {opportunities.length} opportunities identified for {report.entity}
-            </p>
-          </div>
-
-          {/* Priority Summary */}
-          {priority_summary && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {Object.entries(priority_summary).map(([tier, count]) => {
-                const config = priorityConfig[tier] || priorityConfig['Low Priority'];
-                return (
-                  <div key={tier} className={`${config.bgLight} rounded-lg p-4`}>
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className={`w-3 h-3 rounded-full ${config.color}`} />
-                      <span className="text-sm font-medium text-[#212121]">{tier}</span>
-                    </div>
-                    <p className="text-2xl font-bold text-[#212121]">{count}</p>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Opportunities List */}
-          <div className="space-y-4">
-            {opportunities.map((opp, idx) => {
-              const config = priorityConfig[opp.priority?.tier] || priorityConfig['Low Priority'];
-              return (
-                <div key={opp.id || idx} className="bg-white border border-[#E0E0E0] rounded-lg p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className={`px-2 py-0.5 text-xs font-medium rounded ${config.bgLight} ${config.textColor}`}>
-                          {opp.priority?.tier || 'Unclassified'}
-                        </span>
-                        <span className="text-xs text-[#9E9E9E]">{opp.opportunity_type}</span>
-                      </div>
-                      <h3 className="font-medium text-[#212121]">{opp.title}</h3>
-                      {opp.description && (
-                        <p className="text-sm text-[#757575] mt-1">{opp.description}</p>
-                      )}
-                    </div>
-                    <div className="text-right ml-4">
-                      <div className="text-xs text-[#9E9E9E]">Impact</div>
-                      <div className="text-sm font-medium text-[#212121]">{opp.scores?.impact_label || '-'}</div>
-                    </div>
-                  </div>
-
-                  {/* Recommended Actions */}
-                  {opp.recommended_actions && opp.recommended_actions.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-[#E0E0E0]">
-                      <p className="text-xs text-[#9E9E9E] mb-2">Recommended Actions</p>
-                      <ul className="text-sm text-[#757575] space-y-1">
-                        {opp.recommended_actions.slice(0, 3).map((action, actionIdx) => (
-                          <li key={actionIdx} className="flex items-start gap-2">
-                            <span className="text-[#10B981] mt-1">•</span>
-                            <span>{action}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <PRInsightsPanel
+          reportId={report.id}
+          entity={report.entity}
+          selectedMarket={selectedMarket}
+          selectedLLMs={selectedLLMs}
+        />
       );
     }
 

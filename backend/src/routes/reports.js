@@ -541,7 +541,6 @@ router.get('/shared/:token', (req, res) => {
 
       res.json({
         ...report,
-        id: undefined, // Don't expose internal ID
         share_token: undefined, // Don't expose the token in response
         isMultiMarket: true,
         isSharedView: true,
@@ -559,7 +558,6 @@ router.get('/shared/:token', (req, res) => {
 
       res.json({
         ...report,
-        id: undefined, // Don't expose internal ID
         share_token: undefined, // Don't expose the token in response
         isMultiMarket: false,
         isSharedView: true,
