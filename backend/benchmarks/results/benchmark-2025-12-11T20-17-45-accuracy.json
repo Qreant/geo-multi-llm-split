@@ -1,0 +1,177 @@
+{
+  "timestamp": "2025-12-11T20:17:45.407Z",
+  "goldenSetEvaluation": {
+    "overall": {
+      "accuracy": 1
+    }
+  },
+  "crossModelConsensus": {
+    "totalUrls": 500,
+    "totalWithConsensus": 475,
+    "totalAmbiguous": 25,
+    "consensusRate": 0.95,
+    "modelAgreement": {
+      "gemini-flash": 0.9031578947368422,
+      "gemini-flash-lite": 0.8673684210526316,
+      "gpt-4o": 0.9263157894736842,
+      "gpt-4o-mini": 0.47578947368421054,
+      "deepseek-chat": 0.96,
+      "deepseek-reasoner": 0.96
+    },
+    "mostReliableModel": "deepseek-chat",
+    "mostReliableAgreement": 0.96,
+    "sampleConsensus": [
+      {
+        "url": "https://renault-trucks.com/range/electric-trucks",
+        "votes": {
+          "gemini-flash": "Competitor Media",
+          "gemini-flash-lite": "Competitor Media",
+          "gpt-4o": "Competitor Media",
+          "gpt-4o-mini": "Competitor Media",
+          "deepseek-chat": "Competitor Media"
+        },
+        "consensus": "Competitor Media",
+        "agreement": 0.8333333333333334
+      },
+      {
+        "url": "https://www.mantruckandbus.com/electric-solutions",
+        "votes": {
+          "gemini-flash": "Competitor Media",
+          "gemini-flash-lite": "Competitor Media",
+          "gpt-4o": "Competitor Media",
+          "gpt-4o-mini": "Competitor Media",
+          "deepseek-chat": "Competitor Media"
+        },
+        "consensus": "Competitor Media",
+        "agreement": 0.8333333333333334
+      },
+      {
+        "url": "https://www.volvotrucks.fr/fr-fr/news/press-releases/2023/october/electric-trucks-for-long-distance.html",
+        "votes": {
+          "gemini-flash": "Competitor Media",
+          "gemini-flash-lite": "Competitor Media",
+          "gpt-4o": "Competitor Media",
+          "gpt-4o-mini": "Competitor Media",
+          "deepseek-chat": "Competitor Media"
+        },
+        "consensus": "Competitor Media",
+        "agreement": 0.8333333333333334
+      },
+      {
+        "url": "https://www.renault-trucks.fr/actualites/nouvelles-deux-camions-electriques.html",
+        "votes": {
+          "gemini-flash": "Competitor Media",
+          "gemini-flash-lite": "Competitor Media",
+          "gpt-4o": "Competitor Media",
+          "gpt-4o-mini": "Competitor Media",
+          "deepseek-chat": "Competitor Media"
+        },
+        "consensus": "Competitor Media",
+        "agreement": 0.8333333333333334
+      },
+      {
+        "url": "https://www.mercedes-benz-trucks.com/de_DE/electric-trucks/eactros.html",
+        "votes": {
+          "gemini-flash": "Competitor Media",
+          "gemini-flash-lite": "Competitor Media",
+          "gpt-4o": "Competitor Media",
+          "gpt-4o-mini": "Competitor Media",
+          "deepseek-chat": "Competitor Media"
+        },
+        "consensus": "Competitor Media",
+        "agreement": 0.8333333333333334
+      },
+      {
+        "url": "https://www.mantruckandbus.com/products/electric-trucks-etgm.html",
+        "votes": {
+          "gemini-flash": "Competitor Media",
+          "gemini-flash-lite": "Competitor Media",
+          "gpt-4o": "Competitor Media",
+          "gpt-4o-mini": "Competitor Media",
+          "deepseek-chat": "Competitor Media"
+        },
+        "consensus": "Competitor Media",
+        "agreement": 0.8333333333333334
+      },
+      {
+        "url": "https://www.scania.com/fr/fr/home/products/trucks/electric-trucks.html",
+        "votes": {
+          "gemini-flash": "Competitor Media",
+          "gemini-flash-lite": "Competitor Media",
+          "gpt-4o": "Competitor Media",
+          "gpt-4o-mini": "Competitor Media",
+          "deepseek-chat": "Competitor Media"
+        },
+        "consensus": "Competitor Media",
+        "agreement": 0.8333333333333334
+      },
+      {
+        "url": "https://www.beeve.fr/tesla-cybertruck-ne-viendra-jamais-en-france/",
+        "votes": {
+          "gemini-flash": "Journalism",
+          "gemini-flash-lite": "Journalism",
+          "gpt-4o": "Journalism",
+          "gpt-4o-mini": "Corporate Blogs & Content",
+          "deepseek-chat": "Journalism"
+        },
+        "consensus": "Journalism",
+        "agreement": 0.6666666666666666
+      },
+      {
+        "url": "https://www.mobiwisy.com/rouler-en-rivian-r1t-en-france-cest-possible/",
+        "votes": {
+          "gemini-flash": "Journalism",
+          "gemini-flash-lite": "Journalism",
+          "gpt-4o": "Journalism",
+          "gpt-4o-mini": "Corporate Blogs & Content",
+          "deepseek-chat": "Journalism"
+        },
+        "consensus": "Journalism",
+        "agreement": 0.6666666666666666
+      },
+      {
+        "url": "https://www.madness-us.com/fr/vehicules-neufs/rivian-r1t-launch-edition-awd-2023/",
+        "votes": {
+          "gemini-flash": "Corporate Blogs & Content",
+          "gemini-flash-lite": "Corporate Blogs & Content",
+          "gpt-4o": "Corporate Blogs & Content",
+          "gpt-4o-mini": "Corporate Blogs & Content",
+          "deepseek-chat": "Corporate Blogs & Content"
+        },
+        "consensus": "Corporate Blogs & Content",
+        "agreement": 0.8333333333333334
+      }
+    ]
+  },
+  "summary": {
+    "goldenAccuracy": 1,
+    "consensusRate": 0.95,
+    "mostReliableModel": "deepseek-chat",
+    "modelRankings": [
+      {
+        "model": "deepseek-chat",
+        "agreement": 0.96
+      },
+      {
+        "model": "deepseek-reasoner",
+        "agreement": 0.96
+      },
+      {
+        "model": "gpt-4o",
+        "agreement": 0.9263157894736842
+      },
+      {
+        "model": "gemini-flash",
+        "agreement": 0.9031578947368422
+      },
+      {
+        "model": "gemini-flash-lite",
+        "agreement": 0.8673684210526316
+      },
+      {
+        "model": "gpt-4o-mini",
+        "agreement": 0.47578947368421054
+      }
+    ]
+  }
+}

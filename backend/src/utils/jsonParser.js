@@ -43,6 +43,47 @@ function repairJSON(text) {
 }
 
 /**
+ * Advanced JSON repair for complex LLM responses
+ * Handles issues like unescaped quotes in string values
+ */
+function advancedRepairJSON(text) {
+  if (!text || typeof text !== 'string') {
+    return text;
+  }
+
+  let repaired = text;
+
+  // Fix smart/curly quotes that break JSON (common in LLM outputs)
+  repaired = repaired.replace(/[\u201C\u201D\u201E\u201F\u2033\u2036]/g, '"');
+  repaired = repaired.replace(/[\u2018\u2019\u201A\u201B\u2032\u2035]/g, "'");
+
+  // Fix em-dashes and en-dashes that might break parsing
+  repaired = repaired.replace(/[\u2013\u2014]/g, '-');
+
+  // Fix ellipsis character
+  repaired = repaired.replace(/\u2026/g, '...');
+
+  // Remove any BOM or zero-width characters
+  repaired = repaired.replace(/[\uFEFF\u200B\u200C\u200D]/g, '');
+
+  // Try to fix unescaped quotes within string values
+  // This is a heuristic approach - look for patterns like: "text "quoted" more text"
+  // and escape the inner quotes
+  repaired = repaired.replace(
+    /("(?:[^"\\]|\\.)*)"\s*([a-zA-Z])/g,
+    (match, before, after) => {
+      // Check if this looks like an unescaped quote in a sentence
+      if (before.match(/[a-zA-Z,\s]$/) && after.match(/^[a-zA-Z]/)) {
+        return before + '\\"' + after;
+      }
+      return match;
+    }
+  );
+
+  return repaired;
+}
+
+/**
  * Sanitize control characters in JSON string
  */
 export function sanitizeJSON(text) {
@@ -145,6 +186,13 @@ function extractJSONWithBraceCounting(text) {
 
 /**
  * Parse JSON from LLM response with error recovery
+ * Recovery pipeline:
+ * 1. Direct parse
+ * 2. Sanitize (markdown, control chars)
+ * 3. Basic repair (missing commas, trailing commas)
+ * 4. Brace extraction + repair
+ * 5. Advanced repair (smart quotes, unicode issues)
+ * 6. Brace extraction + advanced repair
  */
 export function parseJSON(text) {
   if (!text) {
@@ -152,21 +200,21 @@ export function parseJSON(text) {
   }
 
   try {
-    // Try direct parsing first
+    // Step 1: Try direct parsing first
     return JSON.parse(text);
   } catch (firstError) {
-    // Try sanitization (strips markdown, control chars)
+    // Step 2: Try sanitization (strips markdown, control chars)
     try {
       const sanitized = sanitizeJSON(text);
       return JSON.parse(sanitized);
     } catch (secondError) {
-      // Try JSON repair (fixes missing commas, etc.)
+      // Step 3: Try basic JSON repair (fixes missing commas, etc.)
       try {
         const sanitized = sanitizeJSON(text);
         const repaired = repairJSON(sanitized);
         return JSON.parse(repaired);
       } catch (thirdError) {
-        // Try extracting JSON with brace counting + repair
+        // Step 4: Try extracting JSON with brace counting + basic repair
         try {
           const extracted = extractJSONWithBraceCounting(text);
           if (extracted) {
@@ -175,15 +223,35 @@ export function parseJSON(text) {
             return JSON.parse(repaired);
           }
         } catch (fourthError) {
-          console.error('JSON parsing failed after all recovery attempts:', {
-            firstError: firstError.message,
-            secondError: secondError.message,
-            thirdError: thirdError.message,
-            fourthError: fourthError.message,
-            textLength: text.length,
-            firstChars: text.substring(0, 200),
-            lastChars: text.substring(text.length - 200)
-          });
+          // Step 5: Try advanced repair (smart quotes, unicode, etc.)
+          try {
+            const sanitized = sanitizeJSON(text);
+            const advancedRepaired = advancedRepairJSON(sanitized);
+            const basicRepaired = repairJSON(advancedRepaired);
+            return JSON.parse(basicRepaired);
+          } catch (fifthError) {
+            // Step 6: Try brace extraction + advanced repair
+            try {
+              const extracted = extractJSONWithBraceCounting(text);
+              if (extracted) {
+                const sanitized = sanitizeJSON(extracted);
+                const advancedRepaired = advancedRepairJSON(sanitized);
+                const basicRepaired = repairJSON(advancedRepaired);
+                return JSON.parse(basicRepaired);
+              }
+            } catch (sixthError) {
+              console.error('JSON parsing failed after all recovery attempts:', {
+                firstError: firstError.message,
+                secondError: secondError.message,
+                thirdError: thirdError.message,
+                fourthError: fourthError.message,
+                fifthError: fifthError.message,
+                sixthError: sixthError.message,
+                textLength: text.length,
+                firstChars: text.substring(0, 200)
+              });
+            }
+          }
         }
       }
     }

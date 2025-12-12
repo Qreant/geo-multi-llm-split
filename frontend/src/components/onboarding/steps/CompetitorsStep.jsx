@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Copy, X, ArrowLeft, ArrowRight, Users } from 'lucide-react';
+import { ChevronDown, ChevronUp, Copy, X, ArrowLeft, ArrowRight, Users, AlertCircle, Info } from 'lucide-react';
+
+const MAX_COMPETITORS = 4;
 
 export default function CompetitorsStep({ entity, markets, categoryFamilies, competitors: initialCompetitors, onComplete, onBack }) {
   // State: { [categoryId]: { [marketCode]: ['competitor1', 'competitor2'] } }
@@ -25,9 +27,18 @@ export default function CompetitorsStep({ entity, markets, categoryFamilies, com
 
   const addCompetitor = (categoryId, marketCode, competitor) => {
     const current = getCompetitors(categoryId, marketCode);
+    if (current.length >= MAX_COMPETITORS) {
+      return false; // Limit reached
+    }
     if (!current.includes(competitor) && competitor.trim()) {
       setCompetitorsForMarket(categoryId, marketCode, [...current, competitor.trim()]);
+      return true;
     }
+    return false;
+  };
+
+  const isAtLimit = (categoryId, marketCode) => {
+    return getCompetitors(categoryId, marketCode).length >= MAX_COMPETITORS;
   };
 
   const removeCompetitor = (categoryId, marketCode, competitor) => {
@@ -37,7 +48,8 @@ export default function CompetitorsStep({ entity, markets, categoryFamilies, com
 
   const copyFromPrimary = (categoryId, marketCode) => {
     const primaryCompetitors = getCompetitors(categoryId, primaryMarket.code);
-    setCompetitorsForMarket(categoryId, marketCode, [...primaryCompetitors]);
+    // Only copy up to MAX_COMPETITORS
+    setCompetitorsForMarket(categoryId, marketCode, primaryCompetitors.slice(0, MAX_COMPETITORS));
   };
 
   const handleInputKeyDown = (e, categoryId, marketCode) => {
@@ -99,6 +111,13 @@ export default function CompetitorsStep({ entity, markets, categoryFamilies, com
             <span className="text-2xl font-bold text-[#212121]">{getTotalCompetitors()}</span>
             <p className="text-xs text-[#757575]">competitors added</p>
           </div>
+        </div>
+        {/* Info tooltip about limit */}
+        <div className="flex items-center gap-2 mt-3 px-3 py-2 bg-[#E3F2FD] rounded-lg">
+          <Info className="w-4 h-4 text-[#2196F3] flex-shrink-0" />
+          <p className="text-xs text-[#1976D2]">
+            Maximum {MAX_COMPETITORS} competitors per category per market for optimal analysis quality and performance.
+          </p>
         </div>
       </div>
 
@@ -198,26 +217,52 @@ export default function CompetitorsStep({ entity, markets, categoryFamilies, com
                         </div>
 
                         {/* Input */}
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={inputValues[inputKey] || ''}
-                            onChange={(e) => setInputValues(prev => ({ ...prev, [inputKey]: e.target.value }))}
-                            onKeyDown={(e) => handleInputKeyDown(e, category.id, market.code)}
-                            placeholder="Type competitor name and press Enter..."
-                            className="flex-1 px-3 py-2 bg-white border border-[#E0E0E0] rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent"
-                          />
+                        <div className="space-y-2">
+                          <div className="flex gap-2">
+                            <div className="flex-1 relative">
+                              <input
+                                type="text"
+                                value={inputValues[inputKey] || ''}
+                                onChange={(e) => setInputValues(prev => ({ ...prev, [inputKey]: e.target.value }))}
+                                onKeyDown={(e) => handleInputKeyDown(e, category.id, market.code)}
+                                placeholder={isAtLimit(category.id, market.code)
+                                  ? "Maximum competitors reached"
+                                  : "Type competitor name and press Enter..."}
+                                disabled={isAtLimit(category.id, market.code)}
+                                className={`w-full px-3 py-2 bg-white border rounded text-sm focus:outline-none focus:ring-2 focus:border-transparent ${
+                                  isAtLimit(category.id, market.code)
+                                    ? 'border-[#FFCDD2] bg-[#FFEBEE] text-[#9E9E9E] cursor-not-allowed'
+                                    : 'border-[#E0E0E0] focus:ring-[#10B981]'
+                                }`}
+                              />
+                            </div>
 
-                          {!market.isPrimary && getCompetitors(category.id, primaryMarket.code).length > 0 && (
-                            <button
-                              onClick={() => copyFromPrimary(category.id, market.code)}
-                              className="px-3 py-2 text-[#757575] border border-[#E0E0E0] rounded font-medium text-sm hover:bg-white transition-colors flex items-center gap-1"
-                              title="Copy competitors from primary market"
-                            >
-                              <Copy className="w-4 h-4" />
-                              Copy from {primaryMarket.country.split(' ')[0]}
-                            </button>
-                          )}
+                            {!market.isPrimary && getCompetitors(category.id, primaryMarket.code).length > 0 && (
+                              <button
+                                onClick={() => copyFromPrimary(category.id, market.code)}
+                                className="px-3 py-2 text-[#757575] border border-[#E0E0E0] rounded font-medium text-sm hover:bg-white transition-colors flex items-center gap-1"
+                                title="Copy competitors from primary market"
+                              >
+                                <Copy className="w-4 h-4" />
+                                Copy from {primaryMarket.country.split(' ')[0]}
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Counter and error message */}
+                          <div className="flex items-center justify-between">
+                            <span className={`text-xs ${
+                              isAtLimit(category.id, market.code) ? 'text-[#EF5350]' : 'text-[#9E9E9E]'
+                            }`}>
+                              {marketCompetitors.length}/{MAX_COMPETITORS} competitors
+                            </span>
+                            {isAtLimit(category.id, market.code) && (
+                              <span className="flex items-center gap-1 text-xs text-[#EF5350]">
+                                <AlertCircle className="w-3 h-3" />
+                                Maximum limit reached. Remove a competitor to add a new one.
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     );

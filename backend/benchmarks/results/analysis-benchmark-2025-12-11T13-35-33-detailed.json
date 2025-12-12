@@ -1,0 +1,79 @@
+{
+  "exportedAt": "2025-12-11T13:35:33.347Z",
+  "config": {
+    "models": [
+      "gpt-4o",
+      "gpt-4.1-nano",
+      "gpt-4.1-mini",
+      "gpt-5-nano",
+      "gpt-5-mini"
+    ],
+    "analysisTypes": [
+      "reputation",
+      "visibility",
+      "competitive",
+      "category"
+    ],
+    "warmupRuns": 1,
+    "testRuns": 3
+  },
+  "results": [
+    {
+      "modelId": "gpt-4.1-nano",
+      "model": "gpt-4.1-nano",
+      "description": "Ultra-cheap, fastest inference (96% cheaper)",
+      "skipped": false,
+      "skipReason": null,
+      "overall": {
+        "totalQuestions": 11,
+        "successRate": 1,
+        "validRate": 1,
+        "avgQualityScore": 1,
+        "avgLatencyMs": 5797,
+        "avgInputTokens": 708.2727272727273,
+        "avgOutputTokens": 455.72727272727275,
+        "avgCostPerQuestion": 0.0002531181818181818,
+        "totalCost": 0.0027843,
+        "failures": []
+      },
+      "byAnalysisType": {
+        "reputation": {
+          "questions": 3,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 3770.3333333333335,
+          "avgCostPerQuestion": 0.00014786666666666666,
+          "totalCost": 0.0004436
+        },
+        "visibility": {
+          "questions": 3,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 5709.333333333333,
+          "avgCostPerQuestion": 0.00025560000000000003,
+          "totalCost": 0.0007668000000000001
+        },
+        "competitive": {
+          "questions": 3,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 7961.333333333333,
+          "avgCostPerQuestion": 0.0003694,
+          "totalCost": 0.0011082
+        },
+        "category": {
+          "questions": 2,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 5722,
+          "avgCostPerQuestion": 0.00023285,
+          "totalCost": 0.0004657
+        }
+      }
+    }
+  ]
+}

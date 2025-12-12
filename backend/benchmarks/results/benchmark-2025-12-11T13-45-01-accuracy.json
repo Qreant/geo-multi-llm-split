@@ -1,0 +1,15 @@
+{
+  "timestamp": "2025-12-11T13:45:01.838Z",
+  "goldenSetEvaluation": {
+    "overall": {}
+  },
+  "crossModelConsensus": {
+    "error": "Need at least 2 models for consensus analysis"
+  },
+  "summary": {
+    "goldenAccuracy": null,
+    "consensusRate": null,
+    "mostReliableModel": null,
+    "modelRankings": []
+  }
+}

@@ -1,0 +1,168 @@
+{
+  "exportedAt": "2025-12-11T19:30:18.554Z",
+  "metadata": {
+    "timestamp": "2025-12-11T19:30:18.554Z",
+    "testSourceCount": 500,
+    "warmupRuns": 2,
+    "testRuns": 3,
+    "models": [
+      "gpt-5-nano"
+    ],
+    "batchSizes": [
+      50,
+      100,
+      200,
+      500
+    ]
+  },
+  "results": [
+    {
+      "modelId": "gpt-5-nano",
+      "batchSize": 50,
+      "testRuns": 3,
+      "warmupRuns": 2,
+      "successRate": 0.3333333333333333,
+      "successRateStdDev": 0.16996731711975951,
+      "avgLatencyMs": 54332.76666666666,
+      "minLatencyMs": 51857,
+      "maxLatencyMs": 56579.7,
+      "p50LatencyMs": 51918,
+      "p95LatencyMs": 59087,
+      "latencyStdDev": 1934.8121947333505,
+      "avgLatencyPerSource": 1086.6553333333334,
+      "p50LatencyPerSource": 1038.36,
+      "p95LatencyPerSource": 1181.74,
+      "avgInputTokens": 16791,
+      "avgOutputTokens": 24513.666666666668,
+      "totalTokens": 41304.66666666667,
+      "avgCostPerRun": 0.010645016666666667,
+      "costPer500Sources": 0.010645016666666667,
+      "totalFailedBatches": 20,
+      "failureReasons": {
+        "unknown": 2,
+        "timeout": 18
+      },
+      "primaryFailureReason": "timeout",
+      "accuracyGolden": 1
+    },
+    {
+      "modelId": "gpt-5-nano",
+      "batchSize": 100,
+      "testRuns": 3,
+      "warmupRuns": 2,
+      "successRate": 0.13333333333333333,
+      "successRateStdDev": 0.09428090415820634,
+      "avgLatencyMs": 85139.53333333333,
+      "minLatencyMs": 75662.2,
+      "maxLatencyMs": 90010,
+      "p50LatencyMs": 82230,
+      "p95LatencyMs": 88601,
+      "latencyStdDev": 6702.350660941444,
+      "avgLatencyPerSource": 851.3953333333334,
+      "p50LatencyPerSource": 822.3,
+      "p95LatencyPerSource": 886.01,
+      "avgInputTokens": 5910,
+      "avgOutputTokens": 7479.666666666667,
+      "totalTokens": 13389.666666666668,
+      "avgCostPerRun": 0.0032873666666666666,
+      "costPer500Sources": 0.0032873666666666666,
+      "totalFailedBatches": 13,
+      "failureReasons": {
+        "timeout": 12,
+        "server_error": 1
+      },
+      "primaryFailureReason": "timeout",
+      "accuracyGolden": 1
+    },
+    {
+      "modelId": "gpt-5-nano",
+      "batchSize": 200,
+      "testRuns": 3,
+      "warmupRuns": 2,
+      "successRate": 0.1111111111111111,
+      "successRateStdDev": 0.15713484026367722,
+      "avgLatencyMs": 105162.55555555556,
+      "minLatencyMs": 95500,
+      "maxLatencyMs": 110017,
+      "p50LatencyMs": 76480,
+      "p95LatencyMs": 76480,
+      "latencyStdDev": 6832.484740443631,
+      "avgLatencyPerSource": 630.9753333333333,
+      "p50LatencyPerSource": 382.4,
+      "p95LatencyPerSource": 382.4,
+      "avgInputTokens": 5667,
+      "avgOutputTokens": 6258.333333333333,
+      "totalTokens": 11925.333333333332,
+      "avgCostPerRun": 0.0027866833333333335,
+      "costPer500Sources": 0.0027866833333333335,
+      "totalFailedBatches": 8,
+      "failureReasons": {
+        "timeout": 8
+      },
+      "primaryFailureReason": "timeout",
+      "accuracyGolden": 1
+    },
+    {
+      "modelId": "gpt-5-nano",
+      "batchSize": 500,
+      "testRuns": 3,
+      "warmupRuns": 2,
+      "successRate": 0.6666666666666666,
+      "successRateStdDev": 0.4714045207910317,
+      "avgLatencyMs": 104055.66666666667,
+      "minLatencyMs": 46713,
+      "maxLatencyMs": 179999,
+      "p50LatencyMs": 46713,
+      "p95LatencyMs": 85455,
+      "latencyStdDev": 55980.81843711191,
+      "avgLatencyPerSource": 208.1113333333333,
+      "p50LatencyPerSource": 93.426,
+      "p95LatencyPerSource": 170.91,
+      "avgInputTokens": 30938.666666666668,
+      "avgOutputTokens": 4772.666666666667,
+      "totalTokens": 35711.333333333336,
+      "avgCostPerRun": 0.0034559999999999994,
+      "costPer500Sources": 0.0034559999999999994,
+      "totalFailedBatches": 1,
+      "failureReasons": {
+        "timeout": 1
+      },
+      "primaryFailureReason": "timeout"
+    }
+  ],
+  "recommendations": {
+    "bestOverall": {
+      "modelId": "gpt-5-nano",
+      "batchSize": 500,
+      "score": 0.31666666666666665,
+      "details": "gpt-5-nano @ batch 500: 67% success, 208ms/source, $0.0035/500"
+    },
+    "bestLatency": {
+      "modelId": "gpt-5-nano",
+      "batchSize": 500,
+      "latencyPerSource": 208.1113333333333,
+      "details": "gpt-5-nano @ batch 500: 67% success, 208ms/source, $0.0035/500"
+    },
+    "bestCost": {
+      "modelId": "gpt-5-nano",
+      "batchSize": 500,
+      "costPer500": 0.0034559999999999994,
+      "details": "gpt-5-nano @ batch 500: 67% success, 208ms/source, $0.0035/500"
+    },
+    "bestAccuracy": null,
+    "bestReliability": {
+      "modelId": "gpt-5-nano",
+      "batchSize": 500,
+      "successRate": 0.6666666666666666,
+      "details": "gpt-5-nano @ batch 500: 67% success, 208ms/source, $0.0035/500"
+    },
+    "allRankings": [
+      {
+        "rank": 1,
+        "modelId": "gpt-5-nano",
+        "batchSize": 500,
+        "overallScore": "0.317"
+      }
+    ]
+  }
+}

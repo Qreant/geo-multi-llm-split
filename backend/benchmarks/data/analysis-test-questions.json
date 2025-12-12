@@ -1,0 +1,102 @@
+{
+  "metadata": {
+    "createdAt": "2025-12-11",
+    "version": "1.0",
+    "description": "Test questions for analysis benchmark - consistent prompts across model tests",
+    "brand": "Nike",
+    "competitors": ["Adidas", "Puma", "New Balance", "Under Armour"]
+  },
+  "questions": {
+    "reputation": [
+      {
+        "id": "rep_1",
+        "type": "reputation",
+        "question": "What is the reputation of Nike in the athletic footwear industry?",
+        "brand": "Nike",
+        "market": { "country": "United States", "language": "English" }
+      },
+      {
+        "id": "rep_2",
+        "type": "reputation",
+        "question": "What do consumers think about Nike's sustainability efforts?",
+        "brand": "Nike",
+        "market": { "country": "United States", "language": "English" }
+      },
+      {
+        "id": "rep_3",
+        "type": "reputation",
+        "question": "How is Nike perceived in terms of quality and innovation?",
+        "brand": "Nike",
+        "market": { "country": "United Kingdom", "language": "English" }
+      }
+    ],
+    "visibility": [
+      {
+        "id": "vis_1",
+        "type": "visibility",
+        "question": "What are the best running shoes for marathon training?",
+        "category": "Running Shoes",
+        "brand": "Nike",
+        "market": { "country": "United States", "language": "English" }
+      },
+      {
+        "id": "vis_2",
+        "type": "visibility",
+        "question": "What are the top athletic apparel brands?",
+        "category": "Athletic Apparel",
+        "brand": "Nike",
+        "market": { "country": "United States", "language": "English" }
+      },
+      {
+        "id": "vis_3",
+        "type": "visibility",
+        "question": "What are the best basketball shoes for performance?",
+        "category": "Basketball Shoes",
+        "brand": "Nike",
+        "market": { "country": "United Kingdom", "language": "English" }
+      }
+    ],
+    "competitive": [
+      {
+        "id": "comp_1",
+        "type": "competitive",
+        "question": "Which brand makes the best running shoes for beginners?",
+        "entities": ["Nike", "Adidas", "Puma", "New Balance"],
+        "category": "Running Shoes",
+        "market": { "country": "United States", "language": "English" }
+      },
+      {
+        "id": "comp_2",
+        "type": "competitive",
+        "question": "Which athletic brand offers the best value for money?",
+        "entities": ["Nike", "Adidas", "Under Armour", "Puma"],
+        "category": "Athletic Apparel",
+        "market": { "country": "United States", "language": "English" }
+      },
+      {
+        "id": "comp_3",
+        "type": "competitive",
+        "question": "Which brand is best for professional basketball players?",
+        "entities": ["Nike", "Adidas", "Under Armour"],
+        "category": "Basketball Shoes",
+        "market": { "country": "United Kingdom", "language": "English" }
+      }
+    ],
+    "category": [
+      {
+        "id": "cat_1",
+        "type": "category",
+        "question": "What product categories is Nike primarily known for?",
+        "brand": "Nike",
+        "market": { "country": "United States", "language": "English" }
+      },
+      {
+        "id": "cat_2",
+        "type": "category",
+        "question": "What industries and product categories does Nike compete in?",
+        "brand": "Nike",
+        "market": { "country": "United Kingdom", "language": "English" }
+      }
+    ]
+  }
+}

@@ -170,6 +170,10 @@ export async function callOpenAI(prompt, apiKey, model, options = {}) {
   const { timeout = 60000 } = options;
   const startTime = Date.now();
 
+  // GPT-5 models use max_completion_tokens instead of max_tokens, and don't support custom temperature
+  const isGpt5Model = model.startsWith('gpt-5');
+  const tokenLimit = BENCHMARK_CONFIG.tokenLimits[model] || 16384;
+
   const requestBody = {
     model,
     messages: [
@@ -182,8 +186,8 @@ export async function callOpenAI(prompt, apiKey, model, options = {}) {
         content: prompt
       }
     ],
-    max_tokens: BENCHMARK_CONFIG.tokenLimits['gpt-4o'] || 16384,
-    temperature: BENCHMARK_CONFIG.temperature,
+    ...(isGpt5Model ? { max_completion_tokens: tokenLimit } : { max_tokens: tokenLimit }),
+    ...(isGpt5Model ? {} : { temperature: BENCHMARK_CONFIG.temperature }),
     response_format: { type: 'json_object' }
   };
 

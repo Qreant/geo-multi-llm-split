@@ -1,0 +1,705 @@
+{
+  "exportedAt": "2025-12-11T13:52:58.409Z",
+  "config": {
+    "models": [
+      "gpt-4o",
+      "gpt-4.1-nano",
+      "gpt-4.1-mini",
+      "gpt-5-nano",
+      "gpt-5-mini"
+    ],
+    "analysisTypes": [
+      "reputation",
+      "visibility",
+      "competitive",
+      "category"
+    ],
+    "warmupRuns": 1,
+    "testRuns": 3
+  },
+  "results": [
+    {
+      "modelId": "gpt-4o",
+      "model": "gpt-4o-2024-11-20",
+      "description": "Current baseline - best accuracy",
+      "skipped": false,
+      "skipReason": null,
+      "overall": {
+        "totalQuestions": 33,
+        "successRate": 1,
+        "validRate": 1,
+        "avgQualityScore": 1,
+        "avgLatencyMs": 9595.90909090909,
+        "avgInputTokens": 708.2727272727273,
+        "avgOutputTokens": 783.969696969697,
+        "avgCostPerQuestion": 0.009610378787878788,
+        "totalCost": 0.3171425,
+        "failures": []
+      },
+      "byAnalysisType": {
+        "reputation": {
+          "questions": 9,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 5235.222222222223,
+          "avgCostPerQuestion": 0.004172222222222222,
+          "totalCost": 0.03755
+        },
+        "visibility": {
+          "questions": 9,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 7398.888888888889,
+          "avgCostPerQuestion": 0.006644444444444444,
+          "totalCost": 0.0598
+        },
+        "competitive": {
+          "questions": 9,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 13882.666666666666,
+          "avgCostPerQuestion": 0.01570833333333333,
+          "totalCost": 0.14137499999999997
+        },
+        "category": {
+          "questions": 6,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 13002.333333333334,
+          "avgCostPerQuestion": 0.013069583333333334,
+          "totalCost": 0.0784175
+        }
+      }
+    },
+    {
+      "modelId": "gpt-4.1-nano",
+      "model": "gpt-4.1-nano",
+      "description": "Ultra-cheap, fastest inference (96% cheaper)",
+      "skipped": false,
+      "skipReason": null,
+      "overall": {
+        "totalQuestions": 33,
+        "successRate": 1,
+        "validRate": 1,
+        "avgQualityScore": 1,
+        "avgLatencyMs": 5331.363636363636,
+        "avgInputTokens": 708.2727272727273,
+        "avgOutputTokens": 440.3939393939394,
+        "avgCostPerQuestion": 0.0002469848484848485,
+        "totalCost": 0.008150500000000001,
+        "failures": []
+      },
+      "byAnalysisType": {
+        "reputation": {
+          "questions": 9,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 3527.777777777778,
+          "avgCostPerQuestion": 0.00014626666666666668,
+          "totalCost": 0.0013164000000000001
+        },
+        "visibility": {
+          "questions": 9,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 5661.444444444444,
+          "avgCostPerQuestion": 0.00024711111111111114,
+          "totalCost": 0.0022240000000000003
+        },
+        "competitive": {
+          "questions": 9,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 7476,
+          "avgCostPerQuestion": 0.00035731111111111116,
+          "totalCost": 0.0032158000000000004
+        },
+        "category": {
+          "questions": 6,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 4324.666666666667,
+          "avgCostPerQuestion": 0.00023238333333333336,
+          "totalCost": 0.0013943000000000002
+        }
+      }
+    },
+    {
+      "modelId": "gpt-4.1-mini",
+      "model": "gpt-4.1-mini",
+      "description": "Mid-tier efficiency model (84% cheaper)",
+      "skipped": false,
+      "skipReason": null,
+      "overall": {
+        "totalQuestions": 33,
+        "successRate": 1,
+        "validRate": 1,
+        "avgQualityScore": 1,
+        "avgLatencyMs": 12880.90909090909,
+        "avgInputTokens": 708.2727272727273,
+        "avgOutputTokens": 835.2727272727273,
+        "avgCostPerQuestion": 0.0016197454545454548,
+        "totalCost": 0.05345160000000001,
+        "failures": []
+      },
+      "byAnalysisType": {
+        "reputation": {
+          "questions": 9,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 6190.666666666667,
+          "avgCostPerQuestion": 0.0007496888888888889,
+          "totalCost": 0.0067472
+        },
+        "visibility": {
+          "questions": 9,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 7838.888888888889,
+          "avgCostPerQuestion": 0.0010860444444444443,
+          "totalCost": 0.009774399999999999
+        },
+        "competitive": {
+          "questions": 9,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 25532,
+          "avgCostPerQuestion": 0.0030811555555555563,
+          "totalCost": 0.027730400000000006
+        },
+        "category": {
+          "questions": 6,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 11502.666666666666,
+          "avgCostPerQuestion": 0.0015332666666666667,
+          "totalCost": 0.0091996
+        }
+      }
+    },
+    {
+      "modelId": "gpt-5-nano",
+      "model": "gpt-5-nano",
+      "description": "GPT-5 ultra-cheap variant (98% cheaper)",
+      "skipped": false,
+      "skipReason": null,
+      "overall": {
+        "totalQuestions": 33,
+        "successRate": 0,
+        "validRate": 0,
+        "avgQualityScore": 0,
+        "avgLatencyMs": 0,
+        "avgInputTokens": 0,
+        "avgOutputTokens": 0,
+        "avgCostPerQuestion": 0,
+        "totalCost": 0,
+        "failures": [
+          {
+            "questionId": "rep_1",
+            "type": "reputation",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "rep_2",
+            "type": "reputation",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "rep_3",
+            "type": "reputation",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "vis_1",
+            "type": "visibility",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "vis_2",
+            "type": "visibility",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "vis_3",
+            "type": "visibility",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "comp_1",
+            "type": "competitive",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "comp_2",
+            "type": "competitive",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "comp_3",
+            "type": "competitive",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "cat_1",
+            "type": "category",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "cat_2",
+            "type": "category",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "rep_1",
+            "type": "reputation",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "rep_2",
+            "type": "reputation",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "rep_3",
+            "type": "reputation",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "vis_1",
+            "type": "visibility",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "vis_2",
+            "type": "visibility",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "vis_3",
+            "type": "visibility",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "comp_1",
+            "type": "competitive",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "comp_2",
+            "type": "competitive",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "comp_3",
+            "type": "competitive",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "cat_1",
+            "type": "category",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "cat_2",
+            "type": "category",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "rep_1",
+            "type": "reputation",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "rep_2",
+            "type": "reputation",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "rep_3",
+            "type": "reputation",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "vis_1",
+            "type": "visibility",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "vis_2",
+            "type": "visibility",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "vis_3",
+            "type": "visibility",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "comp_1",
+            "type": "competitive",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "comp_2",
+            "type": "competitive",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "comp_3",
+            "type": "competitive",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "cat_1",
+            "type": "category",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "cat_2",
+            "type": "category",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          }
+        ]
+      },
+      "byAnalysisType": {
+        "reputation": {
+          "questions": 9,
+          "successRate": 0,
+          "validRate": 0,
+          "avgQualityScore": 0,
+          "avgLatencyMs": 0,
+          "avgCostPerQuestion": 0,
+          "totalCost": 0
+        },
+        "visibility": {
+          "questions": 9,
+          "successRate": 0,
+          "validRate": 0,
+          "avgQualityScore": 0,
+          "avgLatencyMs": 0,
+          "avgCostPerQuestion": 0,
+          "totalCost": 0
+        },
+        "competitive": {
+          "questions": 9,
+          "successRate": 0,
+          "validRate": 0,
+          "avgQualityScore": 0,
+          "avgLatencyMs": 0,
+          "avgCostPerQuestion": 0,
+          "totalCost": 0
+        },
+        "category": {
+          "questions": 6,
+          "successRate": 0,
+          "validRate": 0,
+          "avgQualityScore": 0,
+          "avgLatencyMs": 0,
+          "avgCostPerQuestion": 0,
+          "totalCost": 0
+        }
+      }
+    },
+    {
+      "modelId": "gpt-5-mini",
+      "model": "gpt-5-mini",
+      "description": "GPT-5 balanced variant (80% cheaper)",
+      "skipped": false,
+      "skipReason": null,
+      "overall": {
+        "totalQuestions": 33,
+        "successRate": 0,
+        "validRate": 0,
+        "avgQualityScore": 0,
+        "avgLatencyMs": 0,
+        "avgInputTokens": 0,
+        "avgOutputTokens": 0,
+        "avgCostPerQuestion": 0,
+        "totalCost": 0,
+        "failures": [
+          {
+            "questionId": "rep_1",
+            "type": "reputation",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "rep_2",
+            "type": "reputation",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "rep_3",
+            "type": "reputation",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "vis_1",
+            "type": "visibility",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "vis_2",
+            "type": "visibility",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "vis_3",
+            "type": "visibility",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "comp_1",
+            "type": "competitive",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "comp_2",
+            "type": "competitive",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "comp_3",
+            "type": "competitive",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "cat_1",
+            "type": "category",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "cat_2",
+            "type": "category",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "rep_1",
+            "type": "reputation",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "rep_2",
+            "type": "reputation",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "rep_3",
+            "type": "reputation",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "vis_1",
+            "type": "visibility",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "vis_2",
+            "type": "visibility",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "vis_3",
+            "type": "visibility",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "comp_1",
+            "type": "competitive",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "comp_2",
+            "type": "competitive",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "comp_3",
+            "type": "competitive",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "cat_1",
+            "type": "category",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "cat_2",
+            "type": "category",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "rep_1",
+            "type": "reputation",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "rep_2",
+            "type": "reputation",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "rep_3",
+            "type": "reputation",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "vis_1",
+            "type": "visibility",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "vis_2",
+            "type": "visibility",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "vis_3",
+            "type": "visibility",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "comp_1",
+            "type": "competitive",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "comp_2",
+            "type": "competitive",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "comp_3",
+            "type": "competitive",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "cat_1",
+            "type": "category",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          },
+          {
+            "questionId": "cat_2",
+            "type": "category",
+            "reason": "unknown",
+            "error": "Request failed with status code 400"
+          }
+        ]
+      },
+      "byAnalysisType": {
+        "reputation": {
+          "questions": 9,
+          "successRate": 0,
+          "validRate": 0,
+          "avgQualityScore": 0,
+          "avgLatencyMs": 0,
+          "avgCostPerQuestion": 0,
+          "totalCost": 0
+        },
+        "visibility": {
+          "questions": 9,
+          "successRate": 0,
+          "validRate": 0,
+          "avgQualityScore": 0,
+          "avgLatencyMs": 0,
+          "avgCostPerQuestion": 0,
+          "totalCost": 0
+        },
+        "competitive": {
+          "questions": 9,
+          "successRate": 0,
+          "validRate": 0,
+          "avgQualityScore": 0,
+          "avgLatencyMs": 0,
+          "avgCostPerQuestion": 0,
+          "totalCost": 0
+        },
+        "category": {
+          "questions": 6,
+          "successRate": 0,
+          "validRate": 0,
+          "avgQualityScore": 0,
+          "avgLatencyMs": 0,
+          "avgCostPerQuestion": 0,
+          "totalCost": 0
+        }
+      }
+    }
+  ]
+}

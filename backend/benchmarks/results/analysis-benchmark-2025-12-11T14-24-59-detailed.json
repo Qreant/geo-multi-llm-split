@@ -1,0 +1,86 @@
+{
+  "exportedAt": "2025-12-11T14:24:59.446Z",
+  "config": {
+    "models": [
+      "gpt-4o",
+      "gpt-4.1-nano",
+      "gpt-4.1-mini",
+      "gpt-5-nano",
+      "gpt-5-mini"
+    ],
+    "analysisTypes": [
+      "reputation",
+      "visibility",
+      "competitive",
+      "category"
+    ],
+    "warmupRuns": 1,
+    "testRuns": 3
+  },
+  "results": [
+    {
+      "modelId": "gpt-5-nano",
+      "model": "gpt-5-nano",
+      "description": "GPT-5 ultra-cheap variant (98% cheaper)",
+      "skipped": false,
+      "skipReason": null,
+      "overall": {
+        "totalQuestions": 33,
+        "successRate": 0.9696969696969697,
+        "validRate": 1,
+        "avgQualityScore": 1,
+        "avgLatencyMs": 55157.03125,
+        "avgInputTokens": 701.125,
+        "avgOutputTokens": 5400.21875,
+        "avgCostPerQuestion": 0.00219514375,
+        "totalCost": 0.0702446,
+        "failures": [
+          {
+            "questionId": "cat_2",
+            "type": "category",
+            "reason": "server_error",
+            "error": "Request failed with status code 502"
+          }
+        ]
+      },
+      "byAnalysisType": {
+        "reputation": {
+          "questions": 9,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 67454.88888888889,
+          "avgCostPerQuestion": 0.002700838888888889,
+          "totalCost": 0.02430755
+        },
+        "visibility": {
+          "questions": 9,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 26102.333333333332,
+          "avgCostPerQuestion": 0.001058238888888889,
+          "totalCost": 0.00952415
+        },
+        "competitive": {
+          "questions": 9,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 74720,
+          "avgCostPerQuestion": 0.0028731833333333332,
+          "totalCost": 0.02585865
+        },
+        "category": {
+          "questions": 6,
+          "successRate": 0.8333333333333334,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 50106,
+          "avgCostPerQuestion": 0.00211085,
+          "totalCost": 0.01055425
+        }
+      }
+    }
+  ]
+}

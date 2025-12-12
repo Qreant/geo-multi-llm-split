@@ -427,8 +427,8 @@ export async function classifySourceTypes(sources, brandName, apiKey, competitor
       console.log(`   📊 Competitor detection enabled for: ${brandName} (Owned Media) vs ${competitors.join(', ')} (Competitor Media)`);
     }
 
-    // Batch sources for classification (100 per batch)
-    const BATCH_SIZE = 100;
+    // Batch sources for classification (500 per batch - gemini-flash-lite handles large batches well)
+    const BATCH_SIZE = 500;
     const classifiedSources = [];
 
     for (let i = 0; i < sources.length; i += BATCH_SIZE) {

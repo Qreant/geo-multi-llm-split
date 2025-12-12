@@ -1,0 +1,158 @@
+{
+  "exportedAt": "2025-12-11T13:45:01.837Z",
+  "metadata": {
+    "timestamp": "2025-12-11T13:45:01.837Z",
+    "testSourceCount": 500,
+    "warmupRuns": 2,
+    "testRuns": 3,
+    "models": [
+      "gpt-5-nano"
+    ],
+    "batchSizes": [
+      50,
+      100,
+      200,
+      500
+    ]
+  },
+  "results": [
+    {
+      "modelId": "gpt-5-nano",
+      "batchSize": 50,
+      "testRuns": 3,
+      "warmupRuns": 2,
+      "successRate": 0,
+      "successRateStdDev": 0,
+      "avgLatencyMs": 227.63333333333335,
+      "minLatencyMs": 209.7,
+      "maxLatencyMs": 250.4,
+      "p50LatencyMs": 0,
+      "p95LatencyMs": 0,
+      "latencyStdDev": 16.963555706933096,
+      "avgLatencyPerSource": 4.552666666666667,
+      "p50LatencyPerSource": 0,
+      "p95LatencyPerSource": 0,
+      "avgInputTokens": 0,
+      "avgOutputTokens": 0,
+      "totalTokens": 0,
+      "avgCostPerRun": 0,
+      "costPer500Sources": 0,
+      "totalFailedBatches": 30,
+      "failureReasons": {
+        "unknown": 30
+      },
+      "primaryFailureReason": "unknown"
+    },
+    {
+      "modelId": "gpt-5-nano",
+      "batchSize": 100,
+      "testRuns": 3,
+      "warmupRuns": 2,
+      "successRate": 0,
+      "successRateStdDev": 0,
+      "avgLatencyMs": 265.53333333333336,
+      "minLatencyMs": 240.8,
+      "maxLatencyMs": 312.8,
+      "p50LatencyMs": 0,
+      "p95LatencyMs": 0,
+      "latencyStdDev": 33.43464603604404,
+      "avgLatencyPerSource": 2.6553333333333335,
+      "p50LatencyPerSource": 0,
+      "p95LatencyPerSource": 0,
+      "avgInputTokens": 0,
+      "avgOutputTokens": 0,
+      "totalTokens": 0,
+      "avgCostPerRun": 0,
+      "costPer500Sources": 0,
+      "totalFailedBatches": 15,
+      "failureReasons": {
+        "unknown": 15
+      },
+      "primaryFailureReason": "unknown"
+    },
+    {
+      "modelId": "gpt-5-nano",
+      "batchSize": 200,
+      "testRuns": 3,
+      "warmupRuns": 2,
+      "successRate": 0,
+      "successRateStdDev": 0,
+      "avgLatencyMs": 262.6666666666667,
+      "minLatencyMs": 251.66666666666666,
+      "maxLatencyMs": 276.3333333333333,
+      "p50LatencyMs": 0,
+      "p95LatencyMs": 0,
+      "latencyStdDev": 10.245143384207116,
+      "avgLatencyPerSource": 1.5759999999999998,
+      "p50LatencyPerSource": 0,
+      "p95LatencyPerSource": 0,
+      "avgInputTokens": 0,
+      "avgOutputTokens": 0,
+      "totalTokens": 0,
+      "avgCostPerRun": 0,
+      "costPer500Sources": 0,
+      "totalFailedBatches": 9,
+      "failureReasons": {
+        "unknown": 9
+      },
+      "primaryFailureReason": "unknown"
+    },
+    {
+      "modelId": "gpt-5-nano",
+      "batchSize": 500,
+      "testRuns": 3,
+      "warmupRuns": 2,
+      "successRate": 0,
+      "successRateStdDev": 0,
+      "avgLatencyMs": 547.3333333333334,
+      "minLatencyMs": 404,
+      "maxLatencyMs": 802,
+      "p50LatencyMs": 0,
+      "p95LatencyMs": 0,
+      "latencyStdDev": 180.54977768533038,
+      "avgLatencyPerSource": 1.0946666666666667,
+      "p50LatencyPerSource": 0,
+      "p95LatencyPerSource": 0,
+      "avgInputTokens": 0,
+      "avgOutputTokens": 0,
+      "totalTokens": 0,
+      "avgCostPerRun": 0,
+      "costPer500Sources": 0,
+      "totalFailedBatches": 3,
+      "failureReasons": {
+        "unknown": 3
+      },
+      "primaryFailureReason": "unknown"
+    }
+  ],
+  "recommendations": {
+    "error": "All configurations had >50% failure rate",
+    "bestAttempt": {
+      "modelId": "gpt-5-nano",
+      "batchSize": 50,
+      "testRuns": 3,
+      "warmupRuns": 2,
+      "successRate": 0,
+      "successRateStdDev": 0,
+      "avgLatencyMs": 227.63333333333335,
+      "minLatencyMs": 209.7,
+      "maxLatencyMs": 250.4,
+      "p50LatencyMs": 0,
+      "p95LatencyMs": 0,
+      "latencyStdDev": 16.963555706933096,
+      "avgLatencyPerSource": 4.552666666666667,
+      "p50LatencyPerSource": 0,
+      "p95LatencyPerSource": 0,
+      "avgInputTokens": 0,
+      "avgOutputTokens": 0,
+      "totalTokens": 0,
+      "avgCostPerRun": 0,
+      "costPer500Sources": 0,
+      "totalFailedBatches": 30,
+      "failureReasons": {
+        "unknown": 30
+      },
+      "primaryFailureReason": "unknown"
+    }
+  }
+}

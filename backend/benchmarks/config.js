@@ -31,16 +31,16 @@ export const BENCHMARK_CONFIG = {
       description: 'Good balance of cost/performance'
     },
     {
-      id: 'deepseek-chat',
-      provider: 'deepseek',
-      model: 'deepseek-chat',
-      description: 'Very cheap, fast'
+      id: 'gpt-5-nano',
+      provider: 'openai',
+      model: 'gpt-5-nano',
+      description: 'GPT-5 ultra-cheap variant (98% cheaper than gpt-4o)'
     },
     {
-      id: 'deepseek-reasoner',
-      provider: 'deepseek',
-      model: 'deepseek-reasoner',
-      description: 'Better reasoning capabilities'
+      id: 'gpt-5-mini',
+      provider: 'openai',
+      model: 'gpt-5-mini',
+      description: 'GPT-5 balanced variant (80% cheaper than gpt-4o)'
     }
   ],
 
@@ -68,13 +68,15 @@ export const BENCHMARK_CONFIG = {
   retryBackoffMultiplier: 2,
 
   // Token limits per model (output tokens)
+  // Note: GPT-5 models use reasoning tokens which count against max_completion_tokens
+  // so they need higher limits to leave room for actual output after reasoning
   tokenLimits: {
     'gemini-flash': 65000,
     'gemini-flash-lite': 65000,
     'gpt-4o': 16384,
     'gpt-4o-mini': 16384,
-    'deepseek-chat': 8192,
-    'deepseek-reasoner': 8192
+    'gpt-5-nano': 32768,  // Higher for reasoning tokens overhead
+    'gpt-5-mini': 32768   // Higher for reasoning tokens overhead
   },
 
   // Pricing per 1M tokens (USD)
@@ -83,8 +85,8 @@ export const BENCHMARK_CONFIG = {
     'gemini-flash-lite': { input: 0.0375, output: 0.15 },
     'gpt-4o': { input: 2.50, output: 10.00 },
     'gpt-4o-mini': { input: 0.15, output: 0.60 },
-    'deepseek-chat': { input: 0.14, output: 0.28 },
-    'deepseek-reasoner': { input: 0.55, output: 2.19 }
+    'gpt-5-nano': { input: 0.05, output: 0.40 },
+    'gpt-5-mini': { input: 0.25, output: 2.00 }
   }
 };
 

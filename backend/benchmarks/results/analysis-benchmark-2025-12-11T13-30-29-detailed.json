@@ -1,0 +1,79 @@
+{
+  "exportedAt": "2025-12-11T13:30:29.918Z",
+  "config": {
+    "models": [
+      "gpt-4o",
+      "gpt-4.1-nano",
+      "gpt-4.1-mini",
+      "gpt-5-nano",
+      "gpt-5-mini"
+    ],
+    "analysisTypes": [
+      "reputation",
+      "visibility",
+      "competitive",
+      "category"
+    ],
+    "warmupRuns": 1,
+    "testRuns": 3
+  },
+  "results": [
+    {
+      "modelId": "gpt-4o",
+      "model": "gpt-4o-2024-11-20",
+      "description": "Current baseline - best accuracy",
+      "skipped": false,
+      "skipReason": null,
+      "overall": {
+        "totalQuestions": 11,
+        "successRate": 1,
+        "validRate": 1,
+        "avgQualityScore": 1,
+        "avgLatencyMs": 10596.09090909091,
+        "avgInputTokens": 708.2727272727273,
+        "avgOutputTokens": 812.1818181818181,
+        "avgCostPerQuestion": 0.0098925,
+        "totalCost": 0.1088175,
+        "failures": []
+      },
+      "byAnalysisType": {
+        "reputation": {
+          "questions": 3,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 3901,
+          "avgCostPerQuestion": 0.003939999999999999,
+          "totalCost": 0.011819999999999997
+        },
+        "visibility": {
+          "questions": 3,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 9973.333333333334,
+          "avgCostPerQuestion": 0.006756666666666667,
+          "totalCost": 0.02027
+        },
+        "competitive": {
+          "questions": 3,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 13635.333333333334,
+          "avgCostPerQuestion": 0.016251666666666668,
+          "totalCost": 0.048755
+        },
+        "category": {
+          "questions": 2,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 17014,
+          "avgCostPerQuestion": 0.01398625,
+          "totalCost": 0.0279725
+        }
+      }
+    }
+  ]
+}

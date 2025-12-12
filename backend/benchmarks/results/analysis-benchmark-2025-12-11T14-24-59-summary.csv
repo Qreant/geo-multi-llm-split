@@ -1,0 +1,6 @@
+model_id,analysis_type,questions,success_rate,valid_rate,avg_quality_score,avg_latency_ms,avg_input_tokens,avg_output_tokens,avg_cost,total_cost
+gpt-5-nano,ALL,33,97.0%,100.0%,1.000,55157,701,5400,$0.0022,$0.0702
+gpt-5-nano,reputation,9,100.0%,100.0%,1.000,67455,367,6706,$0.0027,$0.0243
+gpt-5-nano,visibility,9,100.0%,100.0%,1.000,26102,614,2569,$0.0011,$0.0095
+gpt-5-nano,competitive,9,100.0%,100.0%,1.000,74720,1010,7057,$0.0029,$0.0259
+gpt-5-nano,category,6,83.3%,100.0%,1.000,50106,903,5164,$0.0021,$0.0106

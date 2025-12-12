@@ -126,9 +126,8 @@ export async function runAnalysis(reportId, questions, config, geminiApiKey, ope
     };
 
     // Process questions in batches
-    // Rate limiting happens at individual call level (5s between calls = 12 RPM)
-    // Batch size determines parallelism, not rate - can process more in parallel
-    const BATCH_SIZE = 15;
+    // gpt-4.1-nano has high rate limits (500+ RPM), can process many in parallel
+    const BATCH_SIZE = 100;
     for (let i = 0; i < allQuestions.length; i += BATCH_SIZE) {
       const batch = allQuestions.slice(i, i + BATCH_SIZE);
 

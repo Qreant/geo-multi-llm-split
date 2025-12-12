@@ -1,0 +1,6 @@
+model_id,analysis_type,questions,success_rate,valid_rate,avg_quality_score,avg_latency_ms,avg_input_tokens,avg_output_tokens,avg_cost,total_cost
+gpt-4o,ALL,11,100.0%,100.0%,1.000,10596,708,812,$0.0099,$0.1088
+gpt-4o,reputation,3,100.0%,100.0%,1.000,3901,368,302,$0.0039,$0.0118
+gpt-4o,visibility,3,100.0%,100.0%,1.000,9973,615,522,$0.0068,$0.0203
+gpt-4o,competitive,3,100.0%,100.0%,1.000,13635,1011,1372,$0.0163,$0.0488
+gpt-4o,category,2,100.0%,100.0%,1.000,17014,905,1173,$0.0140,$0.0280

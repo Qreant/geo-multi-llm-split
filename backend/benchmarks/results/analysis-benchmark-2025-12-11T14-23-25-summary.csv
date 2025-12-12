@@ -1,0 +1,6 @@
+model_id,analysis_type,questions,success_rate,valid_rate,avg_quality_score,avg_latency_ms,avg_input_tokens,avg_output_tokens,avg_cost,total_cost
+gpt-5-mini,ALL,33,100.0%,100.0%,1.000,51698,707,3093,$0.0064,$0.2100
+gpt-5-mini,reputation,9,100.0%,100.0%,1.000,45815,367,2541,$0.0052,$0.0466
+gpt-5-mini,visibility,9,100.0%,100.0%,1.000,51563,614,2779,$0.0057,$0.0514
+gpt-5-mini,competitive,9,100.0%,100.0%,1.000,58274,1010,3650,$0.0076,$0.0680
+gpt-5-mini,category,6,100.0%,100.0%,1.000,50865,904,3558,$0.0073,$0.0441

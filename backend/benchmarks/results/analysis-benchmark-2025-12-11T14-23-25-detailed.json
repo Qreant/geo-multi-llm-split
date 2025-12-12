@@ -1,0 +1,79 @@
+{
+  "exportedAt": "2025-12-11T14:23:25.142Z",
+  "config": {
+    "models": [
+      "gpt-4o",
+      "gpt-4.1-nano",
+      "gpt-4.1-mini",
+      "gpt-5-nano",
+      "gpt-5-mini"
+    ],
+    "analysisTypes": [
+      "reputation",
+      "visibility",
+      "competitive",
+      "category"
+    ],
+    "warmupRuns": 1,
+    "testRuns": 3
+  },
+  "results": [
+    {
+      "modelId": "gpt-5-mini",
+      "model": "gpt-5-mini",
+      "description": "GPT-5 balanced variant (80% cheaper)",
+      "skipped": false,
+      "skipReason": null,
+      "overall": {
+        "totalQuestions": 33,
+        "successRate": 1,
+        "validRate": 1,
+        "avgQualityScore": 1,
+        "avgLatencyMs": 51698.454545454544,
+        "avgInputTokens": 707.2727272727273,
+        "avgOutputTokens": 3093.3636363636365,
+        "avgCostPerQuestion": 0.006363545454545455,
+        "totalCost": 0.20999700000000002,
+        "failures": []
+      },
+      "byAnalysisType": {
+        "reputation": {
+          "questions": 9,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 45814.88888888889,
+          "avgCostPerQuestion": 0.005174638888888889,
+          "totalCost": 0.04657175
+        },
+        "visibility": {
+          "questions": 9,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 51562.555555555555,
+          "avgCostPerQuestion": 0.005710972222222222,
+          "totalCost": 0.05139875
+        },
+        "competitive": {
+          "questions": 9,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 58273.77777777778,
+          "avgCostPerQuestion": 0.007552583333333333,
+          "totalCost": 0.06797325
+        },
+        "category": {
+          "questions": 6,
+          "successRate": 1,
+          "validRate": 1,
+          "avgQualityScore": 1,
+          "avgLatencyMs": 50864.666666666664,
+          "avgCostPerQuestion": 0.007342208333333333,
+          "totalCost": 0.04405325
+        }
+      }
+    }
+  ]
+}

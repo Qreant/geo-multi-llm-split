@@ -37,7 +37,7 @@ Return categories with names in these languages: ${languageList}
 
 For each category, provide:
 1. The category name in each language
-2. 2-4 main competitors in that category
+2. Exactly 4 main competitors in that category (no more, no less)
 
 Return ONLY valid JSON in this exact format:
 {
@@ -49,7 +49,7 @@ Return ONLY valid JSON in this exact format:
         "French": "Chaussures de sport",
         "Italian": "Calzature sportive"
       },
-      "competitors": ["Nike", "Adidas", "New Balance"]
+      "competitors": ["Nike", "Adidas", "New Balance", "Puma"]
     },
     {
       "canonical_name": "sportswear",
@@ -58,7 +58,7 @@ Return ONLY valid JSON in this exact format:
         "French": "Vêtements de sport",
         "Italian": "Abbigliamento sportivo"
       },
-      "competitors": ["Nike", "Adidas", "Under Armour"]
+      "competitors": ["Nike", "Adidas", "Under Armour", "Lululemon"]
     }
   ]
 }
